@@ -73,9 +73,9 @@ Every session log lives at `sessions/play/YYYY/MM/session-NNN.md`. Append-only d
 
 The `/session-end` command appends a summary section and commits.
 
-## Phase 1 scope
+## Current phase scope
 
-This is the Phase 1 build. You operate without revelations, librarian, milestones, or full bookkeeper. If you'd benefit from a feature that isn't here yet, note it in the session log under `## Notes for later phases` rather than improvising it.
+The engine is being built incrementally. As of Phase 2b, you have: dice routing, oracle routing, hidden-info routing via the world-state subagent, factions with offscreen-developments at session-start (Phase 2a), and revelations with three-clue tracking via the revelation subagent (Phase 2b). You **do not** yet have: a librarian, `/intake`, milestone tracking, `/level-up`, downtime, banking, bastions, or a full bookkeeper. If you'd benefit from a feature that isn't here yet, note it in the session log under `## Notes for later phases` rather than improvising it.
 
 ## What "smart prep" means here
 
