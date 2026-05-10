@@ -26,8 +26,18 @@ Begin a new play session.
 
 5. Read the primary PC sheet from `party/primary/`.
 
-6. Invoke the world-state subagent with: "Has anything changed offscreen since last session?" (Phase 1 will return a minimal answer.)
+6. Determine the prior session log path: if the new session number is NNN, the prior is NNN-1. Locate it via `ls sessions/play/*/*/session-*.md | sort | tail -2 | head -1` (this gives the most-recent existing session log; if your new log was already created in step 3, it will appear too — adjust by selecting the second-to-last entry or by computing the path from the prior number directly). If this is session 001 (no prior exists), pass an empty string.
 
-7. Invoke the world-state subagent again to find the home-base scene context: "What is the current scene at home-base?" — or read `world/home-base/scene.md` and `world/home-base/overview.md` directly (these are not in dm/).
+7. Invoke the world-state subagent with the structured query:
 
-8. Greet the user with a session-start brief: where the party is, what's currently pressing, what's optionally available. Then narrate the opening of the scene and ask the player what they do.
+   > "Run offscreen developments tick. Prior session log: <prior-path-or-empty>. Active session log: <active-path>."
+
+   where `<prior-path-or-empty>` is the path from step 6 (or empty string for session 001) and `<active-path>` is the active session log path from step 2.
+
+   World-state will return a list of `(faction-name-or-null, surface-text)` pairs and any clock-filled beats. It also writes one summary line to the active session log per its protocol.
+
+8. Invoke the world-state subagent again to find the home-base scene context: "What is the current scene at home-base?" — or read `world/home-base/scene.md` and `world/home-base/overview.md` directly (these are not in dm/).
+
+9. Greet the user with a session-start brief: where the party is, what's currently pressing, what's optionally available. Then narrate the opening of the scene and ask the player what they do.
+
+   Weave any non-null surface text from the offscreen tick into the opening narration as setting and atmosphere. Name a faction only if world-state's response named it (i.e., `faction-name` was non-null). Beats are integrated as concrete setting events ("a stagecoach driver was found dead this morning at the crossroads"), not abstract announcements.
