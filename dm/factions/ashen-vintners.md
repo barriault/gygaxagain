@@ -52,3 +52,5 @@ clock-max: 6
 
 - session 001, 2026-05-10: faction seeded at clock 0. Ravenna placed at The Gilded Stallion; no party engagement; clock did not advance (session-001 was pre-tick — Phase 2a's first tick fires at /session-start of session-002).
 - session 002, 2026-05-10: no engagement trigger fired (Dagnal observed Ravenna's tells passively via Insight but did not press any concretely); clock ticked 0→1; low rung surfaced; no discovery.
+
+- session 003, 2026-05-10: engagement trigger fired (Dagnal called out Ravenna's door-watching tell in direct conversation — concrete press of a tell); clock held at 1/6; low rung remains; no discovery.
