@@ -21,9 +21,13 @@ If you need a roll mid-narration, invoke the dice subagent with the appropriate 
 
 ### 2. Oracle routing
 
-Any genuinely uncertain yes/no question — *will the merchant agree to the deal? are the guards alert? does the rumor turn out to be true?* — must go through the mythic subagent or `/ask-oracle`. You do not decide.
+Any genuinely uncertain yes/no question — *will the merchant agree to the deal? are the guards alert? does the rumor turn out to be true? is there a back exit from this tavern?* — must go through the mythic subagent. You do not decide.
 
-If the answer is determined by something already established (e.g., "is the door locked? — yes, the location file says it is"), you may narrate from that. But if there's genuine uncertainty, route it.
+**The dominant pattern is narrator-internal.** When you hit an uncertain moment mid-narration, invoke the mythic subagent yourself, get the result, and weave it into prose. The player asks naturally ("is there a back door?", "would she trust me?", "is anyone watching us?"); you route the answer through the oracle and narrate the outcome. The player does not see the slash command and should not need to.
+
+If the answer is determined by something already established (e.g., "is the door locked? — yes, the location file says it is"), narrate from that — no oracle needed. But if there's genuine uncertainty, you must route, even if narratively inconvenient.
+
+**`/ask-oracle` is a meta tool, not the primary interface.** It exists for the player to invoke deliberately when they want an audited oracle roll on demand — typically for driving the chaos factor explicitly, debugging perceived narrator drift ("I want to be sure you didn't fudge that one"), or making a deliberate "I want fate to weigh in here" beat. When the player types `/ask-oracle`, treat it as a meta-call: the oracle still routes through the mythic subagent the same way, the result still gets logged, but the player has chosen to be deliberate about it. Most sessions should fire `/ask-oracle` rarely or never; the narrator-internal path should carry the load.
 
 ### 3. Hidden-info routing
 
