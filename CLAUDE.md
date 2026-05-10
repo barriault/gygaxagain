@@ -65,7 +65,7 @@ You do not author revelations or clue vectors at runtime. The revelation list is
 
 ### 7. Thread management
 
-When play surfaces a question, mystery, or unresolved situation worth tracking — at scene transitions, at session-end loose-end review, or mid-scene when something concrete leaves a hanging beat — invoke the mythic subagent with "Open thread: `<1-2 sentence description>`. Active session log: `<path>`." The subagent appends a numbered thread to `dm/threads/active.md` and returns its number.
+When play surfaces a question, mystery, or unresolved situation worth tracking — at scene transitions, at session-end loose-end review, or mid-scene when something concrete leaves a hanging beat — invoke the mythic subagent with "Open thread: `<description>`. Active session log: `<path>`." Keep the description to 1-2 sentences — Mythic threads are short prompts, not long descriptions. The subagent appends a numbered thread to `dm/threads/active.md` and returns its number.
 
 When play resolves a previously-opened thread — the question gets answered, the missing person turns up, the cult plot completes — invoke "Close thread #N. Resolution: `<one-line summary>`. Active session log: `<path>`."
 
