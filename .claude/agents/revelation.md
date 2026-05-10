@@ -63,7 +63,7 @@ Procedure:
    - **Do not include the new `## Delivered` history line in this payload.** That line is appended separately in step 5.
 4. Call `write_dm_file("revelations/<r_id>.md", <updated content>)` to persist the status change.
 5. Call `append_dm_file("revelations/<r_id>.md", "- session NNN, YYYY-MM-DD: clue <clue_id> — <context>\n")` to add the audit-trail line. Ensure the appended string starts with a leading `\n` if you cannot guarantee the file ends with a newline.
-6. Return `{revelation_id, clue_id, status_after_write, was_first_delivery: true|false}` to the narrator.
+6. Return `{revelation_id, clue_id, status_after_write, was_first_delivery}` to the narrator. `was_first_delivery` is `true` iff the pre-read status (from step 2) was `pending` (this confirm flipped it); `false` if the pre-read status was already `delivered`.
 7. Append to the active session log:
 
    ```
@@ -76,9 +76,11 @@ Procedure:
 
 Procedure:
 
-1. Call `read_dm_file("revelations/<r_id>.md")`.
+1. Call `read_dm_file("revelations/<r_id>.md")`. If the read errors (no such revelation file), return `{error: "no such revelation: <r_id>"}` and append a session-log line noting the failed lookup.
 2. Parse frontmatter `status` and the `## Delivered` section.
-3. Return `{status, delivered_via_clue_ids: [list of clue ids from Delivered], session_NNN_first_delivered}` (or `{status: pending, delivered_via_clue_ids: []}` if never delivered).
+3. Return `{status, delivered_via_clue_ids, session_NNN_first_delivered}` where:
+   - `delivered_via_clue_ids` is the list of clue ids parsed from `## Delivered` lines (empty list if none).
+   - `session_NNN_first_delivered` is the session number from the first `## Delivered` line, or `null` if never delivered.
 4. Append to the active session log:
 
    ```
@@ -87,11 +89,14 @@ Procedure:
 
 ## Edge cases
 
-- **No revelations exist** (empty `dm/revelations/`): could-land returns `[]`. confirm and has-been-delivered return errors ("no such revelation").
+- **`dm/revelations/` directory does not exist or is empty**: could-land returns `[]`. confirm and has-been-delivered return errors ("no such revelation"). Treat a `list_dm_dir` error and an empty result identically.
 - **Clue id doesn't match any revelation file**: confirm returns an error. Do not fabricate a confirmation.
+- **Clue id is malformed** (e.g., `c-001` without trailing letter, or `c-1a` without zero-padding): treat as "doesn't match any revelation file" — return an error.
 - **Clue id matches but revelation is already delivered**: confirm still appends the line; status stays `delivered`; `was_first_delivery: false`.
 - **Revelation has fewer than 3 clue vectors**: could-land returns matching clues with the warning annotation. The narrator passes the warning to the session log so the user can see the discipline gap.
-- **Scope match is ambiguous**: default to inclusive — return any clue whose scope plausibly fits.
+- **`clue-count` frontmatter and the body's clue-vector count disagree**: trust the body for matching; trust frontmatter for the warning threshold. Do not fail; the divergence is an authoring-discipline drift, not a runtime fault.
+- **Scope match is ambiguous**: default to inclusive — return any clue whose scope plausibly fits. "Lean inclusive" means resolve genuine ambiguity in favor of inclusion; it does **not** mean return clues whose scopes are clearly unrelated to the caller's. If a clue's scope tag has nothing in common with the caller's scope (different location, different NPC, different activity), exclude it.
+- **Caller passes a malformed scope** (empty string, paragraph-length blob): treat as best-effort. If empty, return `[]` with a session-log warning.
 - **Revelation file frontmatter is malformed or missing required keys (`status`, `clue-count`)**: skip that file in could-land queries; log a warning in the active session log; continue with other revelations.
 
 ## What you don't do
