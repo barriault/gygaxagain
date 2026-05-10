@@ -31,3 +31,16 @@ def list_dm_dir(dm_root: Path, relative_path: str) -> list[str]:
     if not target.is_dir():
         raise NotADirectoryError(f"{relative_path} is not a directory")
     return [entry.name for entry in target.iterdir()]
+
+
+def write_dm_file(dm_root: Path, relative_path: str, content: str) -> None:
+    """Write a UTF-8 file inside dm/, overwriting any existing content.
+
+    Creates parent directories as needed. Raises IsADirectoryError if the
+    path is an existing directory, or PathSafetyError on escape attempt.
+    """
+    target = resolve_dm_path(dm_root, relative_path)
+    if target.exists() and target.is_dir():
+        raise IsADirectoryError(f"{relative_path} is a directory")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(content, encoding="utf-8")
