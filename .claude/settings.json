@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(dm/**)",
+      "Write(dm/**)",
+      "Edit(dm/**)",
+      "Glob(dm/**)",
+      "Grep(dm/**)",
+      "Bash(cat dm/*)",
+      "Bash(cat dm/**/*)",
+      "Bash(grep dm/*)",
+      "Bash(grep -r dm/*)",
+      "Bash(rg dm/*)",
+      "Bash(less dm/*)",
+      "Bash(more dm/*)",
+      "Bash(head dm/*)",
+      "Bash(tail dm/*)",
+      "Bash(find dm/*)"
+    ]
+  }
+}

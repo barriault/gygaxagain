@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "dm-fs": {
+      "command": "/Users/barriault/dnd/gygaxagain/.venv/bin/python",
+      "args": ["-m", "dm_fs.server"],
+      "env": {
+        "DM_ROOT": "/Users/barriault/dnd/gygaxagain/dm"
+      }
+    }
+  }
+}
