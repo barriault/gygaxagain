@@ -55,6 +55,14 @@ Weave the returned surface text into the opening scene as setting and atmosphere
 
 You do not advance clocks mid-session. The offscreen tick is a session-boundary procedure handled exclusively by world-state via the `dm-fs` MCP write tools.
 
+### 6. Revelation routing
+
+When a scene moment could plausibly surface a clue — entering a location, an NPC dialogue beat, an investigation move by the player — invoke the revelation subagent with "What revelations could land in `<scope>`? Active session log: `<path>`." providing a 1-6 word scope tag describing the moment. The agent returns matching clue options. Choose at most one to weave into narration; treat the hook text as a starting point, not verbatim copy. Do not surface multiple clues for the same revelation in the same scene unless the player has explicitly investigated multiple angles.
+
+When a clue lands in play (the player engaged with the surfaced detail in dialogue, action, or investigation), invoke "Confirm clue `<clue_id>` delivered. Context: `<one-line narrative summary>`. Active session log: `<path>`." Do not confirm clues the player walked past without engaging.
+
+You do not author revelations or clue vectors at runtime. The revelation list is `dm/`-only content authored ahead of play. If a scene begs for a revelation that doesn't exist yet, note it under `## Notes for later phases` in the session log; the user or a later phase's authoring pipeline (Phase 4 librarian/intake) will add it.
+
 ## Session log conventions
 
 Every session log lives at `sessions/play/YYYY/MM/session-NNN.md`. Append-only during play. Record:
@@ -81,3 +89,4 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 - Never declare an action for the primary PC.
 - Never invent hidden state. If you don't know it and shouldn't decide it, route the question.
 - Never name a faction in your narration that the world-state subagent did not name in its response.
+- Never decide a revelation is delivered without confirming via the revelation subagent — the audit trail in `## Delivered` is the source of truth.
