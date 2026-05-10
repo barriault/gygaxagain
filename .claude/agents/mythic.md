@@ -35,10 +35,38 @@ Procedure:
    python -m mythic.cli oracle --likelihood <likelihood> --cf <cf>
    ```
 3. The CLI automatically checks for a random event; if triggered, the `random_event` field in the response will be a non-null `{focus, action, subject}` object.
+
+3a. **Thread spotlight composition.** If `random_event` (from step 3) is non-null and its `focus` is one of:
+   - `Move Toward A Thread`
+   - `Move Away From A Thread`
+   - `Close A Thread`
+
+   Then run the spotlight procedure:
+
+   1. Call `mcp__dm-fs__read_dm_file("threads/active.md")` via the dm-fs MCP.
+   2. Parse the open list under `# Mythic Threads — Active`. Count entries (call it `K`).
+   3. If `K == 0`: skip targeting. Add `event_thread_target: null` with `reason: "no open threads"` to the random_event response. The narrator will interpret the event freeform.
+   4. If the read errors (no such file): same treatment as `K == 0`, with `reason: "no threads file"`.
+   5. If `K >= 1`: invoke the dice CLI via Bash to pick a target:
+      ```
+      python -m dice.cli roll "1d<K>"
+      ```
+      Parse the JSON output's `total` field — that is the picked thread number `N`. Validate `1 <= N <= K`; if not, error out and surface the failure rather than picking the wrong target.
+   6. Read the open-list line at position `N` (1-indexed). Extract `{number: N, description}` where description is the prose before the `*(opened: session NNN)*` annotation.
+   7. Add the target to the `random_event` response object:
+      - For `Move Toward A Thread` and `Move Away From A Thread`: `event_thread_target: {number: N, description: "..."}`.
+      - For `Close A Thread`: `event_thread_close_suggestion: {number: N, description: "..."}`. The distinct key name reminds the narrator this is a suggestion, not a confirmation — the narrator decides whether to actually invoke `close-thread` per CLAUDE.md rule 7.
+
 4. Append a single line to the active session log at the path the caller specifies:
    ```
-   - ORACLE (<likelihood>, CF=<n>): <outcome> [roll <r>]<event suffix if any>
+   - ORACLE (<likelihood>, CF=<n>): <outcome> [roll <r>] [event: <focus> / <action> / <subject>{thread target if any}]
    ```
+   Where `{thread target if any}` is:
+   - ` → thread #<N>: <description>` for `Move Toward A Thread` and `Move Away From A Thread`,
+   - ` → close-suggestion #<N>: <description>` for `Close A Thread`,
+   - nothing if `K == 0` or the focus is not thread-targeting.
+   The event-suffix square brackets are only included if `random_event` was non-null.
+
 5. Return to the caller: `outcome`, `roll`, `random_event`, plus a one-line plain-English summary.
 
 ## Chaos factor adjustments
@@ -156,3 +184,4 @@ Procedure:
 - Don't use your `Edit` tool on `dm/` files — `Edit(dm/**)` is denied at the project level. All `dm/` mutations flow through `mcp__dm-fs__write_dm_file` via the dm-fs MCP.
 - Don't read `dm/factions/`, `dm/npcs/`, `dm/revelations/`, or any other `dm/` paths — those belong to the world-state and revelation subagents.
 - Don't author thread content beyond what the caller provides — descriptions are user/narrator-supplied.
+- Don't automatically invoke `close-thread` based on a `Close A Thread` random event focus — return the suggestion in the oracle response (`event_thread_close_suggestion`) and let the narrator decide whether the scene actually resolves the thread.
