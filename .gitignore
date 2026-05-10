@@ -1,0 +1,19 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Env
+.env
+.env.local
+
+# Copyrighted reference material (PDFs, etc.) — local-only
+references/
