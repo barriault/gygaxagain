@@ -21,7 +21,7 @@ clock-max: 6
 
 - Name: The Crossroads Cup
 - Goal: Identify and dose a specific traveling target passing through Amphail within the season — exact target known only to the cell handler.
-- Clock: 0/6
+- Clock: 1/6
 - Started: session 001, 2026-05-10
 
 ## Observable consequences ladder
@@ -51,3 +51,4 @@ clock-max: 6
 ## History
 
 - session 001, 2026-05-10: faction seeded at clock 0. Ravenna placed at The Gilded Stallion; no party engagement; clock did not advance (session-001 was pre-tick — Phase 2a's first tick fires at /session-start of session-002).
+- session 002, 2026-05-10: no engagement trigger fired (Dagnal observed Ravenna's tells passively via Insight but did not press any concretely); clock ticked 0→1; low rung surfaced; no discovery.
