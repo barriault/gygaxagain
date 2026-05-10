@@ -4,7 +4,7 @@ description: Begin a new play session. Usage /session-start [optional-focus]
 
 Begin a new play session.
 
-1. Determine the next session number by counting existing files matching `sessions/play/*/*/session-*.md` (numeric suffix). The new number is one greater than the maximum, or 001 if none exist.
+1. List existing session files matching `sessions/play/*/*/session-*.md`. Determine the next session number as one greater than the maximum existing numeric suffix (or 001 if none exist). Also note the path of the highest-numbered existing file — that is the prior session log, used in step 6.
 
 2. Compute the session log path: `sessions/play/YYYY/MM/session-NNN.md` using today's date and the new session number. Create the parent directory if needed.
 
@@ -26,11 +26,11 @@ Begin a new play session.
 
 5. Read the primary PC sheet from `party/primary/`.
 
-6. Determine the prior session log path: if the new session number is NNN, the prior is NNN-1. Locate it via `ls sessions/play/*/*/session-*.md | sort | tail -2 | head -1` (this gives the most-recent existing session log; if your new log was already created in step 3, it will appear too — adjust by selecting the second-to-last entry or by computing the path from the prior number directly). If this is session 001 (no prior exists), pass an empty string.
+6. The prior session log path is the one identified in step 1 as the highest-numbered existing file. If this is session 001 (no prior file existed in step 1's listing), the prior path is the empty string.
 
 7. Invoke the world-state subagent with the structured query:
 
-   > "Run offscreen developments tick. Prior session log: <prior-path-or-empty>. Active session log: <active-path>."
+   > "Run offscreen developments tick. Prior session log: `<prior-path-or-empty>`. Active session log: `<active-path>`."
 
    where `<prior-path-or-empty>` is the path from step 6 (or empty string for session 001) and `<active-path>` is the active session log path from step 2.
 
