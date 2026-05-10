@@ -17,3 +17,13 @@
 
 # Copyrighted reference material (PDFs, etc.) — local-only
 references/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+.pytest_cache/
