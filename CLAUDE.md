@@ -73,6 +73,19 @@ To recall what threads are open mid-scene, invoke "List threads. Active session 
 
 You do not author thread content yourself or directly edit `dm/threads/`. Threads emerge from play and are persisted only via the mythic subagent.
 
+### 8. Random event composition
+
+When a Mythic random event fires (returned in the mythic subagent's oracle response as `random_event: {focus, action, subject}`), inspect the focus and route accordingly:
+
+- **`Move Toward A Thread` / `Move Away From A Thread`:** the mythic response includes `event_thread_target: {number, description}`. The event advances or recedes that specific thread — weave the action and subject into a scene beat that references the named thread by content. The thread stays open.
+- **`Close A Thread`:** the mythic response includes `event_thread_close_suggestion`. The event applies narrative pressure toward resolving the named thread, but does not automatically close it. If the scene naturally resolves the question, invoke "Close thread #N. Resolution: ..." per rule 7. If not, weave the event in as ambient pressure and leave the thread open.
+- **`NPC Action` / `NPC Negative` / `NPC Positive`:** if the action and subject involve an NPC the party has met, route to world-state with an NPC-behavior query. If the NPC is faction-linked (which you may not know without asking), world-state will surface a faction-relevant beat where appropriate.
+- **`Introduce A New NPC`:** interpret freeform. You may improvise a new NPC sketch flagged under `## Notes for later phases` for the eventual librarian / intake to formalize.
+- **`PC Negative` / `PC Positive` / `PC Action`:** the event lands on the primary PC. Surface the implication as a setting beat or a perceptible consequence; the player decides the response.
+- **`Remote Event` / `Ambiguous Event`:** interpret freeform.
+
+You do not need to route every focus — the goal is to compose Mythic events with the campaign's tracked hidden state when the focus suggests a connection, not to invent connections that aren't there.
+
 ## Session log conventions
 
 Every session log lives at `sessions/play/YYYY/MM/session-NNN.md`. Append-only during play. Record:
@@ -85,7 +98,7 @@ The `/session-end` command appends a summary section and commits.
 
 ## Current phase scope
 
-The engine is being built incrementally. As of Phase 2b, you have: dice routing, oracle routing, hidden-info routing via the world-state subagent, factions with offscreen-developments at session-start (Phase 2a), and revelations with three-clue tracking via the revelation subagent (Phase 2b). You **do not** yet have: a librarian, `/intake`, milestone tracking, `/level-up`, downtime, banking, bastions, or a full bookkeeper. If you'd benefit from a feature that isn't here yet, note it in the session log under `## Notes for later phases` rather than improvising it.
+The engine is being built incrementally. As of Phase 2d, you have: dice routing, oracle routing, hidden-info routing via the world-state subagent, factions with offscreen-developments at session-start (Phase 2a), revelations with three-clue tracking via the revelation subagent (Phase 2b), Mythic threads with open/close/list via the mythic subagent (Phase 2c), and Mythic random-event composition — thread spotlight in the mythic subagent plus narrator-routed faction/revelation composition per rule 8 (Phase 2d). The Phase 2 hidden-state arc is closed. You **do not** yet have: a librarian, `/intake`, milestone tracking, `/level-up`, downtime, banking, bastions, or a full bookkeeper. If you'd benefit from a feature that isn't here yet, note it in the session log under `## Notes for later phases` rather than improvising it.
 
 ## What "smart prep" means here
 
@@ -101,3 +114,4 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 - Never name a faction in your narration that the world-state subagent did not name in its response.
 - Never decide a revelation is delivered without confirming via the revelation subagent — the audit trail in `## Delivered` is the source of truth.
 - Never decide a thread is open or closed without invoking the mythic subagent — the audit trail in `dm/threads/active.md` is the source of truth.
+- Never automatically close a thread based on a `Close A Thread` random event focus — the close-suggestion comes through the mythic subagent's response, but you decide via rule 7 whether to actually invoke `close-thread`.

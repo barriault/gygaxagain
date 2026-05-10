@@ -55,3 +55,5 @@ clock-max: 6
 
 - session 003, 2026-05-10: engagement trigger fired (Dagnal called out Ravenna's door-watching tell in direct conversation — concrete press of a tell); clock held at 1/6; low rung remains; no discovery.
 - session 004, 2026-05-10: no engagement trigger fired (session spent at chapel and in conversation with Curate Aldous; no Ravenna interaction, no Stallion engagement); clock ticked 1→2; low rung (1-2/6) remains; no discovery.
+
+- session 005, 2026-05-10: engagement trigger fired (Dagnal confronted Ravenna directly — door-watching question, knitting woman's chair named, sustained silent watch, curse named aloud; trigger 1 matches "follows where she watches the door / asks about tells"); clock held at 2/6; low rung (1-2/6) remains; no discovery (Ravenna gave no confession naming patron or faction terms).
