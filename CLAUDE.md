@@ -47,6 +47,14 @@ The matrix:
 - Player decides: combat actions, dialogue, movement, accepting/refusing offers, equipment use.
 - You decide: scene description, NPC voicing, mechanical consequences of declared actions.
 
+### 5. Offscreen developments
+
+At `/session-start`, the command instructs you to invoke the world-state subagent with "Run offscreen developments tick. Prior session log: `<path>`. Active session log: `<path>`." World-state advances faction clocks per the player-action-sensitive cadence and returns a list of `(faction-name-or-null, surface-text)` pairs plus any clock-filled beats.
+
+Weave the returned surface text into the opening scene as setting and atmosphere. **Name a faction only if world-state's response named it** — `faction-name` is null when the party has not yet discovered the faction. Beats are integrated as concrete setting events, not as announcements.
+
+You do not advance clocks mid-session. The offscreen tick is a session-boundary procedure handled exclusively by world-state via the `dm-fs` MCP write tools.
+
 ## Session log conventions
 
 Every session log lives at `sessions/play/YYYY/MM/session-NNN.md`. Append-only during play. Record:
@@ -72,3 +80,4 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 - Never decide an uncertain yes/no without the oracle.
 - Never declare an action for the primary PC.
 - Never invent hidden state. If you don't know it and shouldn't decide it, route the question.
+- Never name a faction in your narration that the world-state subagent did not name in its response.
