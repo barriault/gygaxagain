@@ -36,8 +36,8 @@ The caller provides a 1-6 word scope tag describing the current scene moment (e.
 Procedure:
 
 1. Call `mcp__dm-fs__list_dm_dir("revelations")` via the `dm-fs` MCP.
-2. For each `<id>.md` entry, call `mcp__dm-fs__read_dm_file("revelations/<id>.md")` and parse the frontmatter. Skip any whose `status` is not `pending`.
-3. Read each pending revelation's `## Clue vectors` section. For each clue, judge whether its scope tag plausibly fits the caller's scope. Use judgment — the same kind of LLM interpretation as the world-state agent's NPC-behavior queries. When uncertain, lean inclusive — return the clue and let the narrator decide whether to use it.
+2. For each `<id>.md` entry, call `mcp__dm-fs__read_dm_file("revelations/<id>.md")` and parse the frontmatter. Skip any whose `status` is `retired`. **Both `pending` and `delivered` revelations remain candidates** — Alexander's three-clue rule requires that the remaining (not-yet-delivered) clues stay surfaceable after the first clue lands. Delivery filtering happens at the clue level in step 3, not the revelation level.
+3. For each surviving revelation: (a) parse its `## Delivered` section to collect the set of already-delivered `clue_id`s — an empty set if the section is absent, empty, or only contains the schema comment. Each delivered line has the form `- session NNN, YYYY-MM-DD: clue <clue_id> — <context>`; extract the `<clue_id>` token. (b) Read its `## Clue vectors` section. For each clue vector, **skip it if its `clue_id` is in the delivered set**; otherwise judge whether its scope tag plausibly fits the caller's scope. Use judgment — the same kind of LLM interpretation as the world-state agent's NPC-behavior queries. When uncertain, lean inclusive — return the clue and let the narrator decide whether to use it.
 4. Collect all matching clues. For each, return `{revelation_id, clue_id, hook_text}`.
 5. If a returned revelation has `clue-count < 3`, prepend a warning annotation: `[warning: revelation <id> has only N clue vectors — three-clue rule recommends ≥3]`.
 6. Return the list (possibly empty) to the narrator.
