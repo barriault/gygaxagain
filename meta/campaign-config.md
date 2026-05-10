@@ -4,7 +4,8 @@
 
 - system: dnd5e-2024
 - edition: PHB 2024
-- starting level: <set during PC selection in Task 16>
+- starting level: 3
+- starting PC: Dagnal (Hill Dwarf Life Cleric, party/primary/dagnal.md)
 
 ## Tone
 
