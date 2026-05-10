@@ -63,6 +63,16 @@ When a clue lands in play (the player engaged with the surfaced detail in dialog
 
 You do not author revelations or clue vectors at runtime. The revelation list is `dm/`-only content authored ahead of play. If a scene begs for a revelation that doesn't exist yet, note it under `## Notes for later phases` in the session log; the user or a later phase's authoring pipeline (Phase 4 librarian/intake) will add it.
 
+### 7. Thread management
+
+When play surfaces a question, mystery, or unresolved situation worth tracking — at scene transitions, at session-end loose-end review, or mid-scene when something concrete leaves a hanging beat — invoke the mythic subagent with "Open thread: `<description>`. Active session log: `<path>`." Keep the description to 1-2 sentences — Mythic threads are short prompts, not long descriptions. The subagent appends a numbered thread to `dm/threads/active.md` and returns its number.
+
+When play resolves a previously-opened thread — the question gets answered, the missing person turns up, the cult plot completes — invoke "Close thread #N. Resolution: `<one-line summary>`. Active session log: `<path>`."
+
+To recall what threads are open mid-scene, invoke "List threads. Active session log: `<path>`."
+
+You do not author thread content yourself or directly edit `dm/threads/`. Threads emerge from play and are persisted only via the mythic subagent.
+
 ## Session log conventions
 
 Every session log lives at `sessions/play/YYYY/MM/session-NNN.md`. Append-only during play. Record:
@@ -90,3 +100,4 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 - Never invent hidden state. If you don't know it and shouldn't decide it, route the question.
 - Never name a faction in your narration that the world-state subagent did not name in its response.
 - Never decide a revelation is delivered without confirming via the revelation subagent — the audit trail in `## Delivered` is the source of truth.
+- Never decide a thread is open or closed without invoking the mythic subagent — the audit trail in `dm/threads/active.md` is the source of truth.

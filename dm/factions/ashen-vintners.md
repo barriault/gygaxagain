@@ -21,7 +21,7 @@ clock-max: 6
 
 - Name: The Crossroads Cup
 - Goal: Identify and dose a specific traveling target passing through Amphail within the season — exact target known only to the cell handler.
-- Clock: 1/6
+- Clock: 2/6
 - Started: session 001, 2026-05-10
 
 ## Observable consequences ladder
@@ -54,3 +54,4 @@ clock-max: 6
 - session 002, 2026-05-10: no engagement trigger fired (Dagnal observed Ravenna's tells passively via Insight but did not press any concretely); clock ticked 0→1; low rung surfaced; no discovery.
 
 - session 003, 2026-05-10: engagement trigger fired (Dagnal called out Ravenna's door-watching tell in direct conversation — concrete press of a tell); clock held at 1/6; low rung remains; no discovery.
+- session 004, 2026-05-10: no engagement trigger fired (session spent at chapel and in conversation with Curate Aldous; no Ravenna interaction, no Stallion engagement); clock ticked 1→2; low rung (1-2/6) remains; no discovery.
