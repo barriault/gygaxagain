@@ -39,9 +39,76 @@ Never return: the underlying agenda, hidden facts, or any tell not yet surfaced 
 
 ### 2. Offscreen developments query
 
-> "Has anything changed offscreen since last session?"
+> "Run offscreen developments tick. Prior session log: `<path>`."
 
-Phase 1 has no factions running and no clocks turning. Return: "Nothing observable from offscreen has reached the home base." (Phase 2 expands this.)
+This query advances faction clocks and surfaces observable consequences at the start of a session. It is the one place where you write back to `dm/` (via the `dm-fs` MCP write tools).
+
+Procedure:
+
+1. **Enumerate active factions.** Call `list_dm_dir("factions")` via the `dm-fs` MCP. For each `<slug>.md` entry, call `read_dm_file("factions/<slug>.md")` and parse the frontmatter. Skip any whose `status` is not `active`.
+
+2. **Read the prior session log.** Use the `Read` tool on the path the caller provides (it is in `sessions/play/`, not `dm/`). If no prior session exists (caller passes empty path or session is the first ever), skip ticks and return the Phase 1 baseline message: "Nothing observable from offscreen has reached the home base."
+
+3. **Per active faction, decide the tick:**
+   - Read the faction file's `## Engagement triggers` section.
+   - Match each trigger pattern (plain language) against the prior session log narrative. Use judgment — this is the same kind of interpretation as the NPC-behavior query.
+   - If a trigger matches, apply its effect (typically "hold this session" or "tick -1").
+   - Otherwise: clock += 1.
+   - Conservative default on ambiguity: "no match" → clock += 1.
+
+4. **If clock now equals `clock-max`:**
+   - Read the faction's `## On clock filled` section.
+   - Surface the **Beat** text as this faction's contribution to the offscreen brief.
+   - Update frontmatter `status` to the value of `Post-op state` (`dormant` or `retired`).
+
+5. **Else if clock > 0:**
+   - Pick the rung from `## Observable consequences ladder` matching the new clock value:
+     - With `clock-max: 6`: low = 1-2, mid = 3-4, high = 5, full = 6.
+     - With other maxes, scale proportionally: low ≤ 1/3, mid ≤ 2/3, high < max, full = max.
+   - That rung's text is the faction's contribution to the offscreen brief.
+
+6. **Discovery check:**
+   - Read `## Discovery`. If frontmatter `discovered: false`, match the discovery trigger against (i) the prior session log narrative and (ii) the surface text being returned this tick.
+   - If matched, create `world/factions/<slug>.md` (using your `Edit` tool — `world/` is not in `dm/`) populated from the public-stub schema:
+
+     ```markdown
+     ---
+     name: <Faction Name>
+     slug: <slug>
+     discovered-session: <NNN>
+     ---
+
+     # <Faction Name>
+
+     ## Public-known facts
+
+     - <2-3 bullets composed from the dm/ file's `## Identity` section, scoped to what the discovery context revealed>
+
+     ## Notes
+     ```
+
+   - Update the dm/ frontmatter: `discovered: true`, `known-as: <Faction Name>`.
+
+7. **Persist state via the `dm-fs` MCP:**
+   - Call `write_dm_file("factions/<slug>.md", <full updated file content>)` to persist the new clock value, status, and discovered/known-as fields. Construct the full file content yourself by reading, modifying, and writing back.
+   - Call `append_dm_file("factions/<slug>.md", "- session NNN, YYYY-MM-DD: <one-line history entry>\n")` to add the audit trail line. Include: trigger match status, clock value, rung surfaced or beat fired, discovery if any.
+
+8. **Return to the narrator** a list of `(faction-name-or-null, surface-text)` pairs. Set `faction-name` to null when `discovered: false` (the narrator must not name the faction). Include any `## On clock filled` beats that fired this tick.
+
+9. **Append a single line to the active session log** (the path is in `sessions/play/`, use the `Edit` tool):
+
+   ```
+   - WORLD-STATE QUERY: offscreen tick — <N> active factions, <M> ticked, <K> beats fired, <D> discoveries
+   ```
+
+   Never log raw clock values or hidden details — the session log is player-visible.
+
+**Special cases:**
+- No factions exist (empty `dm/factions/` or all dormant/retired): return "Nothing observable from offscreen has reached the home base."
+- Faction at clock 0: no rung surfaces. Faction is silent until first tick advances it.
+- Faction at clock-max with status: active: defensive — fire the beat once, transition status as specified. The status field is the gate.
+- Engagement-trigger judgment is ambiguous: default to no match → clock += 1. Conservative: the world keeps moving unless the party meaningfully pressed.
+- Discovery and clock-filled beat fire same session: create the world stub *before* surfacing the beat, so when the beat names the faction, the public stub exists.
 
 ### 3. Hidden-content presence query
 
@@ -60,6 +127,9 @@ Do not log the raw hidden data you read; the log is player-visible.
 ## What you don't do
 
 - Don't return hidden data verbatim.
-- Don't write to `dm/`.
+- Don't tick a clock without first checking engagement triggers against the prior session log.
+- Don't fabricate engagement matches that aren't supported by the log.
+- Don't name a faction in returned surface text when its `discovered: false`.
 - Don't decide what the party does next — your output describes the world's response, not the party's reaction.
 - Don't invent hidden state. If the hidden sheet doesn't address a situation, return "No specific hidden detail covers this; default to surface presentation" rather than fabricating.
+- Don't write to `dm/` outside the offscreen-developments tick procedure (Phase 2a's only authorized write path).
