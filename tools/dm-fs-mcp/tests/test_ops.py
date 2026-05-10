@@ -1,10 +1,16 @@
-"""Tests for dm-fs file operations (read, list)."""
+"""Tests for dm-fs file operations (read, list, write, append, create)."""
 
 from pathlib import Path
 
 import pytest
 
-from dm_fs.ops import read_dm_file, list_dm_dir
+from dm_fs.ops import (
+    append_dm_file,
+    create_dm_file,
+    list_dm_dir,
+    read_dm_file,
+    write_dm_file,
+)
 from dm_fs.safety import PathSafetyError
 
 
@@ -94,7 +100,6 @@ def test_write_creates_file(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
     (dm / "factions").mkdir()
-    from dm_fs.ops import write_dm_file
     write_dm_file(dm, "factions/cult.md", "# Cult\n\nclock: 1/6\n")
     assert (dm / "factions" / "cult.md").read_text(encoding="utf-8") == "# Cult\n\nclock: 1/6\n"
 
@@ -105,7 +110,6 @@ def test_write_overwrites_existing(tmp_path: Path):
     (dm / "factions").mkdir()
     target = dm / "factions" / "cult.md"
     target.write_text("old", encoding="utf-8")
-    from dm_fs.ops import write_dm_file
     write_dm_file(dm, "factions/cult.md", "new")
     assert target.read_text(encoding="utf-8") == "new"
 
@@ -113,7 +117,6 @@ def test_write_overwrites_existing(tmp_path: Path):
 def test_write_unsafe_path_raises(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
-    from dm_fs.ops import write_dm_file
     with pytest.raises(PathSafetyError):
         write_dm_file(dm, "../escape.md", "content")
 
@@ -122,7 +125,6 @@ def test_write_to_directory_raises(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
     (dm / "factions").mkdir()
-    from dm_fs.ops import write_dm_file
     with pytest.raises(IsADirectoryError):
         write_dm_file(dm, "factions", "content")
 
@@ -130,7 +132,6 @@ def test_write_to_directory_raises(tmp_path: Path):
 def test_write_creates_parent_directories(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
-    from dm_fs.ops import write_dm_file
     write_dm_file(dm, "factions/new/sub/cult.md", "content")
     assert (dm / "factions" / "new" / "sub" / "cult.md").read_text(encoding="utf-8") == "content"
 
@@ -141,7 +142,6 @@ def test_append_to_existing_file(tmp_path: Path):
     (dm / "factions").mkdir()
     target = dm / "factions" / "cult.md"
     target.write_text("# Cult\n\n## History\n", encoding="utf-8")
-    from dm_fs.ops import append_dm_file
     append_dm_file(dm, "factions/cult.md", "- session 002: clock 0 → 1\n")
     assert target.read_text(encoding="utf-8") == "# Cult\n\n## History\n- session 002: clock 0 → 1\n"
 
@@ -149,7 +149,6 @@ def test_append_to_existing_file(tmp_path: Path):
 def test_append_missing_file_raises(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
-    from dm_fs.ops import append_dm_file
     with pytest.raises(FileNotFoundError):
         append_dm_file(dm, "factions/missing.md", "content")
 
@@ -158,7 +157,6 @@ def test_append_to_directory_raises(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
     (dm / "factions").mkdir()
-    from dm_fs.ops import append_dm_file
     with pytest.raises(IsADirectoryError):
         append_dm_file(dm, "factions", "content")
 
@@ -166,7 +164,6 @@ def test_append_to_directory_raises(tmp_path: Path):
 def test_append_unsafe_path_raises(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
-    from dm_fs.ops import append_dm_file
     with pytest.raises(PathSafetyError):
         append_dm_file(dm, "../escape.md", "content")
 
@@ -175,7 +172,6 @@ def test_create_new_file(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
     (dm / "factions").mkdir()
-    from dm_fs.ops import create_dm_file
     create_dm_file(dm, "factions/new-cult.md", "# New Cult\n")
     assert (dm / "factions" / "new-cult.md").read_text(encoding="utf-8") == "# New Cult\n"
 
@@ -186,7 +182,6 @@ def test_create_existing_file_raises(tmp_path: Path):
     (dm / "factions").mkdir()
     target = dm / "factions" / "cult.md"
     target.write_text("existing", encoding="utf-8")
-    from dm_fs.ops import create_dm_file
     with pytest.raises(FileExistsError):
         create_dm_file(dm, "factions/cult.md", "new")
     assert target.read_text(encoding="utf-8") == "existing"  # unchanged
@@ -195,7 +190,6 @@ def test_create_existing_file_raises(tmp_path: Path):
 def test_create_unsafe_path_raises(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
-    from dm_fs.ops import create_dm_file
     with pytest.raises(PathSafetyError):
         create_dm_file(dm, "../escape.md", "content")
 
@@ -203,6 +197,5 @@ def test_create_unsafe_path_raises(tmp_path: Path):
 def test_create_creates_parent_directories(tmp_path: Path):
     dm = tmp_path / "dm"
     dm.mkdir()
-    from dm_fs.ops import create_dm_file
     create_dm_file(dm, "factions/new/sub/cult.md", "content")
     assert (dm / "factions" / "new" / "sub" / "cult.md").read_text(encoding="utf-8") == "content"
