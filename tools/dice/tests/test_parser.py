@@ -98,3 +98,52 @@ def test_roll_d20_within_range():
         die_value = result["terms"][0]["value"]
         assert 1 <= die_value <= 20
         assert result["total"] == die_value + 5
+
+
+def test_parse_keep_highest():
+    terms = parse_expression("4d6kh3")
+    assert terms == [DiceTerm(count=4, sides=6, sign=1, keep=("h", 3))]
+
+
+def test_parse_advantage_syntax():
+    terms = parse_expression("2d20kh1+5")
+    assert terms == [
+        DiceTerm(count=2, sides=20, sign=1, keep=("h", 1)),
+        ConstantTerm(value=5, sign=1),
+    ]
+
+
+def test_parse_disadvantage_syntax():
+    terms = parse_expression("2d20kl1+5")
+    assert terms == [
+        DiceTerm(count=2, sides=20, sign=1, keep=("l", 1)),
+        ConstantTerm(value=5, sign=1),
+    ]
+
+
+def test_roll_keep_highest_drops_lowest():
+    # 4d1kh3 → all rolls are 1, but "kept" should be 3 of them, "dropped" 1.
+    result = roll("4d1kh3")
+    term = result["terms"][0]
+    assert len(term["kept"]) == 3
+    assert len(term["dropped"]) == 1
+    assert term["value"] == 3
+
+
+def test_roll_advantage_picks_higher_of_two_d20():
+    # Repeatedly roll 2d20kh1 and verify the kept roll is always >= dropped.
+    for _ in range(50):
+        result = roll("2d20kh1")
+        term = result["terms"][0]
+        assert len(term["kept"]) == 1
+        assert len(term["dropped"]) == 1
+        assert term["kept"][0] >= term["dropped"][0]
+
+
+def test_roll_disadvantage_picks_lower_of_two_d20():
+    for _ in range(50):
+        result = roll("2d20kl1")
+        term = result["terms"][0]
+        assert len(term["kept"]) == 1
+        assert len(term["dropped"]) == 1
+        assert term["kept"][0] <= term["dropped"][0]
