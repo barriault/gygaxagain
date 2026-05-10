@@ -28,7 +28,12 @@ the common people — but suspicious of strangers.
      - The MCP's "Equipped Items" list only surfaced top-level
        equipment (4 items), not container contents (Backpack,
        Alms Box, Other Possessions tabs). The full inventory is not
-       captured here — see DnDB during play. -->
+       captured here — see DnDB during play.
+     - The MCP's spell-related endpoints (cast_spell,
+       update_spell_slots) currently return "D&D Beyond has
+       deprecated the v5 character write API endpoints" and cannot
+       enumerate or modify the character's spell list. Spells below
+       are a Phase 1 placeholder; verify against DnDB before play. -->
 
 - Race: Hill Dwarf
 - Class: Cleric (Life Domain), level 3
@@ -59,13 +64,26 @@ the common people — but suspicious of strangers.
   - Dwarven Toughness (+1 HP per level → +3 to max HP at level 3)
 - Feats: none
 - Spells known/prepared:
-  - Wisdom mod +2 + cleric level 3 = 5 prepared spells (1st/2nd level), in
-    addition to the always-prepared domain spells. The DnDB Spells tab is
-    canonical; specific selections not captured here pending Phase 6 sync.
-  - Cantrips: 3 chosen on DnDB. Common Life Cleric picks include Sacred
-    Flame, Guidance, Spare the Dying, Light, Resistance — DnDB Spells tab is
-    canonical.
-  - Domain spells (always prepared, listed above)
+  - **Phase 1 placeholder loadout — verify against DnDB before play.**
+    The DnDB MCP's spell-related endpoints (`cast_spell`,
+    `update_spell_slots`) are currently deprecated ("D&D Beyond has
+    deprecated the v5 character write API endpoints"), so the actual
+    DnDB spell list could not be pulled programmatically. The list
+    below is a standard Life Cleric loadout, selected so the smoke
+    test has plausible spells available; replace with the canonical
+    DnDB Spells tab contents during play.
+  - Cantrips (3, fixed): Sacred Flame, Guidance, Spare the Dying
+  - 1st-level prepared (chosen, plus domain): Healing Word,
+    Shield of Faith, Protection from Evil and Good
+  - 2nd-level prepared (chosen, plus domain): Aid, Hold Person
+  - Always-prepared domain spells (Life Domain, do not count
+    against prepared count):
+    - 1st level: Bless, Cure Wounds
+    - 2nd level: Lesser Restoration, Spiritual Weapon
+  - Prepared count math: WIS mod 2 + cleric level 3 = 5 prepared
+    1st/2nd-level spells in addition to the four always-prepared
+    domain spells. The placeholder above respects this (3 at 1st +
+    2 at 2nd = 5).
 - Equipment (top-level, from DnDB Inventory):
   - **Plate armor** (heavy armor, AC 18, requires STR 13, disadvantage on Stealth) — equipped
   - **Warhammer** (martial, versatile 1d8/1d10, push mastery) — equipped
