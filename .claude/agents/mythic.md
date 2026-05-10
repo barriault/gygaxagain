@@ -45,14 +45,15 @@ Procedure:
 
    1. Call `mcp__dm-fs__read_dm_file("threads/active.md")` via the dm-fs MCP.
    2. Parse the open list under `# Mythic Threads — Active`. Count entries (call it `K`).
-   3. If `K == 0`: skip targeting. Add `event_thread_target: null` with `reason: "no open threads"` to the random_event response. The narrator will interpret the event freeform.
-   4. If the read errors (no such file): same treatment as `K == 0`, with `reason: "no threads file"`.
-   5. If `K >= 1`: invoke the dice CLI via Bash to pick a target:
+   3. If `K == 0`: skip targeting. Set `random_event.event_thread_target = null` and `random_event.event_thread_target_reason = "no open threads"`. The narrator will interpret the event freeform.
+   4. If the read errors (no such file): same treatment as `K == 0`, with `random_event.event_thread_target_reason = "no threads file"`.
+   4b. If the open list parse fails (file exists but malformed): same treatment as `K == 0`, with `random_event.event_thread_target_reason = "threads file malformed"`. Do not mutate the file.
+   5. If `K >= 1`: invoke the dice CLI via Bash to pick a target. Source the venv first (matches the existing mythic-CLI invocation pattern at the top of this prompt):
       ```
-      python -m dice.cli roll "1d<K>"
+      source .venv/bin/activate && python -m dice.cli roll "1d<K>"
       ```
       Parse the JSON output's `total` field — that is the picked thread number `N`. Validate `1 <= N <= K`; if not, error out and surface the failure rather than picking the wrong target.
-   6. Read the open-list line at position `N` (1-indexed). Extract `{number: N, description}` where description is the prose before the `*(opened: session NNN)*` annotation.
+   6. Read the open-list line at position `N` (1-indexed). Extract `{number: N, description}` where description is the prose before the `*(opened: session NNN)*` annotation, with leading and trailing whitespace stripped.
    7. Add the target to the `random_event` response object:
       - For `Move Toward A Thread` and `Move Away From A Thread`: `event_thread_target: {number: N, description: "..."}`.
       - For `Close A Thread`: `event_thread_close_suggestion: {number: N, description: "..."}`. The distinct key name reminds the narrator this is a suggestion, not a confirmation — the narrator decides whether to actually invoke `close-thread` per CLAUDE.md rule 7.
