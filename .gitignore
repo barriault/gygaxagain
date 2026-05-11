@@ -17,6 +17,8 @@
 
 # Copyrighted reference material (PDFs, etc.) — local-only
 references/
+# Synthetic test fixtures in references/ are committed; negate the ignore
+!references/test-bestiary.md
 
 # Python
 .venv/
