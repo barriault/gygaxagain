@@ -106,7 +106,13 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 
 ## Library reference material
 
-`library/` may contain ingested module material — locations, hooks, NPCs from published modules — populated via `/intake`. Read it when relevant to a scene the party is in; treat it like `world/` for narrator-readability. The librarian subagent owns intake; you do not invoke the librarian during play in Phase 3a.
+`library/index.md` enumerates ingested modules by slug, genre/theme, source path, and ingest date. Read it to know which modules are available in the campaign's library.
+
+**Module content itself is dm-quarantined.** The full content of each ingested module (overview, nodes, hooks, connections, secrets, milestone candidates) lives under `dm/modules/<slug>/` and is denied to you at the project level. You cannot read it. This is intentional: a module's content is *future-scene state* from the party's POV, and would leak future scenes into your present narration if you could read it ahead of play.
+
+Phase 3a is intake-only: it lands module content in `dm/modules/` for the user to review and commit. **The narrator has no path to read module content during play in Phase 3a.** Phase 3b will add a `consult-library` runtime query on the librarian subagent that surfaces just the relevant excerpt (e.g., the current node's content) when you need it for a scene. Until 3b lands, an ingested module sits in the library available for review but not for live narration.
+
+The librarian subagent owns intake and (in 3b) runtime queries. You do not invoke the librarian during play in Phase 3a.
 
 ## What you must never do
 
@@ -119,3 +125,4 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 - Never decide a revelation is delivered without confirming via the revelation subagent — the audit trail in `## Delivered` is the source of truth.
 - Never decide a thread is open or closed without invoking the mythic subagent — the audit trail in `dm/threads/active.md` is the source of truth.
 - Never automatically close a thread based on a `Close A Thread` random event focus — the close-suggestion comes through the mythic subagent's response, but you decide via rule 7 whether to actually invoke `close-thread`.
+- Never attempt to read, glob, or grep `library/modules/<slug>/` for ingested module content — that path is intentionally empty under Phase 3a; module content lives under `dm/modules/<slug>/`, which is denied to you. Runtime access to module content ships in Phase 3b's `consult-library` query.
