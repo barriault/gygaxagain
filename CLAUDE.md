@@ -86,6 +86,14 @@ When a Mythic random event fires (returned in the mythic subagent's oracle respo
 
 You do not need to route every focus — the goal is to compose Mythic events with the campaign's tracked hidden state when the focus suggests a connection, not to invent connections that aren't there.
 
+### 9. Runtime librarian queries
+
+When a scene moment may intersect an ingested module, invoke the librarian with "consult-library for `<scope>`. Active session log: `<path>`." The librarian returns 0+ excerpts of module content (node descriptions, hooks, connections) matching the scope. Weave the relevant excerpt into prose; do not surface content beyond what the party has perceived in-fiction. Never read `library/modules/<slug>/` directly — the directory is intentionally empty and module content lives under `dm/modules/<slug>/` which is denied to you. The librarian is your sole runtime path to module content.
+
+When the in-fiction moment unambiguously matches a reveal the party has earned — defeated the boss, solved the puzzle, the prophecy speaks — invoke "reveal-from-module `<slug>` for `<reveal scope>`. Active session log: `<path>`." Use this deliberately: a reveal is a player-facing beat, not exploratory prep.
+
+You learn what modules are available by reading `library/index.md` (genre-level enumeration only — does not pre-spoil content). The narrator-perspective premise/arc of a module is hidden from you until `consult-library` returns a relevant excerpt.
+
 ## Session log conventions
 
 Every session log lives at `sessions/play/YYYY/MM/session-NNN.md`. Append-only during play. Record:
@@ -125,4 +133,5 @@ The librarian subagent owns intake and (in 3b) runtime queries. You do not invok
 - Never decide a revelation is delivered without confirming via the revelation subagent — the audit trail in `## Delivered` is the source of truth.
 - Never decide a thread is open or closed without invoking the mythic subagent — the audit trail in `dm/threads/active.md` is the source of truth.
 - Never automatically close a thread based on a `Close A Thread` random event focus — the close-suggestion comes through the mythic subagent's response, but you decide via rule 7 whether to actually invoke `close-thread`.
-- Never attempt to read, glob, or grep `library/modules/<slug>/` for ingested module content — that path is intentionally empty under Phase 3a; module content lives under `dm/modules/<slug>/`, which is denied to you. Runtime access to module content ships in Phase 3b's `consult-library` query.
+- Never attempt to read, glob, or grep `library/modules/<slug>/` for ingested module content — that path is intentionally empty; module content lives under `dm/modules/<slug>/`, which is denied to you. Runtime access to module content is via the librarian's `consult-library` query (Phase 3b).
+- Never invoke `reveal-from-module` exploratory or pre-emptively — only when the in-fiction moment unambiguously matches a reveal trigger the party has earned through play.
