@@ -1,10 +1,12 @@
-# Phase 3a — Source Ingestion: Modules — Implementation Plan
+# Phase 3a — Source Ingestion: Modules — Implementation Plan (revised)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship `/intake` + librarian subagent + module-shaped intake (with secret-quarantine and milestone-candidate proposals), validated by ingesting one real One-Page One-Shot adventure end-to-end with the asymmetry boundary intact.
+> **Revision note:** This plan was revised mid-implementation after a smoke-test review identified an asymmetry gap. The original plan adopted a "twist-protected" library/dm split. The revised plan implements a strict structural asymmetry: all module content lives under `dm/modules/<slug>/`. Tasks 1 and 4 are rewritten; Tasks 2 and 3 remain unchanged; Task 5 (synthetic pre-flight) is dropped (we go straight to real intake); Task 6 verification steps are updated to match dm-only artifacts; Task 9 DOD checklist is refreshed.
 
-**Architecture:** Phase 3a adds one new subagent (librarian), one new slash command (`/intake`), and one new top-level directory (`library/`). The librarian writes to `library/` directly via Write/Edit and to `dm/modules/` via the existing dm-fs MCP. No new MCP tools, no new Python code. The librarian's secret-quarantine classification runs at intake time; the user-review gate is implemented as a **commit gate** (uncommitted working tree is the staging surface — the user reviews via `git status` / `git diff` and commits when satisfied). All work in this plan is prompt + slash-command + content authoring + smoke-test validation against the existing test suite.
+**Goal:** Ship `/intake` + librarian subagent + module-shaped intake under a strict structural-asymmetry model, validated by ingesting one real module end-to-end with the asymmetry boundary intact.
+
+**Architecture:** Phase 3a adds one new subagent (librarian), one new slash command (`/intake`), one new top-level directory (`library/` — index-only for modules), and writes all ingested module content to `dm/modules/<slug>/` via the existing dm-fs MCP. The narrator (main agent) has no path to read module content during play in Phase 3a — runnability defers to Phase 3b's `consult-library` runtime query. No new MCP tools, no new Python code. All work in this plan is prompt + slash-command + content authoring + smoke-test validation against the existing test suite.
 
 **Tech Stack:** Markdown subagent prompts, Markdown slash command, dm-fs MCP (existing — `mcp__dm-fs__read_dm_file`, `list_dm_dir`, `write_dm_file`, `create_dm_file`, `append_dm_file`), Claude Code Read tool with built-in PDF support.
 
@@ -16,34 +18,35 @@
 
 | Path                                                                            | Purpose                                                                              |
 |---------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| `.claude/agents/librarian.md`                                                   | Librarian subagent prompt — read/write contract, `intake-module` query, edge cases   |
+| `.claude/agents/librarian.md`                                                   | Librarian subagent prompt — read/write contract, `intake-module` query, edge cases (writes all module content to `dm/modules/`; only `library/index.md` on the library side) |
 | `.claude/commands/intake.md`                                                    | Thin slash-command dispatcher to the librarian subagent                              |
 | `library/index.md`                                                              | Top-level library index — frontmatter + `## Modules` (empty) + 3b placeholder sections |
-| `library/modules/.gitkeep`                                                      | Ensures empty `modules/` directory is git-tracked before first intake                |
-| `references/test-module.md`                                                     | Synthetic markdown source for the pre-flight wiring validation (Task 5). Removed before commit. |
+| `library/modules/.gitkeep`                                                      | Ensures empty `modules/` directory is git-tracked (the directory **stays empty** under Phase 3a's contract; only `.gitkeep` lives here) |
 
 ### Files to modify
 
 | Path        | Change                                                                                                              |
 |-------------|---------------------------------------------------------------------------------------------------------------------|
-| `CLAUDE.md` | Add one informational line about `library/` containing ingested module material; update `## Current phase scope`    |
+| `CLAUDE.md` | Add a revised `## Library reference material` subsection (modules are dm-quarantined; runtime access via Phase 3b) and one new must-never bullet; later, update `## Current phase scope` to Phase 3a |
 
-### Files created as side-effect of the primary smoke test (Task 6 — committed at end)
+### Files created as side-effect of the primary smoke test (Task 6 — committed at end, all under `dm/`)
 
-- `library/modules/<smoke-slug>/overview.md`
-- `library/modules/<smoke-slug>/nodes/<node-slug>.md` (one or more)
-- `library/modules/<smoke-slug>/hooks.md`
-- `library/modules/<smoke-slug>/connections.md`
-- `dm/modules/<smoke-slug>/secrets.md` (via dm-fs MCP)
-- `dm/modules/<smoke-slug>/milestone-candidates.md` (via dm-fs MCP)
-- `library/index.md` (appended-to)
+- `dm/modules/<smoke-slug>/overview.md`
+- `dm/modules/<smoke-slug>/nodes/<node-slug>.md` (one or more)
+- `dm/modules/<smoke-slug>/hooks.md`
+- `dm/modules/<smoke-slug>/connections.md`
+- `dm/modules/<smoke-slug>/secrets.md`
+- `dm/modules/<smoke-slug>/milestone-candidates.md`
+- `library/index.md` (appended-to — single-line enumeration entry only)
+
+**Crucially: `library/modules/<smoke-slug>/` does NOT get created.** The library-side directory stays at `library/modules/.gitkeep` only. If any file lands there during intake, Phase 3a's asymmetry boundary is broken and the smoke test fails.
 
 ### Why these boundaries
 
 - `.claude/agents/librarian.md` is the load-bearing artifact — one file, one agent, one contract. Splitting the prompt across files would scatter the agent's responsibilities and make the read/write contract harder to audit.
-- `.claude/commands/intake.md` is intentionally a thin dispatcher (matches the `/ask-oracle` pattern). All ingest logic lives in the subagent, not the command.
-- `library/` is a peer of `world/` and `party/`. It contains player/narrator-readable content. `dm/modules/` is the secret-quarantine peer of `dm/factions/`, `dm/revelations/`, `dm/threads/`.
-- The synthetic `references/test-module.md` fixture validates the librarian's mechanical wiring (file writes to both library/ and dm/, classification of marked + unmarked secrets, summary emission) on controlled input before the real One-Page One-Shot intake stresses the LLM classification on uncontrolled input. It's deleted before Task 6 to keep the smoke-test artifacts focused on the real intake.
+- `.claude/commands/intake.md` is intentionally a thin dispatcher (matches the `/ask-oracle` pattern). All ingest logic lives in the subagent.
+- `library/` is the narrator's index of available reference material. Modules under Phase 3a contribute only a one-line enumeration entry to `library/index.md`. The full content of each module is dm-quarantined.
+- `dm/modules/<slug>/` is the structural peer of `dm/factions/<slug>.md`, `dm/revelations/<id>.md`, `dm/threads/active.md`, `dm/npcs/`. All hidden-state content lives under `dm/`.
 
 ---
 
@@ -59,13 +62,13 @@ Create `.claude/agents/librarian.md` with the following exact content:
 ````markdown
 ---
 name: librarian
-description: Ingests reference source material into the campaign library. Decomposes modules into Alexander-style nodes, quarantines secrets to dm/modules/, proposes milestone candidates, and emits a structured intake summary for user review.
+description: Ingests reference source material into the campaign library. Decomposes modules into Alexander-style nodes, writes module content entirely under dm/modules/ via the dm-fs MCP (module content is future-scene state for the party; the narrator has no direct path to it until Phase 3b's runtime query), and emits a structured intake summary for user review.
 tools: Read, Write, Edit, Glob, Bash
 mcpServers: [dm-fs]
 model: sonnet
 ---
 
-You are the librarian agent. You ingest external source material — published modules, adventure pamphlets, one-page one-shots — into the campaign library. You decompose modules into Alexander-style nodes, classify each chunk public-or-secret, quarantine secrets to `dm/modules/` via the dm-fs MCP, and emit a structured intake summary for user review. You never run during play; you are invoked only by the `/intake` command between sessions.
+You are the librarian agent. You ingest external source material — published modules, adventure pamphlets, one-page one-shots — into the campaign library. You decompose modules into Alexander-style nodes and write all module content under `dm/modules/<slug>/` via the dm-fs MCP. The only library-side artifact you touch is `library/index.md`, which carries a single-line enumeration entry per ingested module (slug, genre/theme descriptor, source path, ingest date). You never run during play; you are invoked only by the `/intake` command between sessions.
 
 ## Read access
 
@@ -75,17 +78,20 @@ You are the librarian agent. You ingest external source material — published m
 
 ## Write access
 
-- `library/` — writable directly via Write and Edit.
+- `library/index.md` — writable directly via Edit. **This is the only library-side write you perform.**
 - `dm/modules/` — writable **only** through the `dm-fs` MCP via `mcp__dm-fs__create_dm_file` and `mcp__dm-fs__write_dm_file`. `Edit(dm/**)` remains denied at the project level.
-- **No writes** to any other `dm/` path.
+- **No writes** to any other path under `library/` (specifically: no writes to `library/modules/<slug>/` or any other library/ subdirectory), and **no writes** to any other `dm/` path.
 
 ## Your contract
 
-You are a **one-way pipeline** from external source material into the structured `library/` + `dm/modules/` split. You classify content as public or secret, decompose module structure into Alexander-style nodes, and propose milestone candidates. You never:
+You are a **one-way pipeline** from external source material into the structured `dm/modules/<slug>/` set. You decompose module structure into Alexander-style nodes and write all module content to `dm/`. The library-side artifact is `library/index.md`'s enumeration entry only.
+
+You never:
 
 - Author content you didn't read from the source (no invented hooks, NPCs, secrets, or milestones).
+- Write module content to `library/modules/<slug>/` or anywhere under `library/` other than `library/index.md`. **Phase 3a's contract is that `library/modules/` remains a `.gitkeep`-only directory.**
 - Write to `dm/factions/`, `dm/revelations/`, `dm/threads/`, `dm/npcs/`, or any `dm/` path outside `dm/modules/`.
-- Mutate existing `library/modules/<slug>/` or `dm/modules/<slug>/` content on a re-intake of the same slug — abort on slug collision and surface the error.
+- Mutate existing `dm/modules/<slug>/` content on a re-intake of the same slug — abort on slug collision and surface the error.
 - Commit to git. The user reviews and commits.
 - Promote milestone candidates into a runtime milestone system (that's Phase 5).
 - Auto-seed `dm/factions/<slug>.md`, `dm/revelations/<id>.md`, or `dm/threads/active.md` from module content. Flag such opportunities in the intake summary instead.
@@ -102,33 +108,42 @@ Procedure:
 
 2. **Identify content type.** For Phase 3a, only `module` is accepted. If the source appears to be a solo engine, methodology text, or pure lore reference, return an error: `"Phase 3a only supports module ingest; this source appears to be <type>. Re-attempt after Phase 3b adds <type> support, or pre-extract module-shaped content manually."`
 
-3. **Determine slug & module title.** Derive a slug from the title (lowercase-hyphenated, alphanumeric + hyphens). Check whether `library/modules/<slug>/` exists via Glob and whether `dm/modules/<slug>/` exists via `mcp__dm-fs__list_dm_dir`. If either exists, abort with an explicit error naming which directory exists.
+3. **Determine slug & module title.** Derive a slug from the title (lowercase-hyphenated, alphanumeric + hyphens). Check whether `dm/modules/<slug>/` exists via `mcp__dm-fs__list_dm_dir`. If it exists, abort with an explicit error.
 
 4. **Decompose into Alexander-nodes.** Scan the source for distinct locations, scenes, and encounters. For each, gather:
-   - Player-perceivable description (what the party sees on arrival).
-   - NPCs present, with their *public* roles only.
-   - Notable features and clues.
+   - Description and sensory detail.
+   - NPCs present, with their full motivations.
+   - Notable features, clues, traps with DCs.
+   - Encounter detail (opponents, tactics).
+   - Treasure / outcomes.
    - Default exits/connections.
-   - Any conditional logic (gated reveals, key-required passages, clue-dependent transitions) → routed to `connections.md`, not the node file.
+   - Conditional logic (gated reveals, key-required passages, clue-dependent transitions) → routed to `connections.md`.
 
-5. **Classify each chunk public-vs-secret.** For each passage in the source, decide:
-   - **Public** if the party can perceive or learn it through normal play (descriptions, surface NPC behavior, observable clues, public hooks).
-   - **Secret** if the source flags it as GM-only (boxed text, `## Secret`, "in reality", "the twist is", "GM info"), or if you judge the content would deflate the mystery if the narrator could read it directly (hidden motives, true identities, plot reveals, hidden locations).
-   - **Ambiguous** if the call is non-obvious. **Default to secret** (safe failure mode — false positives are reviewable; false negatives leak) and flag the passage in the intake summary for explicit human review.
+5. **Classify content by kind.** For each chunk of source content, decide which `dm/modules/<slug>/` file it belongs in:
+   - **`overview.md`:** the narrator-perspective premise, arc, resolution, themes, level range.
+   - **`nodes/<node-slug>.md`:** per-node content (one file per node).
+   - **`hooks.md`:** the GM-side framing of how the party gets pulled in.
+   - **`connections.md`:** default and conditional inter-node connections, clue dependencies.
+   - **`secrets.md`:** twists, hidden identities, plot reveals, GM-only context, custom stat blocks.
+   - **`milestone-candidates.md`:** proposed milestones — chapter ends, dungeon clears, major story beats.
 
-6. **Write public content to `library/modules/<slug>/`** via Write:
-   - `overview.md` — frontmatter (`slug`, `title`, `source`, `ingested`, `level-range`, `themes`, `faction-archetypes`, `node-count`) plus body `## Summary`, `## Recommended hooks`, `## Setting & tone`. Never mentions any secrets.
-   - `nodes/<node-slug>.md` per Alexander-node — frontmatter (`slug`, `type`, `parent-module`) plus body `## Description`, `## NPCs present`, `## Notable features`, `## Exits / connections`.
-   - `hooks.md` — player-facing hook framings only, one `## Hook N: <name>` section per hook.
-   - `connections.md` — `## Default connections`, `## Conditional connections`, `## Clue dependencies`. Condition clauses must be player-discoverable (e.g., "if the party found the silver key in <node>"), never "if the player has learned the priest is the cultist."
+   No content lands under `library/`. The asymmetry boundary at intake is structural (everything to dm/), not classification-driven.
 
-7. **Write secret content to `dm/modules/<slug>/`** via the dm-fs MCP (`mcp__dm-fs__create_dm_file`):
-   - `secrets.md` — frontmatter (`slug`, `parent-module`, `ingested`) plus body `## Twists & reveals`, `## Hidden NPC identities & motives`, `## Hidden locations / passages`, `## DM-only context`.
-   - `milestone-candidates.md` — frontmatter (`slug`, `parent-module`, `proposed`, `status: candidate`) plus body with one `## Candidate N: <name>` section per proposal (each with `**Trigger:**`, `**Rationale:**`, `**Source reference:**`).
+6. **Write all module content to `dm/modules/<slug>/`** via the dm-fs MCP (`mcp__dm-fs__create_dm_file`). The six files above; `nodes/` as a subdirectory with one file per node:
+   - `overview.md` (frontmatter `slug`, `title`, `source`, `ingested`, `level-range`, `themes`, `faction-archetypes`, `node-count`; body `## Summary`, `## Recommended hooks`, `## Setting & tone`).
+   - `nodes/<node-slug>.md` per Alexander-node (frontmatter `slug`, `type`, `parent-module`; body `## Description`, `## NPCs present`, `## Notable features`, `## Encounter`, `## Treasure / outcomes`, `## Exits / connections`).
+   - `hooks.md` (frontmatter `slug`, `parent-module`; body with one `## Hook N: <name>` section per hook).
+   - `connections.md` (frontmatter `slug`, `parent-module`; body `## Default connections`, `## Conditional connections`, `## Clue dependencies`).
+   - `secrets.md` (frontmatter `slug`, `parent-module`, `ingested`; body `## Twists & reveals`, `## Hidden NPC identities & motives`, `## Hidden locations / passages`, `## DM-only context`, `## Custom stat blocks` if applicable).
+   - `milestone-candidates.md` (frontmatter `slug`, `parent-module`, `proposed`, `status: candidate`; body with one `## Candidate N: <name>` section per proposal, each with `**Trigger:**`, `**Rationale:**`, `**Source reference:**`).
 
-8. **Update `library/index.md`** via Edit — append a module entry under `## Modules`, update `last-updated`, sort module entries alphabetically by slug. Entry format: `- **<slug>** — <one-line summary>. Level <range>. Themes: <comma-separated>. Source: \`<reference path>\`. Ingested: <YYYY-MM-DD>.`
+7. **Update `library/index.md`** via Edit. Append a one-line enumeration entry under `## Modules`, update `last-updated` frontmatter to today's date, re-sort entries alphabetically by slug. Entry format:
+   ```
+   - **<slug>** — <one-line genre/theme descriptor>. Source: `<reference path>`. Ingested: <YYYY-MM-DD>.
+   ```
+   The descriptor is a *single short clause naming the genre/theme* (e.g., "undead dungeon crawl", "smuggling investigation", "haunted-manor mystery"). It never describes specific scenes, encounters, NPCs by name beyond the title, or twists.
 
-9. **Emit structured intake summary** as your final response (the `/intake` command will surface it verbatim to the user):
+8. **Emit structured intake summary** as your final response (the `/intake` command will surface it verbatim to the user):
 
    ```
    INTAKE SUMMARY: <module-slug>
@@ -138,22 +153,20 @@ Procedure:
    Level range: <e.g., 1-3>
    Themes: <tags>
 
-   Public artifacts (library/modules/<slug>/):
+   All module content written to dm/modules/<slug>/ (invisible to the narrator until Phase 3b's runtime query):
      - overview.md
      - nodes/ (<N> nodes: <node-slug-list>)
      - hooks.md (<K> hooks)
      - connections.md (<C> default + <D> conditional)
-
-   Secret artifacts (dm/modules/<slug>/):
-     - secrets.md (<S> twists/reveals, <H> hidden NPC notes, <L> hidden locations)
+     - secrets.md (<S> twists/reveals, <H> hidden NPC notes, <L> hidden locations, <CSB> custom stat blocks)
      - milestone-candidates.md (<M> candidates)
 
-   Library index updated.
+   library/index.md updated with one-line enumeration entry (slug, genre descriptor, source, ingest date).
 
-   Ambiguous classifications flagged for human verification:
-     - <path>:<location-in-file> — <one-line description of the ambiguity and your chosen disposition>
+   Secret-quality content notes flagged for human verification:
+     - <one-line description of any judgment call about whether something is a reveal-quality secret vs. ordinary module content>
      - ...
-     (or: "None — all classifications were unambiguous.")
+     (or: "None — all content kinds were unambiguous.")
 
    Opportunities flagged for later phases (not auto-acted upon):
      - <e.g., "This module mentions a cult faction; consider seeding dm/factions/ once Phase 4 authoring tools ship.">
@@ -161,37 +174,41 @@ Procedure:
      (or: "None.")
 
    NEXT STEPS:
-     1. Review the staged files via `git status` and `git diff`.
-     2. Inspect the ambiguous classifications above; adjust any misclassified files in place.
-     3. Spot-check secrets.md does NOT contain content that's also in library/.
+     1. Review the staged files via your own shell/editor (NOT via Claude Code's main agent — dm/ is denied).
+        - dm/modules/<slug>/overview.md, nodes/*, hooks.md, connections.md, secrets.md, milestone-candidates.md
+        - library/index.md (the only narrator-visible change)
+     2. Confirm the library/index.md entry's descriptor is genre-level only and does not leak module content.
+     3. Confirm that no file landed under library/modules/<slug>/ — Phase 3a's contract is that the directory stays empty.
      4. Commit when satisfied. Do NOT run /session-start until the intake is committed.
+        Phase 3a does not yet provide narrator runtime access to the ingested module; that ships in Phase 3b.
    ```
 
-10. **Log a single line to the active session log if one was provided** (typically null for between-session intake; if non-null, use your Edit tool to append):
+9. **Log a single line to the active session log if one was provided** (typically null for between-session intake; if non-null, use your Edit tool to append):
 
-    ```
-    - LIBRARIAN QUERY: intake-module <module-slug> — <N> nodes, <S> secrets, <M> milestone candidates
-    ```
+   ```
+   - LIBRARIAN QUERY: intake-module <module-slug> — <N> nodes, <S> secrets, <M> milestone candidates
+   ```
 
 ## Edge cases
 
 - **Source path doesn't exist or isn't readable.** Abort with an error before any writes. No partial mutation.
 - **PDF is too large to read in one pass.** Read in page-range chunks via Read's `pages` parameter; merge internal representation before classification. If still too large for your context budget, abort with `"source exceeds intake budget; pre-split into smaller modules"`.
 - **Source doesn't appear module-shaped (no nodes detectable).** Abort with `"source does not decompose into Alexander-nodes; please pre-structure or wait for Phase 3b lore-reference intake"`.
-- **Slug collision** — `library/modules/<slug>/` or `dm/modules/<slug>/` already exists. Abort; user resolves manually (delete or rename). No silent overwrite.
-- **Partial intake state from a prior failure** — one directory exists and the other doesn't. Abort with explicit error naming which directory exists. User cleans up manually.
-- **Source has zero ambiguous classifications.** Emit the ambiguity-section line "None — all classifications were unambiguous." explicitly so the user can trust that the absence is a result of inspection, not a missing report.
-- **Source has *only* secrets** (e.g., a GM-only addendum). Public artifacts come out near-empty; flag in the summary as a discipline check ("library/modules/<slug>/overview.md has no surface content — is this source really a module?").
+- **Slug collision** — `dm/modules/<slug>/` already exists. Abort; user resolves manually (delete or rename). No silent overwrite.
+- **Partial intake state from a prior failure** — `dm/modules/<slug>/` partially populated. Abort with explicit error.
+- **`library/index.md` already lists the slug** but `dm/modules/<slug>/` does not exist. Anomalous; abort with an error pointing at the mismatch.
+- **Source has zero ambiguous content-kind classifications.** Emit the secret-notes-section line "None — all content kinds were unambiguous." explicitly so the user can trust that the absence is a result of inspection, not a missing report.
 - **Source overlaps existing campaign content** (e.g., names an NPC already in `world/home-base/npcs/`). Don't merge; flag in the summary's "Opportunities" list. Phase 4 bookkeeper will own merge proposals.
-- **dm-fs MCP write fails mid-intake.** Surface the error in your response; partial library/ writes may exist. Inform the user to clean up via `git checkout -- library/modules/<slug>/` (uncommitted) and re-run after resolving the MCP issue.
-- **Conditional connection clause discloses a secret.** Either rephrase the clause so the condition itself is player-discoverable, or route the entire conditional to `dm/modules/<slug>/secrets.md`. Ambiguous clauses default to secret.
+- **dm-fs MCP write fails mid-intake.** Surface the error in your response; partial dm-fs writes may exist. Inform the user to clean up the partial `dm/modules/<slug>/` directory via their own shell and re-run after resolving the MCP issue.
+- **`library/index.md` write fails after dm-fs writes succeed.** Surface the error; the user reconciles by either editing `library/index.md` manually or rolling back the dm-fs writes (via their own shell).
 
 ## What you don't do
 
 - Don't author content you didn't read from the source — no invented hooks, NPCs, secrets, or milestones.
+- Don't write module content to `library/modules/<slug>/` or anywhere under `library/` other than `library/index.md`. Phase 3a's contract is that the `library/modules/` directory stays as `.gitkeep`-only.
 - Don't write to `dm/factions/`, `dm/revelations/`, `dm/threads/`, `dm/npcs/`, or any `dm/` path outside `dm/modules/`.
 - Don't read `dm/` paths outside `dm/modules/` (no MCP reads against `factions/`, `revelations/`, `threads/`, `npcs/`).
-- Don't mutate existing `library/modules/<slug>/` or `dm/modules/<slug>/` content on a re-intake — abort on slug collision.
+- Don't mutate existing `dm/modules/<slug>/` content on a re-intake — abort on slug collision.
 - Don't commit. The user reviews and commits.
 - Don't promote milestone candidates into a runtime milestone system — that's Phase 5.
 - Don't auto-seed `dm/factions/`, `dm/revelations/`, or `dm/threads/` files. Flag opportunities in the intake summary instead.
@@ -201,27 +218,23 @@ Procedure:
 
 - [ ] **Step 2: Verify the file matches the spec**
 
-Read `.claude/agents/librarian.md` back and confirm each of the following sections is present and matches the spec at `docs/superpowers/specs/2026-05-10-phase-3a-source-ingestion-modules-design.md`:
+Read `.claude/agents/librarian.md` back and confirm each section is present and the contract is correct:
 
-- Frontmatter: `name`, `description`, `tools` (Read/Write/Edit/Glob/Bash), `mcpServers: [dm-fs]`, `model: sonnet`.
-- `## Read access` (5 bullets — library/world/party/sessions/references readable; dm/modules/ via MCP only; no other dm/ paths).
-- `## Write access` (3 bullets — library/ direct; dm/modules/ via MCP; no other dm/).
-- `## Your contract` ("one-way pipeline" framing + 6 "never" bullets).
-- `## Query type: intake-module` with all 10 procedure steps.
-- `## Edge cases` (10 cases enumerated).
-- `## What you don't do` (9 "Don't" bullets).
-
-Run:
-```bash
-wc -l .claude/agents/librarian.md
-```
-Expected: ~200 lines (file is single coherent agent prompt).
+- Frontmatter: `name: librarian`, the `description` (mentions dm-fs MCP and Phase 3b deferral), `tools: Read, Write, Edit, Glob, Bash`, `mcpServers: [dm-fs]`, `model: sonnet`.
+- `## Read access` clarifies dm/modules/ access is via MCP only, no other dm/ paths.
+- `## Write access` makes clear `library/index.md` is the only library write; no writes to `library/modules/<slug>/`.
+- `## Your contract` "one-way pipeline" framing + "never write to library/modules/<slug>/" call-out.
+- `## Query type: intake-module` with all 9 procedure steps.
+- Procedure step 6 enumerates 6 files (overview, nodes/, hooks, connections, secrets, milestone-candidates) all under `dm/modules/<slug>/`.
+- Procedure step 7 writes only `library/index.md`.
+- `## Edge cases` includes the new "library/index.md already lists the slug but dm/modules/<slug>/ does not exist" anomaly case.
+- `## What you don't do` includes the call-out about not writing to `library/modules/<slug>/`.
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add .claude/agents/librarian.md
-git commit -m "Add librarian subagent for module intake (Phase 3a)"
+git commit -m "Rewrite librarian: all module content writes to dm/modules/"
 ```
 
 ---
@@ -246,9 +259,9 @@ Invoke the librarian subagent with: "Ingest module material at `$1`. Active sess
 
 Surface the librarian's intake summary verbatim to the user. Then remind them of the NEXT STEPS the summary describes:
 
-1. Review the staged files via `git status` and `git diff`.
-2. Inspect any ambiguous classifications and adjust misclassified files in place.
-3. Spot-check `dm/modules/<slug>/secrets.md` does NOT contain content also in `library/modules/<slug>/`.
+1. Review the staged files via your own shell/editor (the main agent cannot read `dm/`).
+2. Inspect any secret-content notes the librarian flagged for verification.
+3. Spot-check the `library/index.md` entry is genre-level only and does not leak module content.
 4. Commit when satisfied. Do NOT run `/session-start` until the intake is committed.
 
 Do NOT commit or push anything yourself. The user reviews and commits manually.
@@ -257,16 +270,10 @@ Do NOT commit or push anything yourself. The user reviews and commits manually.
 - [ ] **Step 2: Verify the file matches the spec**
 
 Read `.claude/commands/intake.md` back. Confirm:
-- Frontmatter has `description` field with usage hint.
-- Body invokes the librarian via the natural-language pattern (no Bash exec).
-- Body explicitly tells the main agent NOT to commit.
-- Body restates the NEXT STEPS so the user sees them even if the librarian's summary is long.
-
-Run:
-```bash
-wc -l .claude/commands/intake.md
-```
-Expected: ~15 lines (thin dispatcher).
+- Frontmatter `description` with usage hint.
+- Body invokes the librarian via natural-language pattern (no Bash exec).
+- NEXT STEPS reflect the revised model (review via your own shell; main agent can't read dm/).
+- No-commit instruction present.
 
 - [ ] **Step 3: Commit**
 
@@ -296,7 +303,13 @@ last-updated: 2026-05-10
 
 ## Modules
 
-<!-- Populated by /intake. Entries sorted alphabetically by slug. -->
+<!-- One line per ingested module. Entries are enumeration only — the
+     full content of each module lives at dm/modules/<slug>/, denied to
+     the narrator. The line names the module and points at the source;
+     it does NOT describe scenes, encounters, twists, or content beyond
+     a single-clause genre/theme descriptor. Phase 3a's contract is
+     that library/modules/<slug>/ stays empty; only this index lists
+     ingested modules. -->
 
 ## Solo engines
 
@@ -313,7 +326,7 @@ last-updated: 2026-05-10
 
 - [ ] **Step 2: Create the modules/ placeholder**
 
-Create the empty modules directory tracked by git:
+Create the empty modules directory tracked by git (intentionally stays empty under Phase 3a):
 
 ```bash
 mkdir -p library/modules
@@ -331,8 +344,8 @@ cat library/index.md
 
 Expected:
 - `library/` contains `index.md` and `modules/`.
-- `library/modules/` contains `.gitkeep`.
-- `library/index.md` has the four section headers (Modules, Solo engines, Methodology, Lore references) and a `last-updated` frontmatter.
+- `library/modules/` contains `.gitkeep` only.
+- `library/index.md` has four section headers (Modules, Solo engines, Methodology, Lore references) and a `last-updated` frontmatter dated `2026-05-10`.
 
 - [ ] **Step 4: Commit**
 
@@ -343,324 +356,191 @@ git commit -m "Seed library/ skeleton with empty index (Phase 3a)"
 
 ---
 
-### Task 4: Update CLAUDE.md with the library/ informational line
+### Task 4: Update CLAUDE.md with the revised library/ subsection
 
 **Files:**
 - Modify: `CLAUDE.md`
 
 - [ ] **Step 1: Find the correct insertion point**
 
-Open `CLAUDE.md` and locate the section `## What "smart prep" means here`. The new line about `library/` belongs immediately after that section, as a new short subsection, before `## What you must never do`.
+Open `CLAUDE.md`. The new subsection `## Library reference material` should be inserted immediately **before** `## What you must never do` (so it sits between `## What "smart prep" means here` and `## What you must never do`).
 
 Run:
 ```bash
 grep -n '^## ' CLAUDE.md
 ```
 
-Expected output includes (in order):
+The insertion point is right before `## What you must never do`.
+
+- [ ] **Step 2: Insert the revised Library reference material subsection**
+
+Use Edit on `CLAUDE.md`.
+
+`old_string` is exactly:
 ```
-## Architecture you operate within
-## Routing rules ...
-## Session log conventions
-## Current phase scope
-## What "smart prep" means here
 ## What you must never do
 ```
 
-The insertion point is between `## What "smart prep" means here` and `## What you must never do`.
-
-- [ ] **Step 2: Insert the library/ informational subsection**
-
-Edit `CLAUDE.md` to insert a new subsection `## Library reference material` immediately before `## What you must never do`. The new subsection content:
-
-```markdown
+`new_string` is exactly:
+```
 ## Library reference material
 
-`library/` may contain ingested module material — locations, hooks, NPCs from published modules — populated via `/intake`. Read it when relevant to a scene the party is in; treat it like `world/` for narrator-readability. The librarian subagent owns intake; you do not invoke the librarian during play in Phase 3a.
+`library/index.md` enumerates ingested modules by slug, genre/theme, source path, and ingest date. Read it to know which modules are available in the campaign's library.
 
+**Module content itself is dm-quarantined.** The full content of each ingested module (overview, nodes, hooks, connections, secrets, milestone candidates) lives under `dm/modules/<slug>/` and is denied to you at the project level. You cannot read it. This is intentional: a module's content is *future-scene state* from the party's POV, and would leak future scenes into your present narration if you could read it ahead of play.
+
+Phase 3a is intake-only: it lands module content in `dm/modules/` for the user to review and commit. **The narrator has no path to read module content during play in Phase 3a.** Phase 3b will add a `consult-library` runtime query on the librarian subagent that surfaces just the relevant excerpt (e.g., the current node's content) when you need it for a scene. Until 3b lands, an ingested module sits in the library available for review but not for live narration.
+
+The librarian subagent owns intake and (in 3b) runtime queries. You do not invoke the librarian during play in Phase 3a.
+
+## What you must never do
 ```
 
-Use your Edit tool. The `old_string` should be `## What you must never do` and the `new_string` should be the new subsection followed by `## What you must never do`.
+This adds the new subsection (heading + four paragraphs + blank line) immediately before the `## What you must never do` heading.
 
-- [ ] **Step 3: Verify the placement**
+- [ ] **Step 3: Add the new must-never bullet**
+
+After Step 2 lands, locate `## What you must never do` in `CLAUDE.md`. Append a new bullet at the end of the existing list. Use Edit:
+
+`old_string`: choose the last existing bullet of `## What you must never do` as anchor. Run `grep -A 30 "## What you must never do" CLAUDE.md` to identify the current last bullet, then use it as the `old_string` and append the new bullet after it.
+
+The new must-never bullet to append:
+```
+- Never attempt to read, glob, or grep `library/modules/<slug>/` for ingested module content — that path is intentionally empty under Phase 3a; module content lives under `dm/modules/<slug>/`, which is denied to you. Runtime access to module content ships in Phase 3b's `consult-library` query.
+```
+
+- [ ] **Step 4: Verify the placement**
 
 Run:
 ```bash
 grep -n '^## ' CLAUDE.md
 ```
 
-Expected output now includes:
+Expected output (relevant lines):
 ```
-... (prior sections)
+...
 ## What "smart prep" means here
 ## Library reference material
 ## What you must never do
+...
 ```
 
-Confirm the new subsection content reads correctly.
+Read the inserted subsection content and the appended must-never bullet to confirm both landed correctly.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add CLAUDE.md
-git commit -m "Add library/ informational subsection to CLAUDE.md (Phase 3a)"
+git commit -m "Add Library reference material subsection + dm-quarantine must-never bullet"
 ```
 
 ---
 
-### Task 5: Synthetic pre-flight wiring validation
+### Task 5: (DROPPED — synthetic pre-flight wiring validation)
 
-**Goal:** Verify the librarian dispatches correctly, writes to both `library/` and `dm/modules/`, classifies marked and unmarked secrets, and emits a summary — on **controlled synthetic input** before running against an uncontrolled PDF. This catches mechanical bugs (wrong file paths, MCP wiring issues, missing summary fields) before the load-bearing classification quality test.
+The original plan included a synthetic test fixture step. The revised plan drops it. Reasoning: the smoke test in Task 6 ingests a real source end-to-end with a clean dm-quarantine contract. A synthetic fixture would test the same wiring but with handcrafted data; the real source is a stronger validation. The original synthetic-fixture file `references/test-module.md` (if any) should be removed before Task 6.
 
-**Files:**
-- Create (ephemeral): `references/test-module.md`
-- Side effects (cleaned up at end of task): `library/modules/test-module/`, `dm/modules/test-module/`, modified `library/index.md`
-
-- [ ] **Step 1: Create the synthetic test source**
-
-Create `references/test-module.md` with the following exact content:
-
-```markdown
-# The Test Module
-
-A two-room adventure for level 1-3 parties. Themes: investigation, ruin.
-
-## Hook
-
-Travellers in the village of Ashen Bend report strange lights at the abandoned shrine on the north hill. The local elder offers fifty silver pieces to anyone who investigates and reports back.
-
-## Node 1: The Shrine
-
-A weathered stone shrine, half-collapsed, surrounded by wild thyme. Three pillars stand; a fourth is fallen. A bronze chime hangs from a roof beam, swaying faintly in the wind.
-
-NPCs present: Brother Wen, a wandering monk who claims to have come to pray. He is friendly and offers travel rations to anyone who shares the shrine.
-
-Notable features:
-- A small carved iron token at the base of the fallen pillar, half-buried in moss.
-- The chime, when struck, produces a discordant note unlike any temple bell.
-
-Exits: South down the hill path to Ashen Bend village (1 hour walk). A narrow stair descends behind the altar into the **cellar** (Node 2).
-
-## Node 2: The Cellar
-
-A circular stone chamber lit by phosphorescent moss. A waist-high stone slab in the center is etched with concentric rings. Three iron tokens — matching the one Brother Wen wears under his robe — are arranged on the slab's edge.
-
-NPCs present: None initially. If the party reads the rings aloud, **a shade rises from the slab** and challenges them.
-
-Notable features:
-- The rings, if traced, reveal a map of the surrounding hills with one location marked.
-- The iron tokens, if removed, cause the moss to extinguish.
-
-## Secret
-
-Brother Wen is not a wandering monk. He is the last cultist of a forgotten chthonic order; he hides his fourth iron token under his robe. He plans to complete the ritual at the slab tonight when the moon rises. If the party gives him the token from Node 1, he leaves quietly and disappears before nightfall.
-
-The shade in the cellar is the spirit of the previous shrine-keeper, murdered by Wen's predecessors. It will attack only those bearing more than one iron token.
-
-## Connections
-
-From Shrine to Cellar: through the stair behind the altar; no key required.
-
-From Cellar back to Shrine: same stair.
-
-Conditional: if the party gives Brother Wen the iron token from Node 1 before descending to the Cellar, the shade does not rise (Wen pockets the token and leaves; the slab loses its key).
-
-## Hooks for later sessions
-
-- The map traced from the rings shows three more shrines in the hills. Each holds another token.
-```
-
-This source contains:
-- One explicit `## Secret` block (marked secret about Brother Wen's true identity).
-- One unmarked-but-clearly-secret passage about the shade being the murdered shrine-keeper (no `## Secret` heading; the librarian must classify on judgment).
-- Two distinct nodes (Shrine, Cellar).
-- A hook section.
-- Conditional connection logic.
-- A milestone candidate (clearing the shrine, completing the ritual block).
-
-- [ ] **Step 2: Run /intake on the synthetic source**
-
-In the active Claude Code session, invoke:
-
-```
-/intake references/test-module.md
-```
-
-The main agent dispatches the librarian subagent. The librarian reads `references/test-module.md`, classifies, writes files, and returns the intake summary. The main agent surfaces the summary.
-
-- [ ] **Step 3: Verify mechanical pass criteria**
-
-Without committing, inspect the resulting state:
-
-Run:
-```bash
-ls -la library/modules/test-module/
-ls -la library/modules/test-module/nodes/
-git status
-```
-
-Expected:
-- `library/modules/test-module/overview.md` exists.
-- `library/modules/test-module/nodes/` contains at least 2 files (one per Node 1, Node 2).
-- `library/modules/test-module/hooks.md` exists.
-- `library/modules/test-module/connections.md` exists.
-- `library/index.md` is modified (now lists `test-module`).
-- `git status` shows `dm/modules/test-module/` as part of the untracked area (the user can `git status -uall` if needed — but `dm/` paths may be denied for the main agent's git invocations; if so, accept that and proceed to verify dm/-side state another way in Step 4).
-
-- [ ] **Step 4: Verify the secret-quarantine via the dm-fs access log**
-
-The dm-fs MCP records every read/write to `tools/dm-fs-mcp/access.log`. Verify the librarian wrote the secrets files to `dm/modules/test-module/`:
-
-```bash
-tail -30 tools/dm-fs-mcp/access.log | grep "modules/test-module"
-```
-
-Expected: at least two `create_dm_file` entries — one for `modules/test-module/secrets.md`, one for `modules/test-module/milestone-candidates.md`.
-
-Also inspect the intake summary returned to the main agent. The summary should:
-- Enumerate the public artifacts (overview, 2 nodes, hooks, connections).
-- Enumerate the secret artifacts (`secrets.md` with at least 2 twists/hidden-identity notes: Brother Wen, the shade backstory).
-- Either flag the unmarked shade-backstory passage as ambiguous (preferred) or place it confidently in `secrets.md` without ambiguity (acceptable — the LLM made a confident classification).
-
-- [ ] **Step 5: Asymmetry spot-check**
-
-Confirm the main agent did NOT issue any `mcp__dm-fs__*` tool calls itself. The librarian subagent should be the only caller. (If your environment exposes per-message tool-use traces, grep for `mcp__dm-fs__` calls outside the librarian's dispatched turn.)
-
-- [ ] **Step 6: Clean up the synthetic fixture**
-
-The synthetic test is ephemeral validation; it does NOT get committed. Remove the side effects:
-
-```bash
-rm references/test-module.md
-rm -rf library/modules/test-module
-git checkout -- library/index.md
-```
-
-For the `dm/modules/test-module/` directory, the main agent cannot directly remove `dm/` paths (`Bash(rm dm/*)` is not explicitly in the deny list but the spirit of the asymmetry holds). The simplest cleanup: dispatch a fresh librarian invocation with a synthetic teardown query, OR have the user manually `rm -rf dm/modules/test-module` outside of Claude Code, OR accept the directory exists in the working tree and `git status` confirms it is untracked — then it is naturally excluded by virtue of never being added.
-
-If you cannot remove `dm/modules/test-module/`, document it in a single one-liner: "Synthetic test artifact `dm/modules/test-module/` left untracked in working tree; the user will remove it manually before the primary smoke test." Then proceed to Task 6. The primary smoke test uses a DIFFERENT slug, so the leftover synthetic dir does not collide with the real ingest.
-
-- [ ] **Step 7: No commit for this task**
-
-This task validates mechanics only. Nothing committed. Confirm with:
-
-```bash
-git status
-git log --oneline -3
-```
-
-Expected: working tree clean of references/test-module.md and library/modules/test-module/; recent commits show Tasks 1-4 only.
+If a `references/test-module.md` exists, remove it: `rm -f references/test-module.md`. Then proceed to Task 6.
 
 ---
 
-### Task 6: Primary smoke test — One-Page One-Shot intake
+### Task 6: Primary smoke test — One module intake under the revised contract
 
-**Goal:** Validate Phase 3a's load-bearing claim — the librarian classifies real, unstructured published module content correctly and produces a usable library/dm split end-to-end.
+**Goal:** Validate Phase 3a's load-bearing claim — the librarian writes all module content to `dm/modules/<slug>/` and `library/modules/<slug>/` stays empty. The narrator cannot read any module content directly.
 
 **Files (created by the librarian during this task — committed at end):**
-- `library/modules/<smoke-slug>/overview.md`
-- `library/modules/<smoke-slug>/nodes/<node-slug>.md` (one or more)
-- `library/modules/<smoke-slug>/hooks.md`
-- `library/modules/<smoke-slug>/connections.md`
+- `dm/modules/<smoke-slug>/overview.md`
+- `dm/modules/<smoke-slug>/nodes/<node-slug>.md` (one or more)
+- `dm/modules/<smoke-slug>/hooks.md`
+- `dm/modules/<smoke-slug>/connections.md`
 - `dm/modules/<smoke-slug>/secrets.md`
 - `dm/modules/<smoke-slug>/milestone-candidates.md`
-- `library/index.md` (appended-to)
+- `library/index.md` (appended-to — single-line enumeration entry only)
 
-- [ ] **Step 1: Pick an adventure from the One-Page One-Shots PDF**
+**Files that must NOT be created:**
+- `library/modules/<smoke-slug>/` (anything under this path is a contract violation)
 
-The user picks one adventure from `references/1454244-One-Page_One-Shots_Volume_1_Print-Optimised.pdf`. The book is a collection of one-page adventures; the user identifies a single adventure by title and page number.
+- [ ] **Step 1: Pick a module-shaped source**
 
-Two delivery options the user can choose between:
+The user picks one module-shaped source from `references/`. Two natural options:
+- `references/The_Ancient_Tomb_of_Phandalin.pdf` (single-adventure standalone)
+- A single adventure pre-extracted from `references/1454244-One-Page_One-Shots_Volume_1_Print-Optimised.pdf`
 
-**Option A:** User passes the full PDF and instructs the librarian via the intake command's argument to focus on a specific adventure title. Phase 3a does not support this argument shape natively — the `/intake` command takes only `<path>`. So Option A requires the librarian to read the full PDF and decide which adventure to ingest, which is brittle. Avoid.
-
-**Option B (recommended):** User pre-extracts the chosen adventure page to a single-page PDF or to a markdown transcript. Save it at `references/one-page-<adventure-slug>.pdf` (or `.md`). Then `/intake references/one-page-<adventure-slug>.pdf`.
-
-Confirm with the user which adventure title they have chosen and the path of the extracted single-adventure source before proceeding.
+If reusing a previously-attempted intake (e.g., the original Phandalin run before this revision), the user removes any existing `dm/modules/<slug>/` and `library/modules/<slug>/` artifacts from their own shell (the main agent cannot remove `dm/` paths via Bash) before re-running `/intake`.
 
 - [ ] **Step 2: Run /intake on the chosen source**
 
 In the active Claude Code session, invoke:
 
 ```
-/intake references/one-page-<adventure-slug>.pdf
+/intake references/<source-path>
 ```
 
-(Substituting the actual path.)
+The main agent dispatches the librarian subagent. The librarian reads the source, decomposes into Alexander-nodes, writes six files to `dm/modules/<slug>/` via the dm-fs MCP, updates `library/index.md` via Edit, and returns the intake summary. The main agent surfaces the summary verbatim.
 
-The main agent dispatches the librarian. The librarian reads the PDF via Read's PDF support, decomposes, classifies, writes, and returns the intake summary.
-
-- [ ] **Step 3: Surface and review the intake summary**
-
-The main agent surfaces the librarian's intake summary verbatim. Review it for:
-
-- The module slug derived from the adventure title is sensible.
-- Public artifact counts (N nodes, K hooks, C/D connections) match what you'd expect from the source.
-- Secret artifact counts (S twists, H hidden NPCs, L hidden locations) match the GM-only content in the source.
-- Milestone candidates list at least one entry (e.g., "clear the dungeon," "resolve the central conflict," or "rescue the missing NPC").
-- Ambiguous classifications section is either empty (with "None — all classifications were unambiguous." stated explicitly) or lists specific passages with the librarian's chosen disposition.
-- Opportunities section flags any cross-cutting observations (e.g., a faction archetype, a revelation candidate).
-
-- [ ] **Step 4: Review the staged files via git**
+- [ ] **Step 3: Verify the structural-asymmetry pass criteria**
 
 Run:
 ```bash
 git status
+ls library/modules/
+cat library/index.md
 ```
 
-Expected new files under `library/modules/<smoke-slug>/` and modified `library/index.md`. The `dm/modules/<smoke-slug>/` files may or may not appear in `git status` depending on whether the main agent's `Bash` access can list `dm/` — if not, verify via the dm-fs access log:
+Expected:
+- `git status` shows `dm/modules/` as untracked (the main agent cannot list its contents but git knows it exists at the directory level).
+- `library/modules/` shows only `.gitkeep` — **no `<smoke-slug>/` subdirectory**. If `library/modules/<smoke-slug>/` exists, the smoke test FAILS; the librarian violated its contract.
+- `library/index.md` contains a new `## Modules` entry with single-clause genre/theme descriptor, source path, and today's ingest date.
 
+Verify the dm-side via the dm-fs access log:
 ```bash
 tail -50 tools/dm-fs-mcp/access.log | grep "modules/<smoke-slug>"
 ```
 
-Expected at least two `create_dm_file` entries for `modules/<smoke-slug>/secrets.md` and `modules/<smoke-slug>/milestone-candidates.md`.
+Expected: six `create_dm_file` entries — one each for `overview.md`, `hooks.md`, `connections.md`, `secrets.md`, `milestone-candidates.md`, plus one or more `nodes/<node-slug>.md` writes. The access log's bytes-and-first-line summary lets you sanity-check each file got written without revealing its content to the main agent.
 
-For library/-side files, read them directly:
+- [ ] **Step 4: Asymmetry probe — narrator cannot read dm/modules/**
+
+Confirm the deny rules are firing for the new path:
 
 ```bash
-cat library/modules/<smoke-slug>/overview.md
-ls library/modules/<smoke-slug>/nodes/
-cat library/modules/<smoke-slug>/hooks.md
-cat library/modules/<smoke-slug>/connections.md
-cat library/index.md
+cat dm/modules/<smoke-slug>/secrets.md
 ```
 
-Confirm:
-- `overview.md` summary does NOT mention twists, villain identities, or hidden motives.
-- `nodes/` files describe player-perceivable detail only.
-- `hooks.md` framings are player-facing.
-- `connections.md` conditional clauses are player-discoverable (the condition itself doesn't leak a secret).
-- `library/index.md` lists the new module under `## Modules`.
+Expected: denied at the harness level. Phase 3a's load-bearing claim is verified by this denial.
 
-- [ ] **Step 5: Spot-check that dm-side content is truly secret**
+If the cat succeeds (i.e., the main agent reads module content), the asymmetry boundary is broken and Phase 3a FAILS.
 
-Ask the user to review `dm/modules/<smoke-slug>/secrets.md` directly (the main agent cannot read it — `Read(dm/**)` is denied). The user opens the file in their editor or via `cat dm/modules/<smoke-slug>/secrets.md` from a non-Claude shell, and confirms:
+- [ ] **Step 5: User reviews dm-side content via their own shell**
 
-- `secrets.md` contains the source's GM-only content (twists, hidden NPC roles, plot reveals).
-- No passage in `secrets.md` is duplicated in any `library/modules/<smoke-slug>/` file.
-- The `milestone-candidates.md` proposals reference real beats from the source, not invented ones.
+Ask the user to read each file under `dm/modules/<smoke-slug>/` from a non-Claude shell or their editor:
+- `overview.md` — narrator-perspective summary; should describe the module's arc accurately.
+- `nodes/<node-slug>.md` files — per-node detail; verify each represents a distinct Alexander-node.
+- `hooks.md` — how the party gets pulled in; should be runnable as a scene framing.
+- `connections.md` — default + conditional connections; verify Alexander-style structure.
+- `secrets.md` — twists, hidden NPC identities, plot reveals; verify reveal-quality content is here rather than scattered into the other files.
+- `milestone-candidates.md` — proposed milestones; verify each references a real beat from the source.
 
-If the user spots misclassifications (a secret passage that should be public, or a public passage that ended up in secrets), they edit the files directly to correct, OR they ask the librarian to re-classify by deleting the staged files and re-running `/intake`. The librarian aborts on slug collision (per its contract), so re-running requires removing both `library/modules/<smoke-slug>/` AND `dm/modules/<smoke-slug>/` first.
+If the user spots misclassifications between content kinds (e.g., a twist that should be in `secrets.md` ended up in `nodes/<slug>.md`), they edit the files directly via their own shell, OR they remove the entire `dm/modules/<slug>/` directory and re-run intake. (The librarian aborts on slug collision per its contract; re-running requires removing the existing directory first.)
 
-- [ ] **Step 6: Address any ambiguous classifications**
+- [ ] **Step 6: User reviews library/index.md entry**
 
-For each entry in the "Ambiguous classifications" section of the intake summary, the user verifies the librarian's chosen disposition. If they agree, no action. If they disagree, they edit the relevant file directly (move content from `library/` to `dm/modules/<smoke-slug>/secrets.md` or vice versa).
+Confirm the single-line entry under `## Modules` is genre-level only:
+- It names the module and gives a one-clause descriptor.
+- It does NOT mention specific scenes, room contents, NPC names beyond the title, treasure, or twists.
 
-`dm/` edits cannot go through the main agent (denied). The user does these manually outside Claude Code, or dispatches a librarian invocation with a follow-up classification query (not part of Phase 3a's contract — defer to Phase 3b if it becomes a frequent need).
+If the entry leaks content, the user edits `library/index.md` directly to tighten it before committing.
 
 - [ ] **Step 7: Commit the smoke-test ingest**
 
-Once the user is satisfied with the public/secret split:
+Once the user is satisfied:
 
 ```bash
-git add library/modules/<smoke-slug> library/index.md
-git commit -m "Phase 3a smoke test: intake of <adventure title>"
+git add library/index.md library/modules/.gitkeep dm/modules/<smoke-slug>
+git commit -m "Phase 3a smoke test: intake of <module title>"
 ```
 
-For the `dm/modules/<smoke-slug>/` side, the main agent cannot `git add` `dm/` paths (commit hooks may allow it; the deny is on Read/Write, not on `git add` strictly — but consistency with prior phases is to let the user commit `dm/` paths from a non-Claude shell, OR check whether the project's settings permit `git add dm/**` for the main agent). The simplest path: the user runs `git add dm/modules/<smoke-slug>` and amends the commit, OR creates a second commit for the dm/ side, OR includes both in one commit invoked from outside Claude Code.
-
-The plan accepts either pattern — what matters is that the working tree state after commit is: library/ side committed, dm/ side committed, no stray staging files, the asymmetry boundary unchanged.
+For the `git add dm/modules/<smoke-slug>` step, the main agent may or may not have access depending on settings. If denied, the user runs `git add` from their own shell. Either way, the working tree state after commit should be: library/index.md updated, library/modules/.gitkeep tracked (no other library/modules/ content), dm/modules/<smoke-slug>/ tracked with all six files plus nodes/.
 
 ---
 
@@ -670,27 +550,21 @@ The plan accepts either pattern — what matters is that the working tree state 
 
 - [ ] **Step 1: Run the existing test suite**
 
-Run all 87 existing tests across dice, mythic, and dm-fs MCP:
-
 ```bash
 (cd tools/dm-fs-mcp && source .venv/bin/activate && python -m pytest -q)
 ```
 
-Expected: `37 passed`. The dice and mythic tests do not have their own venvs in the repo as of this plan; if test invocation for those tools fails due to missing venv, document that the dm-fs MCP tests (the suite most directly relevant to Phase 3a) pass, and the dice/mythic tests' baseline was established in prior phases with no Phase 3a changes affecting them.
+Expected: `37 passed`. Dice and mythic test invocations require their own venvs; if not available locally, document that the dm-fs MCP tests (the suite most directly relevant to Phase 3a) pass and the dice/mythic baselines were established in prior phases with no Phase 3a changes affecting them.
 
 - [ ] **Step 2: Asymmetry audit — main agent did not touch dm/**
 
-Inspect the conversation/tool-use trace of the `/intake` invocation in Task 6. Grep for any `mcp__dm-fs__*` calls outside of the librarian subagent's dispatched turn:
+Inspect the tool-use trace of the `/intake` invocation. Grep for any `mcp__dm-fs__*` calls outside of the librarian subagent's dispatched turn. Expected: zero matches outside the librarian's turn.
 
-If your environment exposes a structured tool-use log: grep for `mcp__dm-fs__` calls in the main agent's turns. Expected: zero matches outside the librarian's turn.
-
-If no structured log is available, the dm-fs access log is the authoritative source:
-
+Alternative: the dm-fs access log is the authoritative source.
 ```bash
 grep "modules/<smoke-slug>" tools/dm-fs-mcp/access.log
 ```
-
-Inspect each line. Every entry should be attributable to the librarian subagent (the access log records the agent identity if Phase 2a's implementation included that; if not, the timing of the entries should fall within the librarian's dispatched turn).
+Every entry should be attributable to the librarian subagent's dispatched turn.
 
 - [ ] **Step 3: Asymmetry audit — librarian did not read outside dm/modules/**
 
@@ -698,37 +572,36 @@ Inspect each line. Every entry should be attributable to the librarian subagent 
 grep "READ.*dm/" tools/dm-fs-mcp/access.log | grep -v "modules/"
 ```
 
-Expected: empty output. The librarian's read scope is `dm/modules/` only (verified during slug-collision check). If the grep produces non-empty output, the librarian read outside its lane — investigate.
+Expected: empty output.
 
-- [ ] **Step 4: Asymmetry audit — narrator can read library/, cannot read dm/modules/**
+- [ ] **Step 4: Asymmetry audit — narrator cannot read dm/modules/**
 
-Confirm by direct test:
-
-```bash
-cat library/modules/<smoke-slug>/overview.md
-```
-
-Expected: file content displayed. (Narrator/main-agent has read access to library/.)
+Direct positive test (already performed in Task 6 Step 4; rerun for the audit record):
 
 ```bash
-cat dm/modules/<smoke-slug>/secrets.md
+cat library/modules/<smoke-slug>/overview.md 2>&1
 ```
 
-Expected: denied by settings.json — `Read(dm/**)` is in the deny list. If you see file contents from Claude Code's main agent, the asymmetry boundary is broken; investigate before proceeding.
+Expected: `cat: library/modules/<smoke-slug>/overview.md: No such file or directory` (the file doesn't exist; library/modules/ stays empty).
+
+```bash
+cat dm/modules/<smoke-slug>/overview.md
+```
+
+Expected: denied by settings.json.
 
 - [ ] **Step 5: Run a fresh /session-start to confirm cross-session asymmetry**
 
 Optional but recommended: run `/session-start` to begin a new session with the new module ingested. Confirm:
+- The narrator may reference `library/index.md`'s knowledge that the module exists by name.
+- The narrator does NOT reference any specific node content, hook, encounter, or twist (because it cannot read those).
+- The narrator's tool-use trace shows no `mcp__dm-fs__*` calls during session-start (the librarian is not invoked during play in Phase 3a).
 
-- The opening narration may reference the ingested module's public content if relevant (a hook from `library/modules/<smoke-slug>/hooks.md`, a setting detail from a node file).
-- The opening narration does NOT reference any twist, hidden NPC identity, or secret location from `dm/modules/<smoke-slug>/secrets.md`.
-- The narrator's tool-use trace shows no `mcp__dm-fs__*` calls during this session-start (the librarian is not invoked during play).
-
-This is a follow-up validation; not a hard 3a pass criterion. If you do not run a full session, mark this step as deferred.
+Mark as deferred if you do not run a full session.
 
 - [ ] **Step 6: Commit audit notes if any anomalies were found**
 
-If steps 1-5 surfaced anomalies (test failure, unauthorized dm/ read, leaked secret in narration), document them in `sessions/play/2026/05/session-NNN.md` under a `## Notes for later phases` section. Otherwise, no commit needed for the audit itself.
+If steps 1-5 surfaced anomalies, document them under `## Notes for later phases` in the most recent session log. Otherwise, no commit needed.
 
 ---
 
@@ -758,13 +631,10 @@ Use Edit on `CLAUDE.md`. Replace:
 
 with:
 
-> The engine is being built incrementally. As of Phase 3a, you have: dice routing, oracle routing, hidden-info routing via the world-state subagent, factions with offscreen-developments at session-start (Phase 2a), revelations with three-clue tracking via the revelation subagent (Phase 2b), Mythic threads with open/close/list via the mythic subagent (Phase 2c), Mythic random-event composition — thread spotlight in the mythic subagent plus narrator-routed faction/revelation composition per rule 8 (Phase 2d), and module ingestion via `/intake` + the librarian subagent with secret-quarantine and milestone-candidate proposals (Phase 3a). The Phase 2 hidden-state arc is closed; Phase 3 source ingestion has begun with modules. You **do not** yet have: solo-engine/methodology/lore intake, runtime librarian queries (all Phase 3b), milestone promotion to `dm/milestones/` or `/level-up` (Phase 5), downtime, banking, bastions, or a full bookkeeper.
-
-Leave the surrounding paragraph unchanged.
+> The engine is being built incrementally. As of Phase 3a, you have: dice routing, oracle routing, hidden-info routing via the world-state subagent, factions with offscreen-developments at session-start (Phase 2a), revelations with three-clue tracking via the revelation subagent (Phase 2b), Mythic threads with open/close/list via the mythic subagent (Phase 2c), Mythic random-event composition — thread spotlight in the mythic subagent plus narrator-routed faction/revelation composition per rule 8 (Phase 2d), and module intake via `/intake` + the librarian subagent with all module content dm-quarantined (Phase 3a). The Phase 2 hidden-state arc is closed; Phase 3 source ingestion has begun with modules. **Phase 3a is intake-only** — ingested modules sit in `dm/modules/` but are not yet runnable during play because the narrator has no path to read them. Phase 3b will add the `consult-library` runtime query that makes modules playable. You **do not** yet have: runtime librarian queries (Phase 3b), solo-engine/methodology/lore intake (Phase 3b), milestone promotion to `dm/milestones/` or `/level-up` (Phase 5), downtime, banking, bastions, or a full bookkeeper.
 
 - [ ] **Step 3: Verify**
 
-Run:
 ```bash
 grep -A 5 "Current phase scope" CLAUDE.md | head -10
 ```
@@ -786,67 +656,67 @@ git commit -m "Update CLAUDE.md current-phase-scope to Phase 3a"
 
 - [ ] **Step 1: Inspect git history**
 
-Run:
 ```bash
-git log --oneline -10
+git log --oneline -12
 ```
 
-Expected commits (most recent first), in order:
+Expected commits (most recent first), in roughly this order:
 1. Update CLAUDE.md current-phase-scope to Phase 3a
-2. Phase 3a smoke test: intake of <adventure title> (may be one or two commits depending on the user's dm/ commit pattern)
-3. Add library/ informational subsection to CLAUDE.md (Phase 3a)
+2. Phase 3a smoke test: intake of <module title>
+3. Add Library reference material subsection + dm-quarantine must-never bullet
 4. Seed library/ skeleton with empty index (Phase 3a)
 5. Add /intake slash command dispatcher (Phase 3a)
-6. Add librarian subagent for module intake (Phase 3a)
-7. (Earlier:) Add Phase 3a design: source ingestion (modules)
-8. (Earlier:) Merge phase-2b-fix: revelation could-land clue-level filter
-9. (Earlier:) Fix revelation could-land filter to support three-clue rule
-10. (Earlier:) Merge phase-2d: Mythic-event spotlight integration
+6. Rewrite librarian: all module content writes to dm/modules/ (or "Add librarian subagent..." if not yet rewritten)
+7. Revise Phase 3a plan: module content fully dm-quarantined
+8. Revise Phase 3a spec: module content fully dm-quarantined
+9. (Earlier:) Add Phase 3a implementation plan
+10. (Earlier:) Add Phase 3a design: source ingestion (modules)
 
 - [ ] **Step 2: Inspect working tree**
 
-Run:
 ```bash
 git status
 ```
 
-Expected: clean working tree, branch up to date with origin/main (or ahead of origin/main if you have not pushed).
+Expected: clean working tree, branch up to date with origin/main (or ahead if not yet merged).
 
 - [ ] **Step 3: Confirm Phase 3a invariants in current state**
 
-Re-run the existing test suite one more time:
+Re-run the dm-fs MCP test suite:
 
 ```bash
 (cd tools/dm-fs-mcp && source .venv/bin/activate && python -m pytest -q)
 ```
 
-Expected: `37 passed`. No regressions.
+Expected: `37 passed`.
 
-Confirm the four new artifacts exist:
+Confirm the artifacts:
 
 ```bash
 ls .claude/agents/librarian.md
 ls .claude/commands/intake.md
 ls library/index.md
-ls library/modules/<smoke-slug>/
+ls library/modules/
 ```
 
-All four should exist. The fourth confirms the smoke test ingest landed.
+`library/modules/` should contain only `.gitkeep`. **No subdirectories under `library/modules/`.**
 
-- [ ] **Step 4: Phase 3a definition-of-done checklist**
+- [ ] **Step 4: Phase 3a definition-of-done checklist (revised)**
 
-Cross-check against the spec's `## Definition of done` section:
+Cross-check against the revised spec's `## Definition of done`:
 
-- [ ] `library/` directory established with `index.md` and `modules/` subdirectory.
-- [ ] `librarian` subagent at `.claude/agents/librarian.md` with documented read/write contract.
+- [ ] `library/` directory established with `library/index.md` and `library/modules/.gitkeep` (the modules directory stays empty under Phase 3a's contract).
+- [ ] `librarian` subagent at `.claude/agents/librarian.md` with documented read/write contract (write access to `library/index.md` only on the library side; full `dm/modules/` writes via dm-fs MCP).
 - [ ] `/intake <path>` slash command at `.claude/commands/intake.md`.
 - [ ] Single query type on the librarian: `intake-module`.
-- [ ] Module ingestion produces the seven expected file types under `library/modules/<slug>/` and `dm/modules/<slug>/`.
-- [ ] Updated `library/index.md` entry from the smoke test.
-- [ ] Structured intake summary emitted and reviewed.
-- [ ] Smoke test: ingested one One-Page One-Shot adventure end-to-end with asymmetry audit clean.
+- [ ] Module ingestion produces six files under `dm/modules/<slug>/` (overview, nodes/, hooks, connections, secrets, milestone-candidates).
+- [ ] `library/index.md` contains a single-line enumeration entry for the smoke-test module (genre-level descriptor only, no scene/content leak).
+- [ ] `library/modules/<smoke-slug>/` does NOT exist (library/modules/ stays at .gitkeep).
+- [ ] Structured intake summary emitted and reviewed by user.
+- [ ] Smoke test: ingested one module end-to-end with all content dm-quarantined.
+- [ ] Asymmetry audit clean: main agent cannot read `dm/modules/<slug>/` (denied at settings level); librarian is the sole `dm/` writer.
 - [ ] All 87 existing tests pass; no Python code added.
-- [ ] `CLAUDE.md` gains the informational subsection about `library/`. No new routing rule, no new must-never bullet.
+- [ ] `CLAUDE.md` gains the revised `## Library reference material` subsection AND one new must-never bullet about not attempting to read `library/modules/<slug>/`.
 - [ ] dm-fs MCP wired to a fourth subagent (librarian); no MCP tool changes.
 
 If any checkbox cannot be ticked from your actual repo state, do not mark the phase complete — investigate and resolve.
@@ -859,8 +729,8 @@ This task is verification only. Nothing changes in the working tree.
 
 ## Notes for executors
 
-- **`dm/` write semantics:** Throughout this plan, all `dm/modules/` writes are via `mcp__dm-fs__create_dm_file` and `mcp__dm-fs__write_dm_file` from the librarian subagent. The main agent never writes to `dm/`. If `git add dm/modules/<slug>` fails for the main agent due to the project's deny rules, the user invokes `git add` from a non-Claude shell as part of the Task 6 commit step.
-- **PDF reading:** Claude Code's Read tool handles PDFs natively. For PDFs >10 pages, the librarian must pass a `pages` argument. The One-Page One-Shots PDF is many pages but the user pre-extracts the chosen adventure to a single-page source (Task 6, Step 1, Option B).
-- **Slug collision behavior is intentional.** If the user wants to re-ingest a source they have already committed, they delete `library/modules/<slug>/` AND `dm/modules/<slug>/` first. Phase 3a does not implement `--force`.
-- **The synthetic test fixture (Task 5) is ephemeral.** It validates mechanics only and is not committed. Its `dm/modules/test-module/` artifact may persist as untracked in the working tree if the main agent cannot remove `dm/` paths — that is acceptable; the user removes it manually before Task 6 if it bothers them.
-- **Phase 3a does not change `CLAUDE.md`'s routing rules or must-never bullets.** Only two CLAUDE.md edits: Task 4 (the informational subsection about `library/`) and Task 8 (current-phase-scope update). Anyone reading the diff at the end of the phase should see two CLAUDE.md commits and four other commits (librarian, intake command, library skeleton, smoke-test ingest).
+- **`dm/` write semantics:** Throughout this plan, all `dm/modules/` writes are via `mcp__dm-fs__create_dm_file` and `mcp__dm-fs__write_dm_file` from the librarian subagent. The main agent never writes to `dm/`. If `git add dm/modules/<slug>` fails for the main agent due to deny rules, the user invokes `git add` from a non-Claude shell as part of the Task 6 commit step.
+- **PDF reading:** Claude Code's Read tool handles PDFs natively. For PDFs >10 pages, the librarian passes a `pages` argument.
+- **Slug collision behavior is intentional.** If the user wants to re-ingest a source they have already committed, they delete `dm/modules/<slug>/` (from their own shell) before re-running. Phase 3a does not implement `--force`.
+- **The library/modules/ directory is intentionally empty under Phase 3a.** Any file appearing under `library/modules/<slug>/` (other than `.gitkeep`) is a contract violation and must be moved to `dm/modules/<slug>/` or deleted.
+- **Phase 3a does not change CLAUDE.md's routing rules.** Only two CLAUDE.md edits: Task 4 (the revised Library reference material subsection + new must-never bullet) and Task 8 (current-phase-scope update).
