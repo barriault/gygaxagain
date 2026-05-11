@@ -89,8 +89,8 @@ Procedure:
 8. **Propose revelation seeds from secrets.md content.** Scan the `secrets.md` content you wrote in step 6. For each entry under `## Twists & reveals` and `## Hidden NPC identities & motives` that represents a reveal-quality moment (the kind a party would unambiguously "earn" by investigating or progressing), propose a revelation seed:
 
    1. Call `mcp__dm-fs__list_dm_dir("revelations")` via dm-fs MCP to enumerate existing revelation files.
-   2. For each existing file, call `mcp__dm-fs__read_dm_file("revelations/r-NNN.md")` and parse its frontmatter. If `proposed-from-module: <current module slug>` matches, note that reveal as already proposed — skip re-proposing it.
-   3. Find `max(existing_ids)`. Start new IDs at `max + 1` (zero-padded three digits, e.g., `r-002` after `r-001`). If no revelations exist, start at `r-001`.
+   2. For each existing file, call `mcp__dm-fs__read_dm_file("revelations/r-NNN.md")` and parse its frontmatter. If `proposed-from-module: <current module slug>` matches, read enough of the file to know its subject matter (the `title` and `## Revelation` body). Build a set of "subjects already proposed from this module." The idempotency key is per-secret-subject, not just per-file: when scanning `secrets.md` in step 8.5 below, exclude any secret whose subject matter already appears in this set. Use LLM judgment to determine subject-matter equivalence (e.g., "Brother Wen is the cultist" and "Wen's true identity" name the same secret).
+   3. Find `max(existing_ids)`. Start new IDs at `max + 1` (zero-padded three digits, e.g., `r-002` after `r-001`). If no revelations exist, start at `r-001`. **Never reuse a retired or deleted ID in a gap; allocate strictly above max** to preserve audit-trail stability for external references.
    4. For each remaining reveal candidate, write `dm/revelations/r-NNN.md` via `mcp__dm-fs__create_dm_file` with this schema:
 
       ```markdown
@@ -120,8 +120,9 @@ Procedure:
       <!-- Append-only. The revelation subagent writes here when the narrator confirms a clue landed. Each entry: "- session NNN, YYYY-MM-DD: clue <id> — <one-line context>" -->
       ```
 
-   5. **Clue vector authoring:** for each revelation, identify 3+ nodes in the module where a clue would plausibly land. Use the node slug as the scope tag. Author 1-2 sentence hook text describing how the clue surfaces at that node.
+   5. **Clue vector authoring:** Phase 2b's three-clue rule is a **floor, not a target**. Always produce at least three clue vectors per revelation; produce four or five if the secret has more than three plausible node anchors. Never produce fewer than three. For each clue vector, anchor to a specific node by using its node slug as the scope tag (not a freeform descriptor like "the chapel garden"). Author 1-2 sentence hook text describing how the clue surfaces at that node. The schema template shows three bullet placeholders for clarity; treat that as the minimum, not the prescription.
    6. **Default to skip on ambiguity.** If a secret in secrets.md is flavor-only (e.g., a custom stat block detail with no player-perceivable arc significance), do NOT propose a revelation for it.
+   7. **Edge case — secrets.md missing expected sections.** If `secrets.md` exists but contains no `## Twists & reveals` or `## Hidden NPC identities & motives` headings (e.g., the user hand-edited it or it's from an early intake), treat it as "no candidates" and skip step 8 entirely. Emit the standard "None — no reveal-quality candidates identified in secrets.md." line in step 9's summary. Do not propose from other sections.
 
 9. **Emit structured intake summary** as your final response (the `/intake` command will surface it verbatim to the user):
 
@@ -184,11 +185,11 @@ Procedure:
 
 2. **Read `secrets.md`** via `mcp__dm-fs__read_dm_file("modules/<module-slug>/secrets.md")`.
 
-3. **Read existing revelation files for idempotency.** Call `mcp__dm-fs__list_dm_dir("revelations")` and `mcp__dm-fs__read_dm_file("revelations/r-NNN.md")` for each. Parse frontmatter; note files with `proposed-from-module: <current slug>`. Those reveals are already proposed — skip them.
+3. **Read existing revelation files for idempotency.** Call `mcp__dm-fs__list_dm_dir("revelations")` and `mcp__dm-fs__read_dm_file("revelations/r-NNN.md")` for each. Parse frontmatter; for files with `proposed-from-module: <current slug>`, also read `title` and `## Revelation` body to build a set of "subjects already proposed from this module." The idempotency key is per-secret-subject, not just per-file: when authoring new seeds in step 5, exclude any secret from `secrets.md` whose subject matter already appears in this set. Use LLM judgment for subject-matter equivalence.
 
-4. **Allocate new IDs.** Find `max(existing_ids)`. Start new IDs at `max + 1`. If no revelations exist, start at `r-001`.
+4. **Allocate new IDs.** Find `max(existing_ids)`. Start new IDs at `max + 1` (zero-padded three digits). If no revelations exist, start at `r-001`. **Never reuse a retired or deleted ID in a gap; allocate strictly above max** to preserve audit-trail stability.
 
-5. **For each new reveal candidate, write `dm/revelations/r-NNN.md`** via `mcp__dm-fs__create_dm_file` with the schema documented in `intake-module` step 8.4. Author clue vectors with 3+ entries each anchored to module nodes via their slugs.
+5. **For each new reveal candidate** (excluding those already covered per step 3's subject-matter scan), write `dm/revelations/r-NNN.md` via `mcp__dm-fs__create_dm_file` with the schema documented in `intake-module` step 8.4. Apply the clue vector authoring discipline from `intake-module` step 8.5: three is the floor, not the target; anchor each clue to a specific node by node slug. If `secrets.md` exists but contains no `## Twists & reveals` or `## Hidden NPC identities & motives` sections, emit "None" in step 6's summary rather than proposing from other sections.
 
 6. **Emit a structured summary**:
 
