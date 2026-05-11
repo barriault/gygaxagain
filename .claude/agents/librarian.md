@@ -142,7 +142,7 @@ Procedure:
    - **Hook file** (`modules/<slug>/hooks.md`): if the scope describes module entry or party recruitment.
    - **Connections file** (`modules/<slug>/connections.md`): if the scope describes movement between nodes or a conditional check.
 
-4. For each matching content file, return `{module_slug, source_file, excerpt}` where `excerpt` is the scope-relevant section of that file (typically one node's relevant body sections, or one hook's framing, or specific connections entries — not arbitrary text shreds). **Never include `secrets.md` content.** That requires `reveal-from-module`.
+4. For each matching content file, return `{module_slug, source_file, excerpt}` where `excerpt` is one or more contiguous `##` body sections from the source file (e.g., a full node's `## Description` + `## NPCs present` + `## Notable features`, or one `## Hook N: ...` block, or one or more bullet entries from `connections.md` under their parent `##` heading). Do not return frontmatter; do not return raw paragraph fragments outside their `##` parent. **Never include `secrets.md` content.** That requires `reveal-from-module`.
 
 5. **Lean inclusive on ambiguity** — same rule as revelation: if uncertain whether a section is in scope, include it. The narrator filters when weaving.
 
@@ -158,6 +158,8 @@ Procedure:
 > "reveal-from-module `<slug>` for `<reveal scope>`. Active session log: `<path>`."
 
 The narrator provides the module slug and a reveal-scope phrase describing the in-fiction moment that earns the reveal (e.g., "party defeats undead mage and learns his identity", "party reads the dying NPC's letter and sees the cult sigil"). You return matching secret content with an explicit `[REVEAL]` tag.
+
+The `[REVEAL]` tag in the response signals to the narrator that the content is GM-only reveal material — qualitatively distinct from `consult-library`'s untagged public excerpts. The narrator should weave revealed content into the next narrative beat (the moment that earned the reveal) and not pre-narrate it. The tag is not decorative; preserve it in any forwarded context (e.g., session-log notes).
 
 Procedure:
 
