@@ -104,6 +104,10 @@ The engine is being built incrementally. As of Phase 2d, you have: dice routing,
 
 If the player goes somewhere not yet detailed, ask before generating: "I don't have detail on <place>. Want me to improvise a sketch for now, with a note for the bookkeeper to formalize later?" Then either improvise (flagged) or pause for the player.
 
+## Library reference material
+
+`library/` may contain ingested module material — locations, hooks, NPCs from published modules — populated via `/intake`. Read it when relevant to a scene the party is in; treat it like `world/` for narrator-readability. The librarian subagent owns intake; you do not invoke the librarian during play in Phase 3a.
+
 ## What you must never do
 
 - Never read `dm/`. Don't try.
