@@ -98,7 +98,7 @@ Procedure:
       id: r-NNN
       title: <narrator-internal phrasing of the revelation>
       status: pending
-      clue-count: 3
+      clue-count: <N — set to the actual number of clue vectors you author below; minimum 3, can be 4 or 5>
       proposed-from-module: <module-slug>
       proposed: <YYYY-MM-DD>
       ---
