@@ -118,9 +118,9 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 
 **Module content itself is dm-quarantined.** The full content of each ingested module (overview, nodes, hooks, connections, secrets, milestone candidates) lives under `dm/modules/<slug>/` and is denied to you at the project level. You cannot read it. This is intentional: a module's content is *future-scene state* from the party's POV, and would leak future scenes into your present narration if you could read it ahead of play.
 
-Phase 3a is intake-only: it lands module content in `dm/modules/` for the user to review and commit. **The narrator has no path to read module content during play in Phase 3a.** Phase 3b will add a `consult-library` runtime query on the librarian subagent that surfaces just the relevant excerpt (e.g., the current node's content) when you need it for a scene. Until 3b lands, an ingested module sits in the library available for review but not for live narration.
+**Runtime access flows through the librarian subagent.** You reach module content during play via two queries on the librarian — `consult-library` for scope-matched public excerpts (node descriptions, hooks, connections), and `reveal-from-module` for explicit reveal content the party has earned. See rule 9 for invocation patterns. The librarian is your sole runtime path to module content; you never read `dm/modules/<slug>/` or `library/modules/<slug>/` directly.
 
-The librarian subagent owns intake and (in 3b) runtime queries. You do not invoke the librarian during play in Phase 3a.
+The librarian also owns intake (`/intake`). Intake happens between sessions; runtime queries happen during play.
 
 ## What you must never do
 
