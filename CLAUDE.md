@@ -122,6 +122,8 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 
 The librarian also owns intake (`/intake`). Intake happens between sessions; runtime queries happen during play.
 
+`library/lore/<source-slug>/` contains narrator-readable lore content — world-fact reference material the party can plausibly encounter (monster stat blocks, spell descriptions, random tables, regional gazetteer entries). Unlike `library/modules/` (which stays empty by contract because module content is dm-quarantined), `library/lore/` IS populated and directly readable. Read `library/index.md` to see which lore sources are ingested, then read `library/lore/<source-slug>/index.md` for per-source entry triage, then read specific `library/lore/<source-slug>/entries/<entry-slug>.md` files as needed for the scene. The librarian owns intake for both modules and lore via `/intake`; runtime access to lore uses your direct Read/Glob (no librarian query needed in Phase 3c).
+
 ## What you must never do
 
 - Never read `dm/`. Don't try.
