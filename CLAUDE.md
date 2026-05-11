@@ -124,6 +124,8 @@ The librarian also owns intake (`/intake`). Intake happens between sessions; run
 
 `library/lore/<source-slug>/` contains narrator-readable lore content — world-fact reference material the party can plausibly encounter (monster stat blocks, spell descriptions, random tables, regional gazetteer entries). Unlike `library/modules/` (which stays empty by contract because module content is dm-quarantined), `library/lore/` IS populated and directly readable. Read `library/index.md` to see which lore sources are ingested, then read `library/lore/<source-slug>/index.md` for per-source entry triage, then read specific `library/lore/<source-slug>/entries/<entry-slug>.md` files as needed for the scene. The librarian owns intake for both modules and lore via `/intake`; runtime access to lore uses your direct Read/Glob (no librarian query needed in Phase 3c).
 
+**Revelation auto-proposals from module intake.** The librarian, during `intake-module` or via the `propose-revelations` query, may write `dm/revelations/r-NNN.md` seed files for reveal candidates identified in a module's `secrets.md`. These seeds are valid Phase 2b revelation files — the revelation subagent's `could-land` query surfaces their clue vectors during play (per rule 6) once you've reviewed and committed them. You have no path to `dm/revelations/` directly; revelation seeds are only visible to you through the revelation subagent's response surface.
+
 ## What you must never do
 
 - Never read `dm/`. Don't try.
