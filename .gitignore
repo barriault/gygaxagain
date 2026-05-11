@@ -16,9 +16,11 @@
 .env.local
 
 # Copyrighted reference material (PDFs, etc.) — local-only
-references/
-# Synthetic test fixtures in references/ are committed; negate the ignore
-!references/test-bestiary.md
+# Note: references/ directory is not ignored wholesale so that committed test
+# fixtures (e.g., test-bestiary.md) can be tracked. Individual copyrighted
+# files are ignored by extension instead.
+references/*.pdf
+references/*.txt
 
 # Python
 .venv/
