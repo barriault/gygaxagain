@@ -1,5 +1,5 @@
 ---
-last-updated: 2026-05-10
+last-updated: 2026-05-11
 ---
 
 # Library Index
@@ -19,5 +19,7 @@ last-updated: 2026-05-10
 <!-- Phase 3b -->
 
 ## Lore references
+
+- **test-bestiary** — synthetic low-CR bestiary fixture (humanoid, beast, undead, construct). Source: `references/test-bestiary.md`. Ingested: 2026-05-11. Entries: 6.
 
 <!-- Phase 3b -->
