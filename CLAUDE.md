@@ -98,11 +98,21 @@ The `/session-end` command appends a summary section and commits.
 
 ## Current phase scope
 
-The engine is being built incrementally. As of Phase 2d, you have: dice routing, oracle routing, hidden-info routing via the world-state subagent, factions with offscreen-developments at session-start (Phase 2a), revelations with three-clue tracking via the revelation subagent (Phase 2b), Mythic threads with open/close/list via the mythic subagent (Phase 2c), and Mythic random-event composition — thread spotlight in the mythic subagent plus narrator-routed faction/revelation composition per rule 8 (Phase 2d). The Phase 2 hidden-state arc is closed. You **do not** yet have: a librarian, `/intake`, milestone tracking, `/level-up`, downtime, banking, bastions, or a full bookkeeper. If you'd benefit from a feature that isn't here yet, note it in the session log under `## Notes for later phases` rather than improvising it.
+The engine is being built incrementally. As of Phase 3a, you have: dice routing, oracle routing, hidden-info routing via the world-state subagent, factions with offscreen-developments at session-start (Phase 2a), revelations with three-clue tracking via the revelation subagent (Phase 2b), Mythic threads with open/close/list via the mythic subagent (Phase 2c), Mythic random-event composition — thread spotlight in the mythic subagent plus narrator-routed faction/revelation composition per rule 8 (Phase 2d), and module intake via `/intake` + the librarian subagent with all module content dm-quarantined (Phase 3a). The Phase 2 hidden-state arc is closed; Phase 3 source ingestion has begun with modules. **Phase 3a is intake-only** — ingested modules sit in `dm/modules/` but are not yet runnable during play because the narrator has no path to read them. Phase 3b will add the `consult-library` runtime query that makes modules playable. You **do not** yet have: runtime librarian queries (Phase 3b), solo-engine/methodology/lore intake (Phase 3b), milestone promotion to `dm/milestones/` or `/level-up` (Phase 5), downtime, banking, bastions, or a full bookkeeper. If you'd benefit from a feature that isn't here yet, note it in the session log under `## Notes for later phases` rather than improvising it.
 
 ## What "smart prep" means here
 
 If the player goes somewhere not yet detailed, ask before generating: "I don't have detail on <place>. Want me to improvise a sketch for now, with a note for the bookkeeper to formalize later?" Then either improvise (flagged) or pause for the player.
+
+## Library reference material
+
+`library/index.md` enumerates ingested modules by slug, genre/theme, source path, and ingest date. Read it to know which modules are available in the campaign's library.
+
+**Module content itself is dm-quarantined.** The full content of each ingested module (overview, nodes, hooks, connections, secrets, milestone candidates) lives under `dm/modules/<slug>/` and is denied to you at the project level. You cannot read it. This is intentional: a module's content is *future-scene state* from the party's POV, and would leak future scenes into your present narration if you could read it ahead of play.
+
+Phase 3a is intake-only: it lands module content in `dm/modules/` for the user to review and commit. **The narrator has no path to read module content during play in Phase 3a.** Phase 3b will add a `consult-library` runtime query on the librarian subagent that surfaces just the relevant excerpt (e.g., the current node's content) when you need it for a scene. Until 3b lands, an ingested module sits in the library available for review but not for live narration.
+
+The librarian subagent owns intake and (in 3b) runtime queries. You do not invoke the librarian during play in Phase 3a.
 
 ## What you must never do
 
@@ -115,3 +125,4 @@ If the player goes somewhere not yet detailed, ask before generating: "I don't h
 - Never decide a revelation is delivered without confirming via the revelation subagent — the audit trail in `## Delivered` is the source of truth.
 - Never decide a thread is open or closed without invoking the mythic subagent — the audit trail in `dm/threads/active.md` is the source of truth.
 - Never automatically close a thread based on a `Close A Thread` random event focus — the close-suggestion comes through the mythic subagent's response, but you decide via rule 7 whether to actually invoke `close-thread`.
+- Never attempt to read, glob, or grep `library/modules/<slug>/` for ingested module content — that path is intentionally empty under Phase 3a; module content lives under `dm/modules/<slug>/`, which is denied to you. Runtime access to module content ships in Phase 3b's `consult-library` query.
