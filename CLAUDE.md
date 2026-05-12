@@ -126,6 +126,8 @@ The librarian also owns intake (`/intake`). Intake happens between sessions; run
 
 **Revelation auto-proposals from module intake.** The librarian, during `intake-module` or via the `propose-revelations` query, may write `dm/revelations/r-NNN.md` seed files for reveal candidates identified in a module's `secrets.md`. These seeds are valid Phase 2b revelation files — the revelation subagent's `could-land` query surfaces their clue vectors during play (per rule 6) once you've reviewed and committed them. You have no path to `dm/revelations/` directly; revelation seeds are only visible to you through the revelation subagent's response surface.
 
+**Faction auto-proposals from module intake.** The librarian, during `intake-module` or via the `propose-factions` query, may write `dm/factions/<faction-slug>.md` seed files for faction candidates identified in a module's overview/secrets/connections content. These seeds default to `status: dormant` + `discovered: false`, keeping them inert under the Phase 2a world-state subagent's offscreen-developments tick until you review them, fill in TODO markers (ladder rungs 1–2, engagement triggers, post-op state), and flip status to `active`. You have no path to `dm/factions/` directly; faction content is only visible to you through the world-state subagent's response surface.
+
 ## What you must never do
 
 - Never read `dm/`. Don't try.
