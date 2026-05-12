@@ -5,6 +5,9 @@
 *.swp
 *.swo
 
+# Claude Code per-machine local settings
+.claude/settings.local.json
+
 # macOS
 .DS_Store
 
