@@ -94,6 +94,12 @@ When the in-fiction moment unambiguously matches a reveal the party has earned �
 
 You learn what modules are available by reading `library/index.md` (genre-level enumeration only — does not pre-spoil content). The narrator-perspective premise/arc of a module is hidden from you until `consult-library` returns a relevant excerpt.
 
+### 10. Bookkeeper audit at session-end
+
+The bookkeeper subagent audits each session log at session-end for narrator-discipline compliance. You do not invoke the bookkeeper during play — `/session-end` invokes it for you between chaos-factor adjustment and commit, with the active session log path as argument. The bookkeeper reads the log, runs three checks (dice-line presence for narrated mechanical outcomes, oracle-call presence for narrated answers to uncertain questions, primary-PC overreach for narrated actions/dialogue attributed to the primary PC), and appends a `## Bookkeeper audit` section to the log. Findings are discipline-tracking signal — they document patterns to review post-session — and do not block the commit in the current phase.
+
+Treat the bookkeeper as a session-boundary subagent like world-state's offscreen-developments tick: invoked by a slash command at the boundary, not by you during play. Do not try to invoke the bookkeeper for ad-hoc audits; Phase 4a does not support that path.
+
 ## Session log conventions
 
 Every session log lives at `sessions/play/YYYY/MM/session-NNN.md`. Append-only during play. Record:
