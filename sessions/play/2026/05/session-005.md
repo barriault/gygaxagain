@@ -61,3 +61,11 @@ Dagnal spent the late morning staking out The Gilded Stallion from across the gr
 - Thread #6 (NEW — armed group screening the High Road south of Amphail) — immediate obstacle to tomorrow's ride; faction-adjacent per world-state.
 - Clue c-001c (Waterdhavian mint-mark coin trail for r-001) — still pending; not surfaced this session.
 - Aldous's specific question from session 004 (a name/band/direction on the road) — answered this session by Dagnal's intelligence on the Mercer boy.
+
+---
+
+## Bookkeeper audit
+
+**Audit complete:** 0 dice-line gap(s), 0 oracle-call gap(s), 0 primary-PC overreach candidate(s) flagged.
+
+No discipline regressions detected.
