@@ -66,6 +66,35 @@ Dagnal spent the late morning staking out The Gilded Stallion from across the gr
 
 ## Bookkeeper audit
 
-**Audit complete:** 0 dice-line gap(s), 0 oracle-call gap(s), 0 primary-PC overreach candidate(s) flagged.
+**Audit complete:** 0 dice-line gap(s), 0 oracle-call gap(s), 0 primary-PC overreach candidate(s), 0 faction tick anomal(ies), 0 clue delivery anomal(ies), 0 thread state anomal(ies) flagged.
+
+**Warning:** check 4 skipped due to MCP error: `mcp__dm-fs__list_dm_dir` tool not available in this environment.
+**Warning:** check 5 skipped due to MCP error: `mcp__dm-fs__list_dm_dir` tool not available in this environment.
+**Warning:** check 6 skipped due to MCP error: `mcp__dm-fs__read_dm_file` tool not available in this environment.
+**Warning:** session log has no inline narrative prose; checks 1–3 ran against zero classifiable prose lines and produced zero findings vacuously.
 
 No discipline regressions detected.
+
+### Dice-line gaps
+
+- (none)
+
+### Oracle-call gaps
+
+- (none)
+
+### Primary-PC overreach
+
+- (none)
+
+### Faction tick rationale
+
+- (skipped — dm-fs MCP unavailable)
+
+### Clue delivery confirmation
+
+- (skipped — dm-fs MCP unavailable)
+
+### Thread state consistency
+
+- (skipped — dm-fs MCP unavailable)
