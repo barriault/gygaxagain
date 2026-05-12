@@ -452,3 +452,31 @@ Phase 4b sits within Strategy A (vertical slices by playability). Updated phasin
 18. **Phase 7 — Downtime, banking, bastions.**
 
 Phase 4b's scope is what's locked here.
+
+## Post-ship postmortem (2026-05-12)
+
+Phase 4b shipped with checks 4–6 partially validated. The Phase 4b smoke test executed under Claude Code v2.1.92 in a session where the dm-fs MCP server did not activate for the bookkeeper subagent despite syntactically correct `mcpServers: [dm-fs]` frontmatter. Checks 1–3 ran and the replace-on-rerun semantic was confirmed; checks 4–6 took the documented graceful-degradation path and produced skip markers instead of real findings.
+
+On resume to a new Claude Code session on 2026-05-12 (after the venv was rebuilt and `claude mcp list` reported `dm-fs: ✓ Connected`), the post-resume re-audit was attempted three times against `sessions/play/2026/05/session-005.md` — once with stock frontmatter, once with explicit `tools:` entries for `mcp__dm-fs__list_dm_dir` and `mcp__dm-fs__read_dm_file`, and once after a full Claude Code relaunch. All three runs reported `No such tool available` for the dm-fs MCP tools. A librarian diagnostic dispatch confirmed the same failure shape — meaning the issue is environment-wide, not bookkeeper-specific.
+
+**Root cause:** [anthropics/claude-code#25200](https://github.com/anthropics/claude-code/issues/25200) — custom subagents in `.claude/agents/` are hardcoded to receive Read, Write, Edit, Bash, Glob, Grep only. `ToolSearch` is excluded by `CUSTOM_AGENT_DISALLOWED_TOOLS` in Claude Code's source, and `ToolSearch` is required to materialize deferred MCP tools. Frontmatter declarations (`tools:`, `mcpServers:`, `disallowedTools:`) are parsed but have zero effect on the runtime tool inventory. The regression was introduced between Claude Code v2.1.45 (Feb 2026, last known working version per the issue's RCA) and v2.1.92 (when Phase 4b's smoke test ran). Phase 4b's design assumed the v2.1.45 behavior; the assumption broke before Phase 4b shipped.
+
+**Validation status:**
+
+| Check | Phase 4b smoke test | Post-resume re-audit |
+|---|---|---|
+| 1 — dice-line gaps | passed (zero findings) | passed (zero findings) |
+| 2 — oracle-call gaps | passed (zero findings) | passed (zero findings) |
+| 3 — primary-PC overreach | passed (zero findings) | passed (zero findings) |
+| 4 — faction tick rationale | skipped — graceful degradation | skipped — graceful degradation |
+| 5 — clue delivery confirmation | skipped — graceful degradation | skipped — graceful degradation |
+| 6 — thread state consistency | skipped — graceful degradation | skipped — graceful degradation |
+| Replace-on-rerun semantic | passed | passed (truncated and re-appended cleanly each time) |
+| Asymmetry audit (narrator deny rules) | passed | passed |
+| dm-fs test suite (37 tests) | passed | passed |
+
+**What this means for Phase 4b's "complete" claim:** checks 4–6 are correctly implemented but cannot be empirically validated under any current Claude Code version. The graceful-degradation path Phase 4b designed for "MCP unavailable" is the actual operating mode on this Claude Code version, not the edge case. Phase 4b is treated as shipped — the bookkeeper produces well-formed v2 audits, the replace-on-rerun semantic works, and the asymmetry boundary holds — with the caveat that checks 4–6 will skip until upstream fix lands or the architecture is reworked.
+
+**Cross-cutting impact (beyond Phase 4b).** The same regression breaks every dm/-touching subagent: world-state (Phase 2a offscreen-developments tick, Phase 2a hidden-info queries), librarian (Phase 3a intake-module, Phase 3b consult-library, Phase 3b reveal-from-module, Phase 3c intake-lore for revelation/faction-adjacent ingest, Phase 3d propose-revelations, Phase 3e propose-factions), and revelation (Phase 2b clue queries and delivery confirmation against dm/revelations/). Play sessions on Claude Code v2.1.46+ are degraded — the narrator can dispatch these subagents but they cannot reach dm/ content. See `docs/known-limitations.md` for the broader picture.
+
+**Next steps:** filed comment on issue #25200 with v2.1.139 repro signal. Phase 4c brainstorming will consider whether to wait for upstream fix, downgrade Claude Code to v2.1.45, or rework the architecture (e.g., have subagents shell out to a dm-fs CLI via Bash, which subagents do retain). No code changes from this postmortem — the bookkeeper subagent definition and Phase 4b smoke-test artifact (session-005.md with the partial-validation audit) remain in their shipped state.
