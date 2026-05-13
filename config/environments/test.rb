@@ -36,9 +36,7 @@ Rails.application.configure do
   # ActionMailer::Base.deliveries array.
   config.action_mailer.delivery_method = :test
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
-
+  # Set host to be used by links generated in mailer templates + URL helpers.
   config.action_controller.default_url_options = { host: "gygaxagain.com" }
   config.action_mailer.default_url_options = { host: "gygaxagain.com" }
 
