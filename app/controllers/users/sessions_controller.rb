@@ -4,6 +4,8 @@ class Users::SessionsController < Devise::SessionsController
   # host (admin.gygaxagain.com). Rails 8+ blocks cross-host redirects by
   # default via ActionController::Redirecting::OpenRedirectError. We must
   # explicitly pass allow_other_host: true.
+  #
+  # Body copied from devise-5.0.4. Re-check on Devise upgrades.
   def create
     self.resource = warden.authenticate!(auth_options)
     set_flash_message!(:notice, :signed_in)
@@ -11,5 +13,19 @@ class Users::SessionsController < Devise::SessionsController
     yield resource if block_given?
     redirect_to after_sign_in_path_for(resource), allow_other_host: true,
                                                    status: Devise.responder.redirect_status
+  end
+
+  # Override destroy for the same reason: after_sign_out_path_for returns
+  # root_url(subdomain: "") which from admin.gygaxagain.com is a cross-host
+  # redirect to gygaxagain.com.
+  #
+  # Body copied from devise-5.0.4. Re-check on Devise upgrades.
+  def destroy
+    signed_out = (Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name))
+    set_flash_message! :notice, :signed_out if signed_out
+    yield if block_given?
+    redirect_to after_sign_out_path_for(resource_name),
+                allow_other_host: true,
+                status: Devise.responder.redirect_status
   end
 end
