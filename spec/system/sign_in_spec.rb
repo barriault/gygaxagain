@@ -9,7 +9,7 @@ RSpec.describe "Sign in", type: :system do
   let(:password) { "correct horse battery staple" }
   let!(:user) { create(:user, password: password, password_confirmation: password) }
 
-  it "signs in via the apex form and lands on the admin dashboard" do
+  it "signs in via the apex form and lands on the admin new-campaign form (no campaigns)" do
     visit "/users/sign_in"
     expect(page).to have_field("Email")
     expect(page).to have_field("Password")
@@ -18,8 +18,8 @@ RSpec.describe "Sign in", type: :system do
     fill_in "Password", with: password
     click_button "Log in"
 
-    # After sign-in we should be on the admin dashboard.
-    expect(current_url).to include("admin.gygaxagain.com")
-    expect(page).to have_text(/admin dashboard/i)
+    # User has zero campaigns → after_sign_in_path_for sends them to the admin new-campaign form.
+    expect(current_url).to include("admin.gygaxagain.com/campaigns/new")
+    expect(page).to have_text(/new campaign/i)
   end
 end
