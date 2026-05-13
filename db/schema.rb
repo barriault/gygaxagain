@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_13_231520) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_13_232119) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_13_231520) do
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.integer "failed_attempts", default: 0, null: false
+    t.bigint "last_played_campaign_id"
     t.datetime "last_sign_in_at"
     t.string "last_sign_in_ip"
     t.datetime "locked_at"
@@ -41,9 +42,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_13_231520) do
     t.string "unlock_token"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["last_played_campaign_id"], name: "index_users_on_last_played_campaign_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
   add_foreign_key "campaigns", "users", on_delete: :cascade
+  add_foreign_key "users", "campaigns", column: "last_played_campaign_id", on_delete: :nullify
 end
