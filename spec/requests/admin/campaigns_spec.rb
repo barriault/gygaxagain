@@ -51,7 +51,8 @@ RSpec.describe "Admin::Campaigns", type: :request do
       it "renders the form" do
         get "/campaigns/new"
         expect(response).to have_http_status(:ok)
-        expect(response.body).to match(/name/i)
+        expect(response.body).to match(/New campaign/i)
+        expect(response.body).to include('action="/campaigns"')
       end
     end
   end
@@ -75,8 +76,10 @@ RSpec.describe "Admin::Campaigns", type: :request do
 
         expect(response).to have_http_status(:found)
         expect(response.location).to include("/campaigns")
-        expect(user.campaigns.last.name).to eq("Strahd")
-        expect(user.campaigns.last.description).to eq("Ravenloft")
+
+        created = Campaign.find_by!(name: "Strahd")
+        expect(created.user_id).to eq(user.id)
+        expect(created.description).to eq("Ravenloft")
       end
 
       it "rerenders the form with 422 on invalid input" do
