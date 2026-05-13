@@ -1,6 +1,6 @@
 module Admin
   class CampaignsController < ::ApplicationController
-    before_action :load_campaign, only: [:edit, :update]
+    before_action :load_campaign, only: [:edit, :update, :destroy]
 
     def index
       @campaigns = current_user.campaigns.order(:name)
@@ -47,6 +47,11 @@ module Admin
           method: :patch
         ), status: :unprocessable_entity
       end
+    end
+
+    def destroy
+      @campaign.destroy
+      redirect_to admin_campaigns_path, notice: "Campaign deleted."
     end
 
     private

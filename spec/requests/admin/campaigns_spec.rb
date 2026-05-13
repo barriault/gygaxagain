@@ -154,4 +154,48 @@ RSpec.describe "Admin::Campaigns", type: :request do
       end
     end
   end
+
+  describe "DELETE /campaigns/:id" do
+    context "unauthenticated" do
+      it "redirects to apex sign-in" do
+        campaign = create(:campaign, user: user)
+        delete "/campaigns/#{campaign.id}"
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("gygaxagain.com/users/sign_in")
+      end
+    end
+
+    context "authenticated as owner" do
+      before { sign_in user }
+
+      it "deletes the campaign and redirects to the index" do
+        campaign = create(:campaign, user: user)
+        expect { delete "/campaigns/#{campaign.id}" }
+          .to change { user.campaigns.count }.by(-1)
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("/campaigns")
+      end
+
+      it "nullifies last_played_campaign_id when deleting the last-played campaign" do
+        campaign = create(:campaign, user: user)
+        user.update_column(:last_played_campaign_id, campaign.id)
+
+        delete "/campaigns/#{campaign.id}"
+
+        user.reload
+        expect(user.last_played_campaign_id).to be_nil
+      end
+    end
+
+    context "authenticated as another user" do
+      before { sign_in other_user }
+
+      it "404s on the foreign campaign and does not delete it" do
+        foreign = create(:campaign, user: user)
+        expect { delete "/campaigns/#{foreign.id}" }
+          .not_to change(Campaign, :count)
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end
