@@ -31,6 +31,11 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
+  # Allow lvh.me + subdomains through ActionDispatch::HostAuthorization.
+  # lvh.me resolves to 127.0.0.1; we use it for local subdomain testing.
+  config.hosts << "lvh.me"
+  config.hosts << ".lvh.me"
+
   # Configure default URL options for link generation.
   config.action_controller.default_url_options = { host: "lvh.me", port: 3000 }
   config.action_mailer.default_url_options     = { host: "lvh.me", port: 3000 }

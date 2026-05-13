@@ -46,4 +46,25 @@ RSpec.describe "Cross-subdomain session", type: :request do
     expect(response).to have_http_status(:see_other)
     expect(response.location).to eq("http://gygaxagain.com/")
   end
+
+  it "allows sign-out when the form was rendered on a different subdomain (cross-origin Origin header)" do
+    # Regression: in production, the admin dashboard renders a sign-out form
+    # that POSTs to gygaxagain.com/users/sign_out. The browser sends
+    # Origin: https://admin.gygaxagain.com. Rails' default CSRF origin check
+    # rejects with 422 because origin-host != request-host. We turn that check
+    # off in config/application.rb because the same-session token check still
+    # protects us. This spec exercises that scenario explicitly.
+    sign_in user
+
+    host! "gygaxagain.com"
+    delete "/users/sign_out",
+           headers: {
+             "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+             "Origin" => "https://admin.gygaxagain.com"
+           }
+
+    # Before the forgery_protection_origin_check fix, this was 422.
+    expect(response).to have_http_status(:see_other)
+    expect(response.location).to eq("http://gygaxagain.com/")
+  end
 end
