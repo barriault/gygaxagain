@@ -1,5 +1,7 @@
 module Admin
   class CampaignsController < ::ApplicationController
+    before_action :load_campaign, only: [:edit, :update]
+
     def index
       @campaigns = current_user.campaigns.order(:name)
       render Admin::Campaigns::IndexComponent.new(campaigns: @campaigns)
@@ -27,7 +29,31 @@ module Admin
       end
     end
 
+    def edit
+      render Admin::Campaigns::FormComponent.new(
+        campaign: @campaign,
+        form_url: admin_campaign_path(@campaign),
+        method: :patch
+      )
+    end
+
+    def update
+      if @campaign.update(campaign_params)
+        redirect_to admin_campaigns_path, notice: "Campaign updated."
+      else
+        render Admin::Campaigns::FormComponent.new(
+          campaign: @campaign,
+          form_url: admin_campaign_path(@campaign),
+          method: :patch
+        ), status: :unprocessable_entity
+      end
+    end
+
     private
+
+    def load_campaign
+      @campaign = current_user.campaigns.find(params[:id])
+    end
 
     def campaign_params
       params.require(:campaign).permit(:name, :description)

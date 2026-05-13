@@ -89,4 +89,69 @@ RSpec.describe "Admin::Campaigns", type: :request do
       end
     end
   end
+
+  describe "GET /campaigns/:id/edit" do
+    context "unauthenticated" do
+      it "redirects to apex sign-in" do
+        campaign = create(:campaign, user: user)
+        get "/campaigns/#{campaign.id}/edit"
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("gygaxagain.com/users/sign_in")
+      end
+    end
+
+    context "authenticated as owner" do
+      before { sign_in user }
+
+      it "renders the edit form" do
+        campaign = create(:campaign, user: user, name: "Strahd")
+        get "/campaigns/#{campaign.id}/edit"
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Strahd")
+      end
+    end
+
+    context "authenticated as another user" do
+      before { sign_in user }
+
+      it "404s on another user's campaign" do
+        foreign = create(:campaign, user: other_user)
+        get "/campaigns/#{foreign.id}/edit"
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe "PATCH /campaigns/:id" do
+    context "authenticated as owner" do
+      before { sign_in user }
+
+      it "updates the campaign and redirects to the index" do
+        campaign = create(:campaign, user: user, name: "Old")
+        patch "/campaigns/#{campaign.id}", params: { campaign: { name: "New" } }
+
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("/campaigns")
+        expect(campaign.reload.name).to eq("New")
+      end
+
+      it "rerenders the form with 422 on invalid input" do
+        campaign = create(:campaign, user: user, name: "Keep")
+        patch "/campaigns/#{campaign.id}", params: { campaign: { name: "" } }
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(campaign.reload.name).to eq("Keep")
+      end
+    end
+
+    context "authenticated as another user" do
+      before { sign_in user }
+
+      it "404s on another user's campaign" do
+        foreign = create(:campaign, user: other_user, name: "Theirs")
+        patch "/campaigns/#{foreign.id}", params: { campaign: { name: "Hijacked" } }
+        expect(response).to have_http_status(:not_found)
+        expect(foreign.reload.name).to eq("Theirs")
+      end
+    end
+  end
 end
