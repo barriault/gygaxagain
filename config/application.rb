@@ -45,5 +45,15 @@ module Gygaxagain
     # Token-based CSRF protection (authenticity_token) remains active and is
     # the primary defense.
     config.action_controller.forgery_protection_origin_check = false
+
+    # Allow cross-host `redirect_to`. Our subdomain architecture has several
+    # legitimate apex<->admin redirects (sign-in success, sign-out success,
+    # require_no_authentication, future Devise + Pundit flows). The default
+    # `raise_on_open_redirects = true` (Rails 8.0+) requires `allow_other_host:`
+    # on every call, which is whack-a-mole for Devise's internal filters.
+    # We don't have any user-controlled redirect targets in this codebase
+    # (all redirects are to known internal URLs), so the protection adds
+    # friction without preventing a real threat for our use case.
+    config.action_controller.raise_on_open_redirects = false
   end
 end

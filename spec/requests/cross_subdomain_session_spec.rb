@@ -47,6 +47,22 @@ RSpec.describe "Cross-subdomain session", type: :request do
     expect(response.location).to eq("http://gygaxagain.com/")
   end
 
+  it "redirects already-authenticated users away from sign-in (Devise's require_no_authentication filter, cross-host)" do
+    # Regression: hitting /users/sign_in while already signed in triggers
+    # Devise's require_no_authentication filter, which redirects to
+    # after_sign_in_path_for (= admin dashboard, cross-host from apex).
+    # Without raise_on_open_redirects = false in config/application.rb,
+    # Rails 8 raises OpenRedirectError → 500.
+    sign_in user
+
+    host! "gygaxagain.com"
+    get "/users/sign_in",
+        headers: { "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
+
+    expect(response).to have_http_status(:found).or have_http_status(:see_other)
+    expect(response.location).to include("admin.gygaxagain.com")
+  end
+
   it "allows sign-out when the form was rendered on a different subdomain (cross-origin Origin header)" do
     # Regression: in production, the admin dashboard renders a sign-out form
     # that POSTs to gygaxagain.com/users/sign_out. The browser sends
