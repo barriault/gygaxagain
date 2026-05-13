@@ -19,7 +19,7 @@ RSpec.describe "Admin::Campaigns", type: :request do
       before { sign_in user }
 
       it "renders the index with the user's campaigns" do
-        own = create(:campaign, user: user, name: "Mine")
+        create(:campaign, user: user, name: "Mine")
         create(:campaign, user: other_user, name: "Theirs")
 
         get "/campaigns"
