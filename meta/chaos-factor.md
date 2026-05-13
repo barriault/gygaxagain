@@ -1,3 +1,0 @@
-# Chaos factor
-
-4
