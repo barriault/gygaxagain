@@ -27,13 +27,38 @@ bin/rails db:create db:migrate
 bin/dev
 ```
 
-Visit `http://localhost:3000`.
+Visit `http://lvh.me:3000` (apex) or `http://admin.lvh.me:3000` (admin subdomain).
+
+`lvh.me` is a public DNS service that resolves `*.lvh.me` to `127.0.0.1`,
+so subdomain routing works locally without `/etc/hosts` edits.
 
 - RSpec: `bundle exec rspec`
 - RuboCop: `bin/rubocop`
 - Brakeman: `bin/brakeman`
 - erb_lint: `bundle exec erb_lint --lint-all`
-- Lookbook (component previews, dev only): `http://localhost:3000/lookbook`
+- Lookbook (component previews, dev only): `http://lvh.me:3000/lookbook`
+
+## Authentication
+
+Alpha is invite-only; signup is disabled in Devise. Create users manually:
+
+```bash
+bin/rails users:create EMAIL=jane@example.com PASSWORD=correct-horse-battery-staple
+```
+
+On Heroku:
+
+```bash
+heroku run rake users:create EMAIL=... PASSWORD=... -a gygaxagain
+```
+
+Sign in at `https://gygaxagain.com/users/sign_in`. The session is shared
+across `gygaxagain.com` and `admin.gygaxagain.com` via a cookie scoped
+to `.gygaxagain.com`.
+
+Password reset is wired but requires SMTP config (`SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` env vars on Heroku). These are blank
+in alpha; reset requests appear to succeed but no email is sent.
 
 ## Deploy
 
@@ -50,6 +75,10 @@ git push heroku main
 ```
 
 Buildpacks: `https://github.com/jakeg/heroku-buildpack-bun` then `heroku/ruby`. Postgres add-on: `heroku-postgresql:essential-0`.
+
+The Heroku app serves two domains: `gygaxagain.com` (play surface) and
+`admin.gygaxagain.com` (campaign management). Both terminate at the same
+dyno; Rails subdomain routing dispatches.
 
 ## Roadmap
 
