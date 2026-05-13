@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "Pages", type: :request do
+RSpec.describe "Play home", type: :request do
   describe "GET /" do
     before { get "/" }
 
