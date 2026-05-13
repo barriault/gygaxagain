@@ -1,0 +1,15 @@
+class Users::SessionsController < Devise::SessionsController
+  # Override create to allow cross-host redirect after sign-in.
+  # after_sign_in_path_for returns admin_dashboard_url which is a different
+  # host (admin.gygaxagain.com). Rails 8+ blocks cross-host redirects by
+  # default via ActionController::Redirecting::OpenRedirectError. We must
+  # explicitly pass allow_other_host: true.
+  def create
+    self.resource = warden.authenticate!(auth_options)
+    set_flash_message!(:notice, :signed_in)
+    sign_in(resource_name, resource)
+    yield resource if block_given?
+    redirect_to after_sign_in_path_for(resource), allow_other_host: true,
+                                                   status: Devise.responder.redirect_status
+  end
+end
