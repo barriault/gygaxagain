@@ -112,10 +112,10 @@ RSpec.describe "Admin::Campaigns", type: :request do
     end
 
     context "authenticated as another user" do
-      before { sign_in user }
+      before { sign_in other_user }
 
-      it "404s on another user's campaign" do
-        foreign = create(:campaign, user: other_user)
+      it "404s on the foreign campaign" do
+        foreign = create(:campaign, user: user)
         get "/campaigns/#{foreign.id}/edit"
         expect(response).to have_http_status(:not_found)
       end
@@ -144,10 +144,10 @@ RSpec.describe "Admin::Campaigns", type: :request do
     end
 
     context "authenticated as another user" do
-      before { sign_in user }
+      before { sign_in other_user }
 
-      it "404s on another user's campaign" do
-        foreign = create(:campaign, user: other_user, name: "Theirs")
+      it "404s on the foreign campaign and does not mutate it" do
+        foreign = create(:campaign, user: user, name: "Theirs")
         patch "/campaigns/#{foreign.id}", params: { campaign: { name: "Hijacked" } }
         expect(response).to have_http_status(:not_found)
         expect(foreign.reload.name).to eq("Theirs")
