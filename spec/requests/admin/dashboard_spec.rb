@@ -21,4 +21,17 @@ RSpec.describe "Admin dashboard", type: :request do
       expect(response.body).to match(/admin dashboard/i)
     end
   end
+
+  describe "controller auth chain" do
+    it "enforces Admin::ApplicationController#authenticate_user!" do
+      expect(Admin::DashboardController.ancestors).to include(Admin::ApplicationController)
+    end
+
+    it "fires authenticate_user! as a before_action" do
+      filters = Admin::DashboardController._process_action_callbacks
+                  .select { |cb| cb.kind == :before }
+                  .map(&:filter)
+      expect(filters).to include(:authenticate_user!)
+    end
+  end
 end
