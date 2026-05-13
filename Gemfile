@@ -6,6 +6,7 @@ gem "rails", "~> 8.1.3"
 
 gem "bootsnap", require: false
 gem "cssbundling-rails"
+gem "devise"
 gem "image_processing", "~> 1.2"
 gem "jbuilder"
 gem "jsbundling-rails"
@@ -37,6 +38,7 @@ group :development do
   gem "annotaterb"
   gem "bullet"
   gem "erb_lint", require: false
+  gem "letter_opener"
   gem "lookbook"
   gem "web-console"
 end
