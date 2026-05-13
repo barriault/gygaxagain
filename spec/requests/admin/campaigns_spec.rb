@@ -35,4 +35,55 @@ RSpec.describe "Admin::Campaigns", type: :request do
       end
     end
   end
+
+  describe "GET /campaigns/new" do
+    context "unauthenticated" do
+      it "redirects to apex sign-in" do
+        get "/campaigns/new"
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("gygaxagain.com/users/sign_in")
+      end
+    end
+
+    context "authenticated" do
+      before { sign_in user }
+
+      it "renders the form" do
+        get "/campaigns/new"
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match(/name/i)
+      end
+    end
+  end
+
+  describe "POST /campaigns" do
+    context "unauthenticated" do
+      it "redirects to apex sign-in" do
+        post "/campaigns", params: { campaign: { name: "X" } }
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("gygaxagain.com/users/sign_in")
+      end
+    end
+
+    context "authenticated" do
+      before { sign_in user }
+
+      it "creates a campaign owned by the current user and redirects to the index" do
+        expect {
+          post "/campaigns", params: { campaign: { name: "Strahd", description: "Ravenloft" } }
+        }.to change { user.campaigns.count }.by(1)
+
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("/campaigns")
+        expect(user.campaigns.last.name).to eq("Strahd")
+        expect(user.campaigns.last.description).to eq("Ravenloft")
+      end
+
+      it "rerenders the form with 422 on invalid input" do
+        post "/campaigns", params: { campaign: { name: "" } }
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.body).to match(/can.?t be blank|prohibited this/i)
+      end
+    end
+  end
 end

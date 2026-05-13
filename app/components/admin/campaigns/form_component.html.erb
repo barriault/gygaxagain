@@ -1,0 +1,43 @@
+<div class="min-h-screen bg-slate-900 text-slate-100 px-4 py-12">
+  <div class="mx-auto max-w-xl">
+    <h1 class="text-3xl font-bold tracking-tight">
+      <%= campaign.persisted? ? "Edit campaign" : "New campaign" %>
+    </h1>
+
+    <% if campaign.errors.any? %>
+      <div class="mt-6 rounded border border-rose-700 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
+        <p class="font-semibold">
+          <%= pluralize(campaign.errors.count, "error") %> prohibited this campaign from being saved:
+        </p>
+        <ul class="mt-2 list-disc pl-5">
+          <% campaign.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= form_with model: campaign, url: form_url, method: method, local: true, class: "mt-8 space-y-6" do |f| %>
+      <div>
+        <%= f.label :name, class: "block text-sm uppercase tracking-widest text-slate-400" %>
+        <%= f.text_field :name,
+                         class: "mt-2 w-full rounded bg-slate-800 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500" %>
+      </div>
+
+      <div>
+        <%= f.label :description, class: "block text-sm uppercase tracking-widest text-slate-400" %>
+        <%= f.text_area :description,
+                        rows: 6,
+                        class: "mt-2 w-full rounded bg-slate-800 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500" %>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <%= f.submit (campaign.persisted? ? "Update campaign" : "Create campaign"),
+                     class: "rounded bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white" %>
+        <%= link_to "Cancel",
+                    helpers.admin_campaigns_path,
+                    class: "text-sm text-slate-400 hover:text-slate-200" %>
+      </div>
+    <% end %>
+  </div>
+</div>
