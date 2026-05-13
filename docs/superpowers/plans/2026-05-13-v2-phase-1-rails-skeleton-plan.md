@@ -266,12 +266,30 @@ cd /Users/barriault/dnd/gygaxagain && bin/rails about
 ```
 Expected: prints Rails version, Ruby version, environment, etc., without errors.
 
-- [ ] **Step 6: Commit Gemfile changes**
+- [ ] **Step 6: Create development + test databases and generate initial schema**
 
 Run:
 ```
-cd /Users/barriault/dnd/gygaxagain && git add Gemfile Gemfile.lock
-git -C /Users/barriault/dnd/gygaxagain commit -m "Add Phase 1 gems (RSpec, ViewComponent, Lookbook, factory_bot, shoulda-matchers, erb_lint, bullet, annotaterb, dotenv-rails, capybara)"
+cd /Users/barriault/dnd/gygaxagain && bin/rails db:create db:migrate
+```
+Expected: creates `gygaxagain_development` and `gygaxagain_test` databases; writes empty `db/schema.rb` (since no migrations exist yet).
+
+This ensures the test database exists before any RSpec run, and produces the initial `schema.rb` artifact that CI will later use via `db:schema:load`.
+
+- [ ] **Step 7: Verify schema.rb exists**
+
+Run:
+```
+test -f /Users/barriault/dnd/gygaxagain/db/schema.rb && echo "schema exists" || echo "missing"
+```
+Expected: `schema exists`.
+
+- [ ] **Step 8: Commit Gemfile changes and initial schema**
+
+Run:
+```
+cd /Users/barriault/dnd/gygaxagain && git add Gemfile Gemfile.lock db/schema.rb
+git -C /Users/barriault/dnd/gygaxagain commit -m "Add Phase 1 gems (RSpec, ViewComponent, Lookbook, factory_bot, shoulda-matchers, erb_lint, bullet, annotaterb, dotenv-rails, capybara); create databases"
 ```
 
 ---
@@ -657,33 +675,17 @@ jobs:
         run: bin/brakeman -q --no-pager
 ```
 
-- [ ] **Step 2: Generate a starting schema so db:schema:load has something to do**
+- [ ] **Step 2: Commit the CI workflow**
 
-The CI workflow runs `db:schema:load`, which needs `db/schema.rb` to exist. Generate an empty schema file:
-
-Run:
-```
-cd /Users/barriault/dnd/gygaxagain && bin/rails db:create db:migrate
-```
-Expected: creates `db/schema.rb` (empty schema since no migrations exist yet) and the development+test databases locally.
-
-- [ ] **Step 3: Verify schema.rb exists**
+(The `db/schema.rb` artifact is already committed at the end of Task 3.)
 
 Run:
 ```
-test -f /Users/barriault/dnd/gygaxagain/db/schema.rb && echo "schema exists" || echo "missing"
-```
-Expected: `schema exists`.
-
-- [ ] **Step 4: Commit the CI workflow and schema**
-
-Run:
-```
-git -C /Users/barriault/dnd/gygaxagain add .github/workflows/ci.yml db/schema.rb
+git -C /Users/barriault/dnd/gygaxagain add .github/workflows/ci.yml
 git -C /Users/barriault/dnd/gygaxagain commit -m "Add GitHub Actions CI workflow (RSpec + RuboCop + erb_lint + Brakeman)"
 ```
 
-- [ ] **Step 5: Push and verify CI runs**
+- [ ] **Step 3: Push and verify CI runs**
 
 Run:
 ```
@@ -696,7 +698,7 @@ sleep 30 && gh run list -R barriault/gygaxagain --limit 3
 ```
 Expected: one row showing the most recent `main` commit with status `completed` and conclusion `success`. If CI is still running, wait and re-check.
 
-- [ ] **Step 6: Verify both jobs passed**
+- [ ] **Step 4: Verify both jobs passed**
 
 Run:
 ```
