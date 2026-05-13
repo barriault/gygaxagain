@@ -1,5 +1,5 @@
 module Admin
-  class DashboardController < Admin::ApplicationController
+  class DashboardController < ::ApplicationController
     def show
       render Admin::DashboardComponent.new
     end

@@ -1,4 +1,9 @@
 class Users::SessionsController < Devise::SessionsController
+  # The sign-in form itself must be reachable when unauthenticated.
+  # ApplicationController has a default `before_action :authenticate_user!`;
+  # without skipping it here we'd loop redirect-to-sign-in forever.
+  skip_before_action :authenticate_user!
+
   # Override create to allow cross-host redirect after sign-in.
   # after_sign_in_path_for returns admin_dashboard_url which is a different
   # host (admin.gygaxagain.com). Rails 8+ blocks cross-host redirects by

@@ -23,8 +23,8 @@ RSpec.describe "Admin dashboard", type: :request do
   end
 
   describe "controller auth chain" do
-    it "enforces Admin::ApplicationController#authenticate_user!" do
-      expect(Admin::DashboardController.ancestors).to include(Admin::ApplicationController)
+    it "inherits from ApplicationController (default-deny base)" do
+      expect(Admin::DashboardController.ancestors).to include(ApplicationController)
     end
 
     it "fires authenticate_user! as a before_action" do

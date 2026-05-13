@@ -412,6 +412,38 @@ Deferred to later phases (or until further notice):
 - **Custom Devise error pages / lockable email notifications.** Defaults.
 - **Multi-user sharing.** Permanent out-of-scope per Phase 0.
 
+## Phase 0 deviations
+
+This phase makes one architectural change to the Phase 0 commitments:
+
+### Default-deny auth at `ApplicationController` (no namespaced base controllers)
+
+Phase 0 prescribed `Play::ApplicationController` and `Admin::ApplicationController`
+descending from the top-level `ApplicationController`, with the admin base setting
+`before_action :authenticate_user!`. In implementation we found the namespaced base
+classes were near-empty (one line each) and the architecture would default to
+*open* for any newly-added controller that forgot to extend the admin base.
+
+This phase instead puts `before_action :authenticate_user!` on the top-level
+`ApplicationController`. Controllers default to authenticated. Public-facing
+controllers explicitly opt out:
+
+- `Play::HomeController` — `skip_before_action :authenticate_user!` (alpha
+  placeholder; remove when we have a proper play-surface sign-in landing).
+- `Users::SessionsController` — `skip_before_action :authenticate_user!` (the
+  sign-in form must be reachable when unauthenticated).
+
+Devise's default `PasswordsController` and `UnlocksController` inherit from
+`ApplicationController` via `config.parent_controller`, so they will redirect
+unauthenticated requests to sign-in too. This is acceptable for alpha because
+SMTP is blank and password reset doesn't deliver email anyway; the redirect
+is a no-op user-facing. When SMTP is wired, add `Users::PasswordsController`
+(and `Users::UnlocksController` if needed) with the same skip.
+
+Namespaced base controllers can return in a later phase if Pundit/policy code
+or per-namespace before_actions justify them. For Phase 2 the simpler
+top-level filter is sufficient.
+
 ## Self-review notes
 
 - This spec resolves every open question I could think of at brainstorm time. If any decision needs revisiting during implementation, the implementation plan should call it out rather than silently drift.

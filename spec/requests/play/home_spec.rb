@@ -20,4 +20,18 @@ RSpec.describe "Play home", type: :request do
       expect(response.body).to include("private alpha")
     end
   end
+
+  describe "controller auth chain" do
+    it "skips authenticate_user! (public landing during alpha)" do
+      before_filters = Play::HomeController._process_action_callbacks
+                         .select { |cb| cb.kind == :before }
+                         .map(&:filter)
+      expect(before_filters).not_to include(:authenticate_user!)
+    end
+
+    it "renders for unauthenticated visitors" do
+      get "/"
+      expect(response).to have_http_status(:ok)
+    end
+  end
 end
