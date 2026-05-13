@@ -75,3 +75,10 @@ yarn-error.log
 
 # Claude Code per-machine local settings
 .claude/settings.local.json
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
