@@ -23,5 +23,5 @@ class Campaign < ApplicationRecord
 
   validates :name, presence: true,
                    length: { maximum: 100 },
-                   uniqueness: { scope: :user_id }
+                   uniqueness: { scope: :user_id, case_sensitive: false }
 end

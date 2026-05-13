@@ -45,6 +45,14 @@ RSpec.describe Campaign, type: :model do
       create(:campaign, user: user_a, name: "Strahd")
       expect(build(:campaign, user: user_b, name: "Strahd")).to be_valid
     end
+
+    it "treats name uniqueness as case-insensitive within a user" do
+      user = create(:user)
+      create(:campaign, user: user, name: "Strahd")
+      duplicate = build(:campaign, user: user, name: "strahd")
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:name]).to include("has already been taken")
+    end
   end
 
   describe "factory" do
