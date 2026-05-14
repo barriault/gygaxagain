@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_155429) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_14_155630) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -87,6 +87,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_155429) do
     t.index ["campaign_id"], name: "index_npcs_on_campaign_id"
   end
 
+  create_table "scenes", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "position", null: false
+    t.text "summary"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id", "position"], name: "index_scenes_on_campaign_id_and_position"
+    t.index ["campaign_id"], name: "index_scenes_on_campaign_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "current_sign_in_at"
@@ -117,5 +128,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_155429) do
   add_foreign_key "llm_calls", "users", on_delete: :cascade
   add_foreign_key "npc_secrets", "npcs", on_delete: :cascade
   add_foreign_key "npcs", "campaigns", on_delete: :cascade
+  add_foreign_key "scenes", "campaigns", on_delete: :cascade
   add_foreign_key "users", "campaigns", column: "last_played_campaign_id", on_delete: :nullify
 end

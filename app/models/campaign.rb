@@ -23,6 +23,7 @@ class Campaign < ApplicationRecord
   has_many :llm_calls, dependent: :destroy
   has_many :factions, dependent: :destroy
   has_many :npcs, dependent: :destroy
+  has_many :scenes, dependent: :destroy
 
   validates :name, presence: true,
                    length: { maximum: 100 },
