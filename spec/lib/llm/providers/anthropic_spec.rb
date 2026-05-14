@@ -5,7 +5,7 @@ RSpec.describe Llm::Providers::Anthropic do
   let(:messages) { [ { role: "user", content: "Hello" } ] }
 
   before do
-    ENV["ANTHROPIC_API_KEY"] = "sk-ant-test-key"
+    allow(described_class).to receive(:api_key).and_return("sk-ant-test-key")
     described_class.reset_client!
   end
 
@@ -154,16 +154,16 @@ RSpec.describe Llm::Providers::Anthropic do
   end
 
   describe "#call (config errors)" do
-    it "raises Llm::ConfigError when ANTHROPIC_API_KEY is missing" do
-      ENV.delete("ANTHROPIC_API_KEY")
+    it "raises Llm::ConfigError when the API key is missing from credentials" do
+      allow(described_class).to receive(:api_key).and_return(nil)
       expect { adapter.call(messages: messages) }
-        .to raise_error(Llm::ConfigError, /ANTHROPIC_API_KEY/)
+        .to raise_error(Llm::ConfigError, /credentials\.anthropic\.api_key/)
     end
 
-    it "raises Llm::ConfigError when ANTHROPIC_API_KEY is blank" do
-      ENV["ANTHROPIC_API_KEY"] = ""
+    it "raises Llm::ConfigError when the API key is blank" do
+      allow(described_class).to receive(:api_key).and_return("")
       expect { adapter.call(messages: messages) }
-        .to raise_error(Llm::ConfigError, /ANTHROPIC_API_KEY/)
+        .to raise_error(Llm::ConfigError, /credentials\.anthropic\.api_key/)
     end
   end
 end

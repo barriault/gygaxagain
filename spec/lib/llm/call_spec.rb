@@ -5,7 +5,7 @@ RSpec.describe Llm::Call do
   let(:messages) { [ { role: "user", content: "Hello" } ] }
 
   before do
-    ENV["ANTHROPIC_API_KEY"] = "sk-ant-test-key"
+    allow(Llm::Providers::Anthropic).to receive(:api_key).and_return("sk-ant-test-key")
   end
 
   describe ".execute (success path)" do
@@ -125,7 +125,7 @@ RSpec.describe Llm::Call do
 
   describe ".execute (config error)" do
     it "raises Llm::ConfigError without persisting a row when API key is missing" do
-      ENV.delete("ANTHROPIC_API_KEY")
+      allow(Llm::Providers::Anthropic).to receive(:api_key).and_return(nil)
       expect {
         expect {
           described_class.execute(purpose: :diagnostics, messages: messages, user: user)

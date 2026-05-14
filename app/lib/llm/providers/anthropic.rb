@@ -12,10 +12,10 @@ module Llm
 
       # Returns Llm::Result. Never raises on HTTP/transport errors —
       # those are captured into result.error. Raises Llm::ConfigError
-      # if the API key is missing.
+      # if the API key is missing from Rails credentials.
       def call(system: nil, messages:, max_tokens: 1024)
-        api_key = ENV["ANTHROPIC_API_KEY"]
-        raise Llm::ConfigError, "ANTHROPIC_API_KEY is not set" if api_key.blank?
+        api_key = self.class.api_key
+        raise Llm::ConfigError, "Anthropic API key not configured (credentials.anthropic.api_key)" if api_key.blank?
 
         request_body = {
           model: model,
@@ -61,7 +61,11 @@ module Llm
       end
 
       def self.sdk_client
-        @sdk_client ||= ::Anthropic::Client.new(api_key: ENV.fetch("ANTHROPIC_API_KEY"))
+        @sdk_client ||= ::Anthropic::Client.new(api_key: api_key)
+      end
+
+      def self.api_key
+        Rails.application.credentials.dig(:anthropic, :api_key)
       end
 
       def self.reset_client!

@@ -19,7 +19,7 @@ RSpec.describe "Admin::Diagnostics::Llm", type: :request do
 
   before do
     host! "admin.gygaxagain.com"
-    ENV["ANTHROPIC_API_KEY"] = "sk-ant-test-key"
+    allow(Llm::Providers::Anthropic).to receive(:api_key).and_return("sk-ant-test-key")
   end
 
   describe "GET /diagnostics/llm" do
@@ -165,10 +165,10 @@ RSpec.describe "Admin::Diagnostics::Llm", type: :request do
       end
     end
 
-    context "authenticated, ANTHROPIC_API_KEY unset" do
+    context "authenticated, Anthropic API key not configured" do
       before do
         sign_in user
-        ENV.delete("ANTHROPIC_API_KEY")
+        allow(Llm::Providers::Anthropic).to receive(:api_key).and_return(nil)
       end
 
       it "returns 503 with a flash alert" do
