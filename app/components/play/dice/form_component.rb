@@ -1,7 +1,12 @@
 module Play
   module Dice
     class FormComponent < ViewComponent::Base
-      QUICK_CHIPS = %w[d20 d100 2d6 4d6kh3].freeze
+      QUICK_CHIPS = {
+        "d20"    => "1d20",
+        "d100"   => "1d100",
+        "2d6"    => "2d6",
+        "4d6kh3" => "4d6kh3"
+      }.freeze
 
       def initialize(scene:, expression: nil, error: nil)
         @scene = scene

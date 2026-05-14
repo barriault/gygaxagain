@@ -23,11 +23,11 @@
     <% end %>
 
     <div class="mt-3 flex flex-wrap gap-2">
-      <% quick_chips.each do |chip| %>
+      <% quick_chips.each do |label, expression| %>
         <button type="button"
                 data-action="click->dice-form#useChip"
-                data-dice-form-expression-param="<%= chip %>"
-                class="rounded bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"><%= chip %></button>
+                data-dice-form-expression-param="<%= expression %>"
+                class="rounded bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700"><%= label %></button>
       <% end %>
     </div>
   <% end %>
