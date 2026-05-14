@@ -64,6 +64,9 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
     expect(page).to have_text(/chaos factor/i)
     find("button[data-direction='up']").click
 
+    # Wait for the redirect+re-render to show the updated value before touching
+    # the database, to avoid a race between the Capybara driver and the server.
+    expect(page).to have_css("p", text: "6")
     expect(campaign.reload.chaos_factor).to eq(6)
 
     # Back to play; confirm the oracle form's chaos label updated.

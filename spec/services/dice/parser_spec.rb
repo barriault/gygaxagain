@@ -34,19 +34,19 @@ RSpec.describe Dice::Parser do
       term = result.first
       expect(term.count).to eq(4)
       expect(term.sides).to eq(6)
-      expect(term.keep).to eq([:h, 3])
+      expect(term.keep).to eq([ :h, 3 ])
     end
 
     it "parses keep-lowest" do
       result = described_class.parse("2d20kl1")
       term = result.first
-      expect(term.keep).to eq([:l, 1])
+      expect(term.keep).to eq([ :l, 1 ])
     end
 
     it "parses keep-highest with a trailing constant" do
       result = described_class.parse("4d6kh3+2")
       expect(result.length).to eq(2)
-      expect(result[0].keep).to eq([:h, 3])
+      expect(result[0].keep).to eq([ :h, 3 ])
       expect(result[1].value).to eq(2)
     end
 
@@ -67,7 +67,7 @@ RSpec.describe Dice::Parser do
 
     it "parses a constant-only expression" do
       result = described_class.parse("+5")
-      expect(result).to eq([Dice::Parser::ConstantTerm.new(value: 5, sign: 1)])
+      expect(result).to eq([ Dice::Parser::ConstantTerm.new(value: 5, sign: 1) ])
     end
 
     it "tolerates whitespace" do

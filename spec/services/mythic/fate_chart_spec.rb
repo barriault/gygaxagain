@@ -20,12 +20,12 @@ RSpec.describe Mythic::FateChart do
     it "each cell is a 4-tuple with 0 <= a <= b <= c <= d == 100" do
       described_class::CHART.each do |(likelihood, cf), bands|
         a, b, c, d = bands
-        expect(bands.length).to eq(4), "cell #{[likelihood, cf].inspect} has #{bands.length} values"
+        expect(bands.length).to eq(4), "cell #{[ likelihood, cf ].inspect} has #{bands.length} values"
         expect(a).to be >= 0
         expect(a).to be <= b
         expect(b).to be <= c
         expect(c).to be <= d
-        expect(d).to eq(100), "cell #{[likelihood, cf].inspect} has exc_no_max=#{d}, expected 100"
+        expect(d).to eq(100), "cell #{[ likelihood, cf ].inspect} has exc_no_max=#{d}, expected 100"
       end
     end
 

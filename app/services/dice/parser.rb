@@ -55,7 +55,7 @@ module Dice
           if match[:keep]
             keep_n = match[:keep_n].to_i
             raise Dice::ParseError, "keep count must be >= 1, got #{keep_n}" if keep_n < 1
-            keep = [match[:keep].to_sym, keep_n]
+            keep = [ match[:keep].to_sym, keep_n ]
           end
 
           terms << DiceTerm.new(count: count, sides: sides, sign: sign, keep: keep)
