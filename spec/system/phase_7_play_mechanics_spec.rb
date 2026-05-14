@@ -191,5 +191,16 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       click_button "adv"  # toggle off
       expect(page).to have_field("dice_roll[expression]", with: "3d6+2")
     end
+
+    it "clears builder state when the user types directly, then a chip replaces the text" do
+      click_button "d6"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+
+      fill_in "dice_roll[expression]", with: "1d4+wat"
+      expect(page.find_button("d10")["aria-disabled"]).to eq("false")  # builder detached
+
+      click_button "d6"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+    end
   end
 end

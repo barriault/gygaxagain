@@ -80,6 +80,15 @@ export default class extends Controller {
     this.#render()
   }
 
+  expressionInput(_event) {
+    if (this.programmaticWrite) return
+    this.state = this.#initialState()
+    this.preserved = { count: 0, keep: 0 }
+    // Don't touch expressionTarget.value — let the user's typing stand.
+    this.#renderDieChips()
+    this.#renderModifierChips()
+  }
+
   #initialState() {
     return { die: null, count: 0, modifier: 0, keep: 0, mode: "normal" }
   }
