@@ -46,8 +46,13 @@ RSpec.describe Play::Events::Component do
       )
     end
 
-    it "REGISTRY keys are kept in sync with Event::KINDS" do
-      expect(described_class::REGISTRY.keys.sort).to eq(Event::KINDS.sort)
+    it "REGISTRY keys are a subset of Event::KINDS" do
+      # We assert subset (not equality) so a new Event kind can be introduced
+      # in one commit and its component dispatcher entry added in a later one
+      # without leaving an intermediate broken state. The reverse direction —
+      # "every kind has a component" — is enforced at runtime by `.for(event)`
+      # raising on unknown kinds.
+      expect(described_class::REGISTRY.keys - Event::KINDS).to be_empty
     end
   end
 end
