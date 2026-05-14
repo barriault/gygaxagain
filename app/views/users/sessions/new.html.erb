@@ -1,0 +1,53 @@
+<div class="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-md">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight">gygaxagain</h1>
+      <p class="mt-2 text-xs uppercase tracking-widest text-slate-500">private alpha &middot; sign in</p>
+    </div>
+
+    <%= form_with model: resource, url: session_path(resource_name), local: true, class: "mt-10 space-y-6" do |f| %>
+      <div>
+        <%= f.label :email, class: "block text-sm uppercase tracking-widest text-slate-400" %>
+        <%= f.email_field :email,
+                          autofocus: true,
+                          autocomplete: "email",
+                          class: "mt-2 w-full rounded bg-slate-800 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500" %>
+      </div>
+
+      <div>
+        <%= f.label :password, class: "block text-sm uppercase tracking-widest text-slate-400" %>
+        <%= f.password_field :password,
+                             autocomplete: "current-password",
+                             class: "mt-2 w-full rounded bg-slate-800 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500" %>
+      </div>
+
+      <% if devise_mapping.rememberable? %>
+        <label class="flex items-center gap-2 text-sm text-slate-300">
+          <%= f.check_box :remember_me, class: "rounded bg-slate-800 border-slate-700" %>
+          <span>Remember me</span>
+        </label>
+      <% end %>
+
+      <%= f.submit "Log in",
+                   class: "w-full rounded bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white cursor-pointer" %>
+    <% end %>
+
+    <div class="mt-8 text-center text-sm text-slate-500 space-y-2">
+      <% if devise_mapping.recoverable? %>
+        <div>
+          <%= link_to "Forgot your password?",
+                      new_password_path(resource_name),
+                      class: "hover:text-slate-300" %>
+        </div>
+      <% end %>
+
+      <% if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) %>
+        <div>
+          <%= link_to "Didn't receive unlock instructions?",
+                      new_unlock_path(resource_name),
+                      class: "hover:text-slate-300" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
