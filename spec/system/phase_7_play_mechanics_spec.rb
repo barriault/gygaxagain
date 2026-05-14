@@ -91,5 +91,16 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       # No event card appended — the dice scene log placeholder is still visible.
       expect(page).to have_text(/the scene is set/i)
     end
+
+    it "disables other die chips once a die is selected" do
+      click_button "d6"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+
+      d10 = page.find_button("d10")
+      expect(d10["aria-disabled"]).to eq("true")
+
+      click_button "d10"  # Capybara fires the click even on aria-disabled buttons.
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+    end
   end
 end
