@@ -1,13 +1,16 @@
 module Play
   module Dice
     class FormComponent < ViewComponent::Base
-      QUICK_CHIPS = {
-        "d20"  => "1d20",
-        "d100" => "1d100",
-        "2d6"  => "2d6",
-        "adv"  => "2d20kh1",
-        "dis"  => "2d20kl1"
-      }.freeze
+      DIE_CHIPS = %w[d4 d6 d8 d10 d12 d20 d100].freeze
+
+      MODIFIER_CHIPS = [
+        { key: "plus",  label: "+",     action: "bumpModifier", params: { delta: 1 } },
+        { key: "minus", label: "−",     action: "bumpModifier", params: { delta: -1 } },
+        { key: "keep",  label: "keep",  action: "bumpKeep",     params: {} },
+        { key: "adv",   label: "adv",   action: "setMode",      params: { mode: "adv" } },
+        { key: "dis",   label: "dis",   action: "setMode",      params: { mode: "dis" } },
+        { key: "clear", label: "clear", action: "clearAll",     params: {} }
+      ].freeze
 
       def initialize(scene:, expression: nil, error: nil)
         @scene = scene
@@ -25,8 +28,12 @@ module Play
         helpers.dom_id(scene, :dice_form)
       end
 
-      def quick_chips
-        QUICK_CHIPS
+      def die_chips
+        DIE_CHIPS
+      end
+
+      def modifier_chips
+        MODIFIER_CHIPS
       end
     end
   end
