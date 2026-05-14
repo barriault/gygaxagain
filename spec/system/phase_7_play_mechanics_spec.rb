@@ -165,5 +165,20 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       click_button "dis"
       expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
     end
+
+    it "preserves count and keep when entering adv, and restores them when exiting" do
+      click_button "d6"
+      click_button "d6"
+      click_button "d6"
+      click_button "+"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "3d6+2")
+
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d6kh1+2")
+
+      click_button "adv"  # toggle off
+      expect(page).to have_field("dice_roll[expression]", with: "3d6+2")
+    end
   end
 end
