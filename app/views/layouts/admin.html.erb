@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Gygaxagain admin" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  </head>
+
+  <body>
+    <% if flash[:notice].present? %>
+      <div class="fixed top-4 right-4 z-50 rounded bg-emerald-800 px-4 py-2 text-sm text-emerald-100 shadow-lg">
+        <%= flash[:notice] %>
+      </div>
+    <% end %>
+    <% if flash[:alert].present? %>
+      <div class="fixed top-4 right-4 z-50 rounded bg-red-800 px-4 py-2 text-sm text-red-100 shadow-lg">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <div class="min-h-screen bg-slate-950 text-slate-100">
+      <%= render Admin::NavComponent.new(current_path: request.path) %>
+      <main class="max-w-5xl mx-auto px-4 py-6">
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>
