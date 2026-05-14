@@ -1,23 +1,24 @@
 {
   "name": "app",
   "private": true,
-  "engines": {
-    "node": "22.x"
-  },
-  "packageManager": "bun@1.3.0",
+  "packageManager": "bun@1",
   "scripts": {
+    "preinstall": "test ! -f yarn.lock || (echo 'Error: yarn.lock detected. This project uses Bun, not Yarn.'; exit 1); case $npm_config_user_agent in *yarn*) echo 'Error: Yarn is not allowed for installing dependencies.'; exit 1;; esac",
     "build": "bun run build:css && bun run build:js",
     "build:css": "bun scripts/build_css.mjs",
     "watch:css": "bun scripts/build_css.mjs --watch",
-    "build:js": "bun bun.config.js",
-    "watch:js": "bun bun.config.js --watch"
+    "build:js": "bun build app/javascript/application.js --outdir app/assets/builds --format esm --sourcemap",
+    "watch:js": "bun build app/javascript/application.js --outdir app/assets/builds --format esm --sourcemap --watch",
+    "bunx:clear-cache": "bun pm cache rm --all"
   },
   "dependencies": {
+    "@tailwindcss/cli": "4.1.13",
     "tailwindcss": "4.1.13"
   },
   "devDependencies": {
     "@parcel/watcher": "^2.5.6",
-    "@tailwindcss/postcss": "4.1.13",
+    "@tailwindcss/postcss": "^4.1.13",
+    "esbuild": "^0.25.9",
     "postcss": "^8.5.14"
   }
 }
