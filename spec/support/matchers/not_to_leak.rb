@@ -63,3 +63,18 @@ RSpec::Matchers.define :leak_secrets_of do |*records|
     end
   end
 end
+
+RSpec::Matchers.define :expose_attrs_via do |association_name|
+  match do |view_model_class|
+    view_model_class.respond_to?(:exposed_attrs) &&
+      view_model_class.exposed_attrs.include?(association_name)
+  end
+
+  failure_message do |klass|
+    "expected #{klass} to expose attrs via #{association_name.inspect}, but exposed_attrs is #{klass.exposed_attrs.inspect}"
+  end
+
+  failure_message_when_negated do |klass|
+    "expected #{klass} NOT to expose attrs via #{association_name.inspect}, but :#{association_name} is in exposed_attrs"
+  end
+end

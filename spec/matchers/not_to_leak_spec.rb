@@ -75,3 +75,44 @@ RSpec.describe "leak_secrets_of matcher" do
     end
   end
 end
+
+RSpec.describe "expose_attrs_via matcher" do
+  let(:player_vm_class) do
+    Class.new(ApplicationViewModel) { expose :id, :name }
+  end
+
+  let(:narrator_vm_class) do
+    Class.new(ApplicationViewModel) do
+      expose :id, :name
+      expose :secrets do
+        []
+      end
+    end
+  end
+
+  let(:disguised_leaker_class) do
+    Class.new(ApplicationViewModel) do
+      expose :hidden_facts do
+        @record.secrets.map(&:content)
+      end
+    end
+  end
+
+  it "matches a class with :secrets in exposed_attrs" do
+    expect(narrator_vm_class).to expose_attrs_via(:secrets)
+  end
+
+  it "does NOT match a class whose exposed_attrs excludes :secrets" do
+    expect(player_vm_class).not_to expose_attrs_via(:secrets)
+  end
+
+  it "documented limitation: does NOT match a disguised leaker (caught dynamically by leak_secrets_of)" do
+    expect(disguised_leaker_class).not_to expose_attrs_via(:secrets)
+    # And here's the dynamic catch:
+    campaign = create(:campaign)
+    faction = create(:faction, campaign: campaign)
+    create(:faction_secret, faction: faction, content: "leaked content")
+    vm = disguised_leaker_class.new(faction)
+    expect(vm).to leak_secrets_of(faction)
+  end
+end
