@@ -21,7 +21,9 @@
 
       <% if scenes.any? %>
         <ul class="mt-6 divide-y divide-slate-800">
-          <%# Task 6 renders Admin::Scenes::RowComponent here %>
+          <% scenes.each do |scene| %>
+            <%= render Admin::Scenes::RowComponent.new(scene: scene) %>
+          <% end %>
         </ul>
       <% else %>
         <p class="mt-8 text-slate-400">No scenes yet. Create one to start playing.</p>
