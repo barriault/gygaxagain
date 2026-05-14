@@ -21,12 +21,75 @@ RSpec.describe Play::Dice::FormComponent, type: :component do
     expect(page.find("form")["action"]).to eq(expected_path)
   end
 
-  it "renders the four quick-roll chips" do
+  it "renders the seven die chips" do
     render_inline(described_class.new(scene: scene))
 
-    %w[d20 d100 2d6 adv dis].each do |chip|
-      expect(page).to have_button(chip)
+    %w[d4 d6 d8 d10 d12 d20 d100].each do |die|
+      expect(page).to have_button(die)
     end
+  end
+
+  it "renders the six modifier chips" do
+    render_inline(described_class.new(scene: scene))
+
+    [ "+", "−", "keep", "adv", "dis", "clear" ].each do |label|
+      expect(page).to have_button(label)
+    end
+  end
+
+  it "wires die chips to the pickDie Stimulus action with a die param" do
+    render_inline(described_class.new(scene: scene))
+
+    chip = page.find_button("d6")
+    expect(chip["data-action"]).to include("click->dice-form#pickDie")
+    expect(chip["data-dice-form-die-param"]).to eq("d6")
+    expect(chip["data-dice-form-target"]).to include("dieChip")
+  end
+
+  it "wires the + and − chips to bumpModifier with a delta param" do
+    render_inline(described_class.new(scene: scene))
+
+    plus = page.find_button("+")
+    expect(plus["data-action"]).to include("click->dice-form#bumpModifier")
+    expect(plus["data-dice-form-delta-param"]).to eq("1")
+
+    minus = page.find_button("−")
+    expect(minus["data-action"]).to include("click->dice-form#bumpModifier")
+    expect(minus["data-dice-form-delta-param"]).to eq("-1")
+  end
+
+  it "wires the keep chip to bumpKeep" do
+    render_inline(described_class.new(scene: scene))
+
+    keep = page.find_button("keep")
+    expect(keep["data-action"]).to include("click->dice-form#bumpKeep")
+    expect(keep["data-dice-form-target"]).to include("keepChip")
+  end
+
+  it "wires the adv and dis chips to setMode with a mode param" do
+    render_inline(described_class.new(scene: scene))
+
+    adv = page.find_button("adv")
+    expect(adv["data-action"]).to include("click->dice-form#setMode")
+    expect(adv["data-dice-form-mode-param"]).to eq("adv")
+
+    dis = page.find_button("dis")
+    expect(dis["data-action"]).to include("click->dice-form#setMode")
+    expect(dis["data-dice-form-mode-param"]).to eq("dis")
+  end
+
+  it "wires the clear chip to clearAll" do
+    render_inline(described_class.new(scene: scene))
+
+    clear = page.find_button("clear")
+    expect(clear["data-action"]).to include("click->dice-form#clearAll")
+  end
+
+  it "wires the expression field to dice-form#expressionInput for detach detection" do
+    render_inline(described_class.new(scene: scene))
+
+    field = page.find_field("dice_roll[expression]")
+    expect(field["data-action"]).to include("input->dice-form#expressionInput")
   end
 
   it "echoes a sticky expression on error" do

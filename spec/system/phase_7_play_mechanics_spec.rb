@@ -74,4 +74,148 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
     visit play_campaign_scene_path(campaign, scene)
     expect(page).to have_text("chaos 6")
   end
+
+  describe "dice builder chips" do
+    before do
+      visit play_campaign_scene_path(campaign, scene)
+    end
+
+    it "builds 2d6+3 by tapping d6 twice and + three times, without submitting" do
+      click_button "d6"
+      click_button "d6"
+      click_button "+"
+      click_button "+"
+      click_button "+"
+
+      expect(page).to have_field("dice_roll[expression]", with: "2d6+3")
+      # No event card appended — the dice scene log placeholder is still visible.
+      expect(page).to have_text(/the scene is set/i)
+    end
+
+    it "disables other die chips once a die is selected" do
+      click_button "d6"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+
+      d10 = page.find_button("d10")
+      expect(d10["aria-disabled"]).to eq("true")
+
+      click_button "d10"  # Capybara fires the click even on aria-disabled buttons.
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+    end
+
+    it "resets state and re-enables dice when clear is tapped" do
+      click_button "d6"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+1")
+
+      click_button "clear"
+      expect(page).to have_field("dice_roll[expression]", with: "")
+      expect(page.find_button("d10")["aria-disabled"]).to eq("false")
+
+      click_button "d10"
+      expect(page).to have_field("dice_roll[expression]", with: "1d10")
+    end
+
+    it "increments keep up to count and wraps to zero on the next tap" do
+      click_button "d20"
+      click_button "d20"
+      click_button "d20"
+      click_button "d20"
+      expect(page).to have_field("dice_roll[expression]", with: "4d20")
+
+      click_button "keep"
+      click_button "keep"
+      expect(page).to have_field("dice_roll[expression]", with: "4d20kh2")
+
+      click_button "keep"
+      click_button "keep"  # keep is now equal to count (4)
+      expect(page).to have_field("dice_roll[expression]", with: "4d20kh4")
+
+      click_button "keep"  # wraps to 0
+      expect(page).to have_field("dice_roll[expression]", with: "4d20")
+    end
+
+    it "increments and decrements the modifier across zero" do
+      click_button "d6"
+      click_button "+"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+2")
+
+      click_button "−"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+1")
+
+      click_button "−"
+      click_button "−"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6-1")
+    end
+
+    it "uses d20 as the default die when adv or dis is tapped first" do
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kh1")
+
+      click_button "clear"
+      click_button "dis"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
+    end
+
+    it "swaps between adv and dis (radio behavior)" do
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kh1")
+
+      click_button "dis"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
+    end
+
+    it "exits adv mode when the selected die is tapped" do
+      click_button "d6"
+      click_button "d6"
+      click_button "+"
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d6kh1+1")
+
+      click_button "d6"  # the active die exits adv, restoring count/keep
+      expect(page).to have_field("dice_roll[expression]", with: "2d6+1")
+    end
+
+    it "preserves count and keep when entering adv, and restores them when exiting" do
+      click_button "d6"
+      click_button "d6"
+      click_button "d6"
+      click_button "+"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "3d6+2")
+
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d6kh1+2")
+
+      click_button "adv"  # toggle off
+      expect(page).to have_field("dice_roll[expression]", with: "3d6+2")
+    end
+
+    it "clears builder state when the user types directly, then a chip replaces the text" do
+      click_button "d6"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+
+      fill_in "dice_roll[expression]", with: "1d4+wat"
+      expect(page.find_button("d10")["aria-disabled"]).to eq("false")  # builder detached
+
+      click_button "d6"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6")
+    end
+
+    it "resets builder state after a successful Roll submission" do
+      Dice::Random.fixed_queue = [ 4 ]
+      click_button "d6"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+1")
+
+      click_button "Roll"
+
+      # Wait for the new event card to appear in the log.
+      expect(page).to have_text("Result: 5")
+      # Form is re-rendered empty; chip state is fresh.
+      expect(page).to have_field("dice_roll[expression]", with: "")
+      expect(page.find_button("d10")["aria-disabled"]).to eq("false")
+    end
+  end
 end
