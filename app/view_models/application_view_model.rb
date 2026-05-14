@@ -18,6 +18,11 @@ class ApplicationViewModel
       (@exposed_attrs || []).dup.freeze
     end
 
+    def inherited(subclass)
+      super
+      subclass.instance_variable_set(:@exposed_attrs, (@exposed_attrs || []).dup)
+    end
+
     private
 
     def record_exposed(attr)

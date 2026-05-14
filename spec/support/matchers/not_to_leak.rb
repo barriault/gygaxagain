@@ -10,6 +10,11 @@
 #     expect(player_view_model).not_to leak_secrets_of(faction)
 #     expect(rendered_prompt).not_to    leak_secrets_of(faction, npc)
 #
+#   IMPORTANT: this matcher raises ArgumentError if none of the passed records
+#   have any *Secret rows. This is intentional — a vacuous "no leak detected"
+#   pass is almost always a forgotten `create(:faction_secret, ...)` in the
+#   test's `before` block, not a real asymmetry assertion. Seed secrets first.
+#
 # expose_attrs_via(association_name)
 #   Asserts (as a structural check) that a ViewModel class exposes an
 #   attribute whose name matches the given association. Use it like:
@@ -23,8 +28,17 @@
 
 RSpec::Matchers.define :leak_secrets_of do |*records|
   match do |subject|
+    secret_strings = collect_secret_strings(records)
+    if secret_strings.compact.reject(&:empty?).empty?
+      raise ArgumentError,
+            "leak_secrets_of: none of the passed records have any *Secret rows. " \
+            "Seed at least one secret in a `before` block before calling this matcher, " \
+            "or remove the assertion entirely. The matcher refuses to silently pass " \
+            "with no secrets to check against."
+    end
+
     @leaked = []
-    collect_secret_strings(records).each do |secret_str|
+    secret_strings.each do |secret_str|
       next if secret_str.nil? || secret_str.empty?
       if render_subject(subject).include?(secret_str)
         @leaked << secret_str

@@ -105,4 +105,28 @@ RSpec.describe ApplicationViewModel, type: :view_model do
       expect(vm.to_h).to eq(friends: [ { name: "Grace" }, { name: "Linus" } ])
     end
   end
+
+  describe "exposed_attrs inheritance" do
+    let(:parent) do
+      Class.new(described_class) { expose :name }
+    end
+
+    let(:child) do
+      Class.new(parent) { expose :email }
+    end
+
+    it "inherits exposed attrs from the parent class" do
+      expect(child.exposed_attrs).to eq([ :name, :email ])
+    end
+
+    it "does not mutate the parent's exposed_attrs when the child adds its own" do
+      child # force evaluation
+      expect(parent.exposed_attrs).to eq([ :name ])
+    end
+
+    it "the child's to_h includes both parent-declared and child-declared attrs" do
+      child_instance = child.new(record_class.new(name: "Ada", email: "ada@example.test", secret: nil))
+      expect(child_instance.to_h).to eq(name: "Ada", email: "ada@example.test")
+    end
+  end
 end

@@ -20,9 +20,11 @@ RSpec.describe "leak_secrets_of matcher" do
       expect("This text is innocuous and reveals nothing.").not_to leak_secrets_of(faction)
     end
 
-    it "does NOT match when the faction has no secrets at all" do
-      # No secrets created.
-      expect("Any string here.").not_to leak_secrets_of(faction)
+    it "raises ArgumentError when no records have any secrets (vacuous-pass guard)" do
+      # No secrets created — the matcher refuses to silently pass.
+      expect {
+        expect("Any string here.").not_to leak_secrets_of(faction)
+      }.to raise_error(ArgumentError, /none of the passed records have any \*Secret rows/)
     end
   end
 
