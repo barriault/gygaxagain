@@ -2,12 +2,13 @@
 #
 # Table name: campaigns
 #
-#  id          :bigint           not null, primary key
-#  description :text
-#  name        :string           not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  user_id     :bigint           not null
+#  id           :bigint           not null, primary key
+#  chaos_factor :integer          default(5), not null
+#  description  :text
+#  name         :string           not null
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  user_id      :bigint           not null
 #
 # Indexes
 #
@@ -28,4 +29,9 @@ class Campaign < ApplicationRecord
   validates :name, presence: true,
                    length: { maximum: 100 },
                    uniqueness: { scope: :user_id, case_sensitive: false }
+
+  validates :chaos_factor, presence: true,
+                           numericality: { only_integer: true,
+                                           greater_than_or_equal_to: 1,
+                                           less_than_or_equal_to: 9 }
 end

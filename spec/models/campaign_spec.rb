@@ -2,12 +2,13 @@
 #
 # Table name: campaigns
 #
-#  id          :bigint           not null, primary key
-#  description :text
-#  name        :string           not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  user_id     :bigint           not null
+#  id           :bigint           not null, primary key
+#  chaos_factor :integer          default(5), not null
+#  description  :text
+#  name         :string           not null
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  user_id      :bigint           not null
 #
 # Indexes
 #
@@ -53,6 +54,39 @@ RSpec.describe Campaign, type: :model do
       duplicate = build(:campaign, user: user, name: "strahd")
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:name]).to include("has already been taken")
+    end
+  end
+
+  describe "chaos_factor" do
+    let(:user) { create(:user) }
+
+    it "defaults to 5 on a new campaign" do
+      campaign = Campaign.new(name: "C", user: user)
+      expect(campaign.chaos_factor).to eq(5)
+    end
+
+    it "is valid for values 1..9" do
+      (1..9).each do |value|
+        campaign = build(:campaign, chaos_factor: value)
+        expect(campaign).to be_valid, "expected chaos_factor=#{value} to be valid"
+      end
+    end
+
+    it "is invalid below 1" do
+      campaign = build(:campaign, chaos_factor: 0)
+      expect(campaign).not_to be_valid
+      expect(campaign.errors[:chaos_factor]).to be_present
+    end
+
+    it "is invalid above 9" do
+      campaign = build(:campaign, chaos_factor: 10)
+      expect(campaign).not_to be_valid
+      expect(campaign.errors[:chaos_factor]).to be_present
+    end
+
+    it "is invalid when nil" do
+      campaign = build(:campaign, chaos_factor: nil)
+      expect(campaign).not_to be_valid
     end
   end
 

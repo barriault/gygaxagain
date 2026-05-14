@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_160137) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_14_203131) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "campaigns", force: :cascade do |t|
+    t.integer "chaos_factor", default: 5, null: false
     t.datetime "created_at", null: false
     t.text "description"
     t.string "name", null: false
