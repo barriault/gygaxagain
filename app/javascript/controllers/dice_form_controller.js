@@ -15,6 +15,8 @@ export default class extends Controller {
   ]
 
   connect() {
+    // Submit reset is implicit: the server's turbo_stream.replace swaps the
+    // form fragment, so Stimulus reconnects and runs this initializer fresh.
     this.state = this.#initialState()
     this.preserved = { count: 0, keep: 0 }
     this.programmaticWrite = false
@@ -106,12 +108,12 @@ export default class extends Controller {
   }
 
   #formula() {
-    const { die, count, modifier, mode } = this.state
+    const { die, count, modifier, keep, mode } = this.state
     if (!die) return ""
     if (mode === "adv") return `2${die}kh1${this.#modifierStr(modifier)}`
     if (mode === "dis") return `2${die}kl1${this.#modifierStr(modifier)}`
     if (count === 0) return ""
-    const keepStr = this.state.keep > 0 ? `kh${this.state.keep}` : ""
+    const keepStr = keep > 0 ? `kh${keep}` : ""
     return `${count}${die}${keepStr}${this.#modifierStr(modifier)}`
   }
 
@@ -160,6 +162,7 @@ export default class extends Controller {
     this.#toggleHighlight(this.keepChipTarget, keep > 0)
     this.#toggleHighlight(this.advChipTarget, mode === "adv")
     this.#toggleHighlight(this.disChipTarget, mode === "dis")
+    this.#toggleDisabled(this.clearChipTarget, false)
   }
 
   #toggleDisabled(el, disabled) {
