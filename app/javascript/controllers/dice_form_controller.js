@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 const DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"]
+const ACTIVE_CLASSES = ["bg-amber-500/20", "ring-1", "ring-amber-400", "text-amber-200"]
 
 export default class extends Controller {
   static targets = [
@@ -67,7 +68,6 @@ export default class extends Controller {
   }
 
   #renderDieChips() {
-    const activeClasses = ["bg-amber-500/20", "ring-1", "ring-amber-400", "text-amber-200"]
     const idleClasses = ["bg-slate-800", "text-slate-300"]
     const disabledClasses = ["opacity-50", "cursor-not-allowed"]
 
@@ -76,8 +76,8 @@ export default class extends Controller {
       const isActive = this.state.die === die
       const isDisabled = this.state.die !== null && !isActive
 
-      chip.classList.remove(...activeClasses, ...idleClasses, ...disabledClasses)
-      chip.classList.add(...(isActive ? activeClasses : idleClasses))
+      chip.classList.remove(...ACTIVE_CLASSES, ...idleClasses, ...disabledClasses)
+      chip.classList.add(...(isActive ? ACTIVE_CLASSES : idleClasses))
       if (isDisabled) chip.classList.add(...disabledClasses)
       chip.setAttribute("aria-disabled", isDisabled ? "true" : "false")
       chip.setAttribute("aria-pressed", isActive ? "true" : "false")
@@ -115,8 +115,7 @@ export default class extends Controller {
   }
 
   #toggleHighlight(el, active) {
-    const activeClasses = ["bg-amber-500/20", "ring-1", "ring-amber-400", "text-amber-200"]
-    activeClasses.forEach((cls) => el.classList.toggle(cls, active))
+    ACTIVE_CLASSES.forEach((cls) => el.classList.toggle(cls, active))
     el.setAttribute("aria-pressed", active ? "true" : "false")
   }
 }
