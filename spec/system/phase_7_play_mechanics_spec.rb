@@ -148,5 +148,22 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       click_button "−"
       expect(page).to have_field("dice_roll[expression]", with: "1d6-1")
     end
+
+    it "uses d20 as the default die when adv or dis is tapped first" do
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kh1")
+
+      click_button "clear"
+      click_button "dis"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
+    end
+
+    it "swaps between adv and dis (radio behavior)" do
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kh1")
+
+      click_button "dis"
+      expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
+    end
   end
 end

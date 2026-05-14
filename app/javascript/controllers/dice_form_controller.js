@@ -43,6 +43,27 @@ export default class extends Controller {
     this.#render()
   }
 
+  setMode({ params: { mode } }) {
+    if (mode !== "adv" && mode !== "dis") return
+
+    // Toggle off if the same mode is tapped again.
+    if (this.state.mode === mode) {
+      this.state.mode = "normal"
+      this.state.count = this.preserved.count > 0 ? this.preserved.count : 1
+      this.state.keep = this.preserved.keep
+      this.#render()
+      return
+    }
+
+    // Entering adv/dis (or swapping). Preserve count/keep only on first entry.
+    if (this.state.mode === "normal") {
+      this.preserved = { count: this.state.count, keep: this.state.keep }
+    }
+    if (!this.state.die) this.state.die = "d20"
+    this.state.mode = mode
+    this.#render()
+  }
+
   clearAll() {
     this.state = this.#initialState()
     this.preserved = { count: 0, keep: 0 }
