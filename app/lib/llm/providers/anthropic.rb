@@ -42,7 +42,7 @@ module Llm
             latency_ms:            latency_ms,
             error:                 nil
           )
-        rescue ::Anthropic::Errors::APIError => e
+        rescue ::Anthropic::Errors::Error => e
           latency_ms = elapsed_ms(started_at)
           Llm::Result.new(
             text: nil,
