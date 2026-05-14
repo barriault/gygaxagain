@@ -45,5 +45,9 @@ RSpec.describe Play::Events::Component do
         "narration", "dice_roll", "oracle_query", "scene_transition"
       )
     end
+
+    it "REGISTRY keys are kept in sync with Event::KINDS" do
+      expect(described_class::REGISTRY.keys.sort).to eq(Event::KINDS.sort)
+    end
   end
 end
