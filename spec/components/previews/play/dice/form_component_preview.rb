@@ -6,11 +6,6 @@ module Play
         render Play::Dice::FormComponent.new(scene: scene)
       end
 
-      def with_sticky_value
-        scene = preview_scene
-        render Play::Dice::FormComponent.new(scene: scene, expression: "4d6kh3")
-      end
-
       def with_error
         scene = preview_scene
         render Play::Dice::FormComponent.new(
