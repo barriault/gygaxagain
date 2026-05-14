@@ -4,6 +4,7 @@ ruby "4.0.2"
 
 gem "rails", "~> 8.1.3"
 
+gem "anthropic"
 gem "bootsnap", require: false
 gem "cssbundling-rails"
 gem "devise"
@@ -45,4 +46,5 @@ end
 
 group :test do
   gem "capybara"
+  gem "webmock"
 end
