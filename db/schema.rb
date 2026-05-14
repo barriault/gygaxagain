@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_154441) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_14_154944) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_154441) do
     t.bigint "user_id", null: false
     t.index "user_id, lower((name)::text)", name: "index_campaigns_on_user_id_and_lower_name", unique: true
     t.index ["user_id"], name: "index_campaigns_on_user_id"
+  end
+
+  create_table "faction_secrets", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "faction_id", null: false
+    t.string "label", null: false
+    t.datetime "updated_at", null: false
+    t.index ["faction_id"], name: "index_faction_secrets_on_faction_id"
   end
 
   create_table "factions", force: :cascade do |t|
@@ -83,6 +92,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_154441) do
   end
 
   add_foreign_key "campaigns", "users", on_delete: :cascade
+  add_foreign_key "faction_secrets", "factions", on_delete: :cascade
   add_foreign_key "factions", "campaigns", on_delete: :cascade
   add_foreign_key "llm_calls", "campaigns", on_delete: :cascade
   add_foreign_key "llm_calls", "users", on_delete: :cascade
