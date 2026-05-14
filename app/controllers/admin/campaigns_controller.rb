@@ -1,10 +1,14 @@
 module Admin
   class CampaignsController < Admin::ApplicationController
-    before_action :load_campaign, only: [ :edit, :update, :destroy ]
+    before_action :load_campaign, only: [ :show, :edit, :update, :destroy ]
 
     def index
       @campaigns = current_user.campaigns.order(:name)
       render Admin::Campaigns::IndexComponent.new(campaigns: @campaigns)
+    end
+
+    def show
+      render Admin::Campaigns::ShowComponent.new(campaign: @campaign)
     end
 
     def new

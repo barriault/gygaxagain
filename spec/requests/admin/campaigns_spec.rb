@@ -36,6 +36,38 @@ RSpec.describe "Admin::Campaigns", type: :request do
     end
   end
 
+  describe "GET /campaigns/:id" do
+    let(:campaign) { create(:campaign, user: user, name: "Curse of Strahd") }
+    let(:other_user) { create(:user) }
+    let(:other_campaign) { create(:campaign, user: other_user) }
+
+    context "authenticated" do
+      before { sign_in user }
+
+      it "renders the show page for the user's campaign" do
+        get "/campaigns/#{campaign.id}"
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Curse of Strahd")
+      end
+
+      it "404s for another user's campaign" do
+        get "/campaigns/#{other_campaign.id}"
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "unauthenticated" do
+      it "redirects to apex sign-in" do
+        get "/campaigns/#{campaign.id}"
+
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("gygaxagain.com/users/sign_in")
+      end
+    end
+  end
+
   describe "GET /campaigns/new" do
     context "unauthenticated" do
       it "redirects to apex sign-in" do
