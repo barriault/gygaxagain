@@ -1,0 +1,71 @@
+module Play
+  class DiceRollsController < ::ApplicationController
+    before_action :load_scene
+
+    def create
+      expression = params.require(:dice_roll).permit(:expression).fetch(:expression, "").to_s
+
+      begin
+        result = ::Dice::Roll.call(expression)
+      rescue ::Dice::ParseError => e
+        return respond_with_error(expression: expression, message: e.message)
+      end
+
+      event = @scene.events.create!(
+        kind: "dice_roll",
+        occurred_at: Time.current,
+        payload: {
+          "expression" => result.expression,
+          "result"     => result.total,
+          "breakdown"  => result.breakdown,
+          "rolls"      => result.rolls
+        }
+      )
+
+      respond_to do |f|
+        f.turbo_stream { render turbo_stream: stream_success(event) }
+        f.html { redirect_to play_campaign_scene_path(@scene.campaign, @scene) }
+      end
+    end
+
+    private
+
+    def load_scene
+      @scene = current_user
+                 .campaigns
+                 .find(params[:campaign_id])
+                 .scenes
+                 .find(params[:scene_id])
+    end
+
+    def stream_success(event)
+      [
+        turbo_stream.append(
+          helpers.dom_id(@scene, :log),
+          Play::Events::Component.for(event).new(event: event)
+        ),
+        turbo_stream.remove(helpers.dom_id(@scene, :log_empty)),
+        turbo_stream.replace(
+          helpers.dom_id(@scene, :dice_form),
+          Play::Dice::FormComponent.new(scene: @scene)
+        )
+      ]
+    end
+
+    def respond_with_error(expression:, message:)
+      respond_to do |f|
+        f.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+                   helpers.dom_id(@scene, :dice_form),
+                   Play::Dice::FormComponent.new(scene: @scene, expression: expression, error: message)
+                 ),
+                 status: :unprocessable_content
+        end
+        f.html do
+          redirect_to play_campaign_scene_path(@scene.campaign, @scene),
+                      alert: message
+        end
+      end
+    end
+  end
+end

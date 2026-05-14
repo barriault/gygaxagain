@@ -1,0 +1,104 @@
+require "rails_helper"
+
+RSpec.describe "Play::DiceRolls", type: :request do
+  before { host! "gygaxagain.com" }
+
+  let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
+  let(:campaign) { create(:campaign, user: user) }
+  let(:scene)    { create(:scene, campaign: campaign) }
+
+  describe "POST /campaigns/:campaign_id/scenes/:scene_id/dice_rolls" do
+    context "authenticated" do
+      before { sign_in user }
+
+      it "creates a dice_roll event with payload (HTML format)" do
+        expect {
+          Dice::Random.with_fixed([ 4, 5 ]) do
+            post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
+                 params: { dice_roll: { expression: "2d6+3" } }
+          end
+        }.to change { scene.events.count }.by(1)
+
+        event = scene.events.last
+        expect(event.kind).to eq("dice_roll")
+        expect(event.payload["expression"]).to eq("2d6+3")
+        expect(event.payload["result"]).to eq(12) # 4 + 5 + 3
+        expect(event.payload["breakdown"]).to be_an(Array)
+        expect(event.payload["rolls"]).to eq([ [ 4, 5 ], [] ])
+      end
+
+      it "responds with redirect on HTML format" do
+        Dice::Random.with_fixed([ 4, 5 ]) do
+          post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
+               params: { dice_roll: { expression: "2d6" } }
+        end
+
+        expect(response).to redirect_to(play_campaign_scene_path(campaign, scene))
+      end
+
+      it "responds with Turbo Stream on turbo_stream format" do
+        Dice::Random.with_fixed([ 4, 5 ]) do
+          post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
+               params: { dice_roll: { expression: "2d6" } },
+               as: :turbo_stream
+        end
+
+        expect(response).to have_http_status(:ok)
+        expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+        expect(response.body).to include('turbo-stream action="append"')
+        expect(response.body).to include('turbo-stream action="remove"')
+        expect(response.body).to include('turbo-stream action="replace"')
+      end
+
+      it "returns 422 and does not create on unparseable expression" do
+        expect {
+          post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
+               params: { dice_roll: { expression: "1d6+wat" } },
+               as: :turbo_stream
+        }.not_to change { scene.events.count }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("unparseable")
+      end
+
+      it "returns 422 on empty expression" do
+        post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
+             params: { dice_roll: { expression: "" } },
+             as: :turbo_stream
+
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it "returns 404 on a cross-user campaign" do
+        other_campaign = create(:campaign, user: other_user)
+        other_scene    = create(:scene, campaign: other_campaign)
+
+        post "/campaigns/#{other_campaign.id}/scenes/#{other_scene.id}/dice_rolls",
+             params: { dice_roll: { expression: "1d6" } }
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "returns 404 on a cross-campaign scene" do
+        other_campaign = create(:campaign, user: user)
+        scene_in_other = create(:scene, campaign: other_campaign)
+
+        post "/campaigns/#{campaign.id}/scenes/#{scene_in_other.id}/dice_rolls",
+             params: { dice_roll: { expression: "1d6" } }
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "unauthenticated" do
+      it "redirects to sign-in" do
+        post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
+             params: { dice_roll: { expression: "1d6" } }
+
+        expect(response).to have_http_status(:found)
+        expect(response.location).to include("/users/sign_in")
+      end
+    end
+  end
+end
