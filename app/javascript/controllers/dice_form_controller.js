@@ -24,6 +24,16 @@ export default class extends Controller {
   pickDie({ params: { die } }) {
     if (!DICE.includes(die)) return
     if (this.state.die && this.state.die !== die) return  // disabled chip
+
+    // Same die tapped while in adv/dis: exit mode, restore preserved count/keep.
+    if (this.state.die === die && this.state.mode !== "normal") {
+      this.state.mode = "normal"
+      this.state.count = this.preserved.count > 0 ? this.preserved.count : 1
+      this.state.keep = this.preserved.keep
+      this.#render()
+      return
+    }
+
     this.state.die = die
     this.state.count = (this.state.count || 0) + 1
     this.#render()

@@ -166,6 +166,17 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
     end
 
+    it "exits adv mode when the selected die is tapped" do
+      click_button "d6"
+      click_button "d6"
+      click_button "+"
+      click_button "adv"
+      expect(page).to have_field("dice_roll[expression]", with: "2d6kh1+1")
+
+      click_button "d6"  # the active die exits adv, restoring count/keep
+      expect(page).to have_field("dice_roll[expression]", with: "2d6+1")
+    end
+
     it "preserves count and keep when entering adv, and restores them when exiting" do
       click_button "d6"
       click_button "d6"
