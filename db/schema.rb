@@ -100,6 +100,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
     t.index ["campaign_id"], name: "index_npcs_on_campaign_id"
   end
 
+  create_table "scene_audits", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "llm_call_id", null: false
+    t.jsonb "result", default: {}, null: false
+    t.bigint "scene_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "verdict", null: false
+    t.index ["llm_call_id"], name: "index_scene_audits_on_llm_call_id"
+    t.index ["scene_id"], name: "index_scene_audits_on_scene_id", unique: true
+    t.index ["verdict"], name: "index_scene_audits_on_verdict"
+  end
+
   create_table "scenes", force: :cascade do |t|
     t.bigint "campaign_id", null: false
     t.datetime "closed_at"
@@ -145,6 +157,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
   add_foreign_key "llm_calls", "users", on_delete: :cascade
   add_foreign_key "npc_secrets", "npcs", on_delete: :cascade
   add_foreign_key "npcs", "campaigns", on_delete: :cascade
+  add_foreign_key "scene_audits", "llm_calls", on_delete: :restrict
+  add_foreign_key "scene_audits", "scenes", on_delete: :cascade
   add_foreign_key "scenes", "campaigns", on_delete: :cascade
   add_foreign_key "users", "campaigns", column: "last_played_campaign_id", on_delete: :nullify
 end

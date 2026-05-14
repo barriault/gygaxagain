@@ -25,6 +25,7 @@ class Campaign < ApplicationRecord
   has_many :factions, dependent: :destroy
   has_many :npcs, dependent: :destroy
   has_many :scenes, dependent: :destroy
+  has_many :scene_audits, through: :scenes, source: :audit
 
   validates :name, presence: true,
                    length: { maximum: 100 },
