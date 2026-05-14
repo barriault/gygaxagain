@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_125010) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_14_154441) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_125010) do
     t.bigint "user_id", null: false
     t.index "user_id, lower((name)::text)", name: "index_campaigns_on_user_id_and_lower_name", unique: true
     t.index ["user_id"], name: "index_campaigns_on_user_id"
+  end
+
+  create_table "factions", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.text "public_description"
+    t.datetime "updated_at", null: false
+    t.index "campaign_id, lower((name)::text)", name: "index_factions_on_campaign_id_and_lower_name", unique: true
+    t.index ["campaign_id"], name: "index_factions_on_campaign_id"
   end
 
   create_table "llm_calls", force: :cascade do |t|
@@ -73,6 +83,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_125010) do
   end
 
   add_foreign_key "campaigns", "users", on_delete: :cascade
+  add_foreign_key "factions", "campaigns", on_delete: :cascade
   add_foreign_key "llm_calls", "campaigns", on_delete: :cascade
   add_foreign_key "llm_calls", "users", on_delete: :cascade
   add_foreign_key "users", "campaigns", column: "last_played_campaign_id", on_delete: :nullify
