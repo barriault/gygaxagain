@@ -5,6 +5,7 @@ module Llm
     PURPOSES = {
       diagnostics:         { provider: :anthropic, model: "claude-sonnet-4-6" },
       narration:           { provider: :anthropic, model: "claude-sonnet-4-6" },
+      bookkeeper_audit:    { provider: :anthropic, model: "claude-sonnet-4-6" },
       intake_long_context: { provider: :anthropic, model: "claude-sonnet-4-6" }
     }.freeze
 
