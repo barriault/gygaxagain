@@ -24,7 +24,7 @@ RSpec.describe Play::Dice::FormComponent, type: :component do
   it "renders the four quick-roll chips" do
     render_inline(described_class.new(scene: scene))
 
-    %w[d20 d100 2d6 4d6kh3].each do |chip|
+    %w[d20 d100 2d6 adv dis].each do |chip|
       expect(page).to have_button(chip)
     end
   end
