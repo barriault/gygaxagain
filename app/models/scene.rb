@@ -1,6 +1,7 @@
 class Scene < ApplicationRecord
   belongs_to :campaign
   has_many :events, dependent: :destroy
+  has_many :llm_calls, dependent: :nullify
 
   acts_as_list scope: :campaign
 

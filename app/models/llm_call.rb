@@ -42,7 +42,7 @@ class LlmCall < ApplicationRecord
 
   belongs_to :user
   belongs_to :campaign, optional: true
-  # belongs_to :scene, optional: true  # uncomment in Phase 5 when Scene model exists
+  belongs_to :scene, optional: true
 
   validates :purpose,  presence: true
   validates :provider, presence: true

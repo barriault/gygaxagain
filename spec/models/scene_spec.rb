@@ -3,6 +3,8 @@ require "rails_helper"
 RSpec.describe Scene, type: :model do
   describe "associations" do
     it { is_expected.to belong_to(:campaign) }
+    it { is_expected.to have_many(:events).dependent(:destroy) }
+    it { is_expected.to have_many(:llm_calls).dependent(:nullify) }
   end
 
   describe "validations" do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_155903) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_14_160137) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -138,6 +138,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_155903) do
   add_foreign_key "faction_secrets", "factions", on_delete: :cascade
   add_foreign_key "factions", "campaigns", on_delete: :cascade
   add_foreign_key "llm_calls", "campaigns", on_delete: :cascade
+  add_foreign_key "llm_calls", "scenes", on_delete: :nullify
   add_foreign_key "llm_calls", "users", on_delete: :cascade
   add_foreign_key "npc_secrets", "npcs", on_delete: :cascade
   add_foreign_key "npcs", "campaigns", on_delete: :cascade

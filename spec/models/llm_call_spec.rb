@@ -92,6 +92,21 @@ RSpec.describe LlmCall, type: :model do
     end
   end
 
+  describe "scene association" do
+    it "belongs_to :scene as optional" do
+      scene = create(:scene)
+      llm_call = create(:llm_call, scene: scene)
+      expect(llm_call.scene).to eq(scene)
+    end
+
+    it "nullifies scene_id when the scene is deleted at the DB level" do
+      scene = create(:scene)
+      llm_call = create(:llm_call, scene: scene)
+      ActiveRecord::Base.connection.execute("DELETE FROM scenes WHERE id = #{scene.id}")
+      expect(llm_call.reload.scene_id).to be_nil
+    end
+  end
+
   describe "cascade deletes" do
     it "is destroyed when its user is destroyed" do
       user = create(:user)
