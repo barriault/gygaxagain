@@ -29,7 +29,7 @@ RSpec.describe Mythic::FateChart do
       end
     end
 
-    it "matches the worked example on p.24 (50_50, CF 5 -> 10 50 91)" do
+    it "matches the worked example on p.24 (50_50, CF 5 -> 10 50 90)" do
       expect(described_class::CHART[[ "50_50", 5 ]]).to eq([ 10, 50, 90, 100 ])
     end
   end

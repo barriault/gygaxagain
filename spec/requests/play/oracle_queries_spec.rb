@@ -93,6 +93,26 @@ RSpec.describe "Play::OracleQueries", type: :request do
 
         expect(response).to have_http_status(:not_found)
       end
+
+      it "returns 404 on a cross-campaign scene" do
+        other_campaign = create(:campaign, user: user)
+        scene_in_other = create(:scene, campaign: other_campaign)
+
+        post "/campaigns/#{campaign.id}/scenes/#{scene_in_other.id}/oracle_queries",
+             params: { oracle_query: { question: "q", likelihood: "50_50" } }
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "falls back to default likelihood when given a bogus value (no 500)" do
+        Mythic::Random.with_fixed_d100([ 50 ]) do
+          post "/campaigns/#{campaign.id}/scenes/#{scene.id}/oracle_queries",
+               params: { oracle_query: { question: "q", likelihood: "garbage" } }
+        end
+
+        expect(response).to have_http_status(:found) # redirect, not 500
+        expect(scene.events.last.payload["likelihood"]).to eq("50_50")
+      end
     end
 
     context "unauthenticated" do

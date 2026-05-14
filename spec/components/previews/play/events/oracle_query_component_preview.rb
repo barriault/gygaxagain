@@ -6,7 +6,7 @@ module Play
           kind: "oracle_query",
           payload: {
             "question"   => "Is it raining?",
-            "likelihood" => "even_odds",
+            "likelihood" => "50_50",
             "chaos"      => 5,
             "answer"     => "yes"
           },
@@ -34,7 +34,7 @@ module Play
           kind: "oracle_query",
           payload: {
             "question"   => "Does the door open?",
-            "likelihood" => "even_odds",
+            "likelihood" => "50_50",
             "chaos"      => 3,
             "answer"     => "exceptional no"
           },

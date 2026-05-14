@@ -33,7 +33,7 @@ FactoryBot.define do
 
     trait :oracle_query do
       kind { "oracle_query" }
-      payload { { question: "Is it raining?", likelihood: "even_odds", chaos: 5, answer: "yes" } }
+      payload { { question: "Is it raining?", likelihood: "50_50", chaos: 5, answer: "yes" } }
     end
 
     trait :scene_transition do

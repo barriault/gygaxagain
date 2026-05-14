@@ -7,6 +7,7 @@ module Play
       question = attrs.fetch(:question, "").to_s.strip
       likelihood = attrs.fetch(:likelihood, ::Play::Oracle::FormComponent::DEFAULT_LIKELIHOOD).to_s
       likelihood = ::Play::Oracle::FormComponent::DEFAULT_LIKELIHOOD if likelihood.blank?
+      likelihood = ::Play::Oracle::FormComponent::DEFAULT_LIKELIHOOD unless ::Mythic::FateChart::LIKELIHOODS.include?(likelihood)
 
       if question.blank?
         return respond_with_error(
