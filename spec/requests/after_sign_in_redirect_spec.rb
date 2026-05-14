@@ -41,11 +41,19 @@ RSpec.describe "After sign-in redirect", type: :request do
     end
   end
 
-  context "when last_played_campaign_id is stale (campaign deleted)" do
-    it "falls through to the next case" do
+  context "when last_played_campaign_id pointed to a deleted campaign" do
+    it "verifies the FK nullify fires and the redirect falls through" do
       campaign = create(:campaign, user: user)
       user.update_column(:last_played_campaign_id, campaign.id)
-      campaign.destroy  # FK nullify should clear the column
+
+      campaign.destroy
+
+      # FK on_delete: :nullify on users.last_played_campaign_id clears the
+      # pointer when its target campaign is destroyed. Verify the column
+      # was cleared before exercising the redirect — this is the contract
+      # the after-sign-in logic is allowed to rely on.
+      user.reload
+      expect(user.last_played_campaign_id).to be_nil
 
       sign_in_with(user)
 
