@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_031310) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_14_125010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_031310) do
     t.bigint "user_id", null: false
     t.index "user_id, lower((name)::text)", name: "index_campaigns_on_user_id_and_lower_name", unique: true
     t.index ["user_id"], name: "index_campaigns_on_user_id"
+  end
+
+  create_table "llm_calls", force: :cascade do |t|
+    t.integer "cache_creation_tokens", default: 0, null: false
+    t.integer "cache_read_tokens", default: 0, null: false
+    t.bigint "campaign_id"
+    t.datetime "created_at", null: false
+    t.integer "input_tokens", default: 0, null: false
+    t.integer "latency_ms"
+    t.string "model", null: false
+    t.integer "output_tokens", default: 0, null: false
+    t.jsonb "prompt_payload", default: {}, null: false
+    t.string "provider", null: false
+    t.string "provider_request_id"
+    t.string "purpose", null: false
+    t.jsonb "response_payload", default: {}, null: false
+    t.bigint "scene_id"
+    t.integer "total_cost_cents", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["campaign_id"], name: "index_llm_calls_on_campaign_id"
+    t.index ["provider", "model"], name: "index_llm_calls_on_provider_and_model"
+    t.index ["purpose", "created_at"], name: "index_llm_calls_on_purpose_and_created_at"
+    t.index ["scene_id"], name: "index_llm_calls_on_scene_id"
+    t.index ["user_id"], name: "index_llm_calls_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -48,5 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_031310) do
   end
 
   add_foreign_key "campaigns", "users", on_delete: :cascade
+  add_foreign_key "llm_calls", "campaigns", on_delete: :cascade
+  add_foreign_key "llm_calls", "users", on_delete: :cascade
   add_foreign_key "users", "campaigns", column: "last_played_campaign_id", on_delete: :nullify
 end

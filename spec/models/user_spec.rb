@@ -61,6 +61,7 @@ RSpec.describe User, type: :model do
 
   describe "Campaign associations" do
     it { is_expected.to have_many(:campaigns).dependent(:destroy) }
+    it { is_expected.to have_many(:llm_calls).dependent(:destroy) }
     it { is_expected.to belong_to(:last_played_campaign).class_name("Campaign").optional }
 
     it "destroys child campaigns when the user is destroyed" do

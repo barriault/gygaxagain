@@ -11,8 +11,8 @@
 #
 # Indexes
 #
-#  index_campaigns_on_user_id           (user_id)
-#  index_campaigns_on_user_id_and_name  (user_id,name) UNIQUE
+#  index_campaigns_on_user_id                 (user_id)
+#  index_campaigns_on_user_id_and_lower_name  (user_id, lower((name)::text)) UNIQUE
 #
 # Foreign Keys
 #

@@ -36,6 +36,7 @@ class User < ApplicationRecord
          :trackable, :timeoutable, :lockable
 
   has_many :campaigns, dependent: :destroy
+  has_many :llm_calls, dependent: :destroy
   belongs_to :last_played_campaign,
              class_name: "Campaign",
              optional: true

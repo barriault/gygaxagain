@@ -11,8 +11,8 @@
 #
 # Indexes
 #
-#  index_campaigns_on_user_id           (user_id)
-#  index_campaigns_on_user_id_and_name  (user_id,name) UNIQUE
+#  index_campaigns_on_user_id                 (user_id)
+#  index_campaigns_on_user_id_and_lower_name  (user_id, lower((name)::text)) UNIQUE
 #
 # Foreign Keys
 #
@@ -23,6 +23,7 @@ require "rails_helper"
 RSpec.describe Campaign, type: :model do
   describe "associations" do
     it { is_expected.to belong_to(:user) }
+    it { is_expected.to have_many(:llm_calls).dependent(:destroy) }
   end
 
   describe "validations" do
