@@ -8,7 +8,12 @@ module Play
     def play
       @campaign = current_user.campaigns.find(params[:id])
       current_user.update_column(:last_played_campaign_id, @campaign.id)
-      render Play::Campaigns::PlaceholderComponent.new(campaign: @campaign)
+
+      if @campaign.scenes.any?
+        render Play::Campaigns::ScenePickerComponent.new(campaign: @campaign)
+      else
+        render Play::Campaigns::PlaceholderComponent.new(campaign: @campaign)
+      end
     end
   end
 end
