@@ -35,6 +35,14 @@ export default class extends Controller {
     this.#render()
   }
 
+  bumpKeep() {
+    if (!this.state.die) return
+    if (this.state.mode !== "normal") return
+    const limit = this.state.count + 1  // wrap inclusive of count, exclusive of count+1
+    this.state.keep = (this.state.keep + 1) % limit
+    this.#render()
+  }
+
   clearAll() {
     this.state = this.#initialState()
     this.preserved = { count: 0, keep: 0 }

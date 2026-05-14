@@ -116,6 +116,25 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       expect(page).to have_field("dice_roll[expression]", with: "1d10")
     end
 
+    it "increments keep up to count and wraps to zero on the next tap" do
+      click_button "d20"
+      click_button "d20"
+      click_button "d20"
+      click_button "d20"
+      expect(page).to have_field("dice_roll[expression]", with: "4d20")
+
+      click_button "keep"
+      click_button "keep"
+      expect(page).to have_field("dice_roll[expression]", with: "4d20kh2")
+
+      click_button "keep"
+      click_button "keep"  # keep is now equal to count (4)
+      expect(page).to have_field("dice_roll[expression]", with: "4d20kh4")
+
+      click_button "keep"  # wraps to 0
+      expect(page).to have_field("dice_roll[expression]", with: "4d20")
+    end
+
     it "increments and decrements the modifier across zero" do
       click_button "d6"
       click_button "+"
