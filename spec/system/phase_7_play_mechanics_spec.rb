@@ -202,5 +202,20 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       click_button "d6"
       expect(page).to have_field("dice_roll[expression]", with: "1d6")
     end
+
+    it "resets builder state after a successful Roll submission" do
+      Dice::Random.fixed_queue = [ 4 ]
+      click_button "d6"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+1")
+
+      click_button "Roll"
+
+      # Wait for the new event card to appear in the log.
+      expect(page).to have_text("Result: 5")
+      # Form is re-rendered empty; chip state is fresh.
+      expect(page).to have_field("dice_roll[expression]", with: "")
+      expect(page.find_button("d10")["aria-disabled"]).to eq("false")
+    end
   end
 end
