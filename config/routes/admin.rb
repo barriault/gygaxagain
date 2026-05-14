@@ -3,6 +3,8 @@ constraints subdomain: "admin" do
     root to: redirect("/campaigns")
 
     resources :campaigns do
+      resource :chaos_factor, only: [ :update ], controller: "chaos_factors"
+
       resources :scenes do
         member do
           post :move_up

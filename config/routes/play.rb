@@ -9,6 +9,9 @@ constraints subdomain: "" do
 
       resources :scenes, only: [] do
         member { get :play }
+
+        resources :dice_rolls,     only: [ :create ]
+        resources :oracle_queries, only: [ :create ]
       end
     end
   end
