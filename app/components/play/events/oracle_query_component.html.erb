@@ -1,0 +1,13 @@
+<div class="my-3 rounded-r border-l-4 border-violet-500 bg-slate-800 px-3 py-2">
+  <p class="text-xs uppercase tracking-widest text-violet-300">Oracle</p>
+  <p class="text-slate-200"><%= question %></p>
+  <p class="mt-1 text-lg font-semibold text-slate-100"><%= answer %></p>
+  <% if likelihood.present? || chaos.present? %>
+    <p class="text-xs text-slate-400">
+      <% if likelihood.present? %><%= likelihood.tr("_", " ") %><% end %>
+      <% if likelihood.present? && chaos.present? %> &middot; <% end %>
+      <% if chaos.present? %>chaos <%= chaos %><% end %>
+    </p>
+  <% end %>
+  <p class="mt-1 text-xs text-slate-600"><%= relative_time %></p>
+</div>
