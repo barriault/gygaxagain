@@ -1,0 +1,24 @@
+<div class="mt-8 rounded border border-slate-800 bg-slate-900/50 px-4 py-3">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <p class="text-xs uppercase tracking-widest text-slate-400">Chaos factor</p>
+      <p class="mt-1 text-2xl font-semibold text-slate-100"><%= campaign.chaos_factor %></p>
+    </div>
+    <div class="flex items-center gap-2">
+      <%= button_to "−",
+                    helpers.admin_campaign_chaos_factor_path(campaign),
+                    method: :patch,
+                    params: { direction: "down" },
+                    disabled: at_floor?,
+                    data: { direction: "down" },
+                    class: "rounded bg-slate-800 px-3 py-1 text-lg text-slate-200 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed" %>
+      <%= button_to "+",
+                    helpers.admin_campaign_chaos_factor_path(campaign),
+                    method: :patch,
+                    params: { direction: "up" },
+                    disabled: at_ceiling?,
+                    data: { direction: "up" },
+                    class: "rounded bg-slate-800 px-3 py-1 text-lg text-slate-200 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed" %>
+    </div>
+  </div>
+</div>
