@@ -56,6 +56,57 @@ module Llm
         end
       end
 
+      # Streaming variant. Yields each text delta to &on_chunk as { text: String }.
+      # Returns Llm::Result at completion (text accumulates the full response).
+      # On error, returns an Llm::Result with `error` populated and any partial text
+      # captured into prompt_payload["partial_text"].
+      def call_streaming(system: nil, messages:, max_tokens: 4096,
+                         cache_breakpoints: [], &on_chunk)
+        api_key = self.class.api_key
+        raise Llm::ConfigError, "Anthropic API key not configured (credentials.anthropic.api_key)" if api_key.blank?
+
+        request_body = build_request_body(system: system, messages: messages,
+                                          max_tokens: max_tokens, cache_breakpoints: cache_breakpoints)
+
+        started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        text       = +""
+
+        begin
+          stream = self.class.sdk_client.messages.stream(**request_body)
+          stream.text.each do |delta|
+            text << delta
+            on_chunk&.call(text: delta)
+          end
+          message = stream.accumulated_message
+          latency_ms = elapsed_ms(started_at)
+
+          Llm::Result.new(
+            text:                  text,
+            input_tokens:          message.usage.input_tokens.to_i,
+            output_tokens:         message.usage.output_tokens.to_i,
+            cache_creation_tokens: cache_creation_from(message.usage),
+            cache_read_tokens:     cache_read_from(message.usage),
+            provider_request_id:   message.id,
+            prompt_payload:        request_body.deep_stringify_keys,
+            response_payload:      JSON.parse(message.to_json),
+            latency_ms:            latency_ms,
+            error:                 nil
+          )
+        rescue ::Anthropic::Errors::Error => e
+          latency_ms = elapsed_ms(started_at)
+          Llm::Result.new(
+            text: text.presence,
+            input_tokens: 0, output_tokens: 0,
+            cache_creation_tokens: 0, cache_read_tokens: 0,
+            provider_request_id: nil,
+            prompt_payload: request_body.deep_stringify_keys.merge("partial_text" => text),
+            response_payload: { "error" => { "class" => e.class.name, "message" => e.message } },
+            latency_ms: latency_ms,
+            error: Llm::ProviderError.new(provider_class: e.class.name, provider_message: e.message)
+          )
+        end
+      end
+
       # Memoized for the life of the process. Credentials are read once at
       # first call; rotating the key requires a process restart (handled
       # automatically by Heroku release phase on every deploy). `reset_client!`
