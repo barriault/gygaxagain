@@ -21,7 +21,7 @@ RSpec.describe ApplicationViewModel, type: :view_model do
     end
 
     it "records exposed attrs on the class" do
-      expect(vm_class.exposed_attrs).to eq([:name, :email])
+      expect(vm_class.exposed_attrs).to eq([ :name, :email ])
     end
 
     it "does NOT expose attrs that weren't declared" do
@@ -46,7 +46,7 @@ RSpec.describe ApplicationViewModel, type: :view_model do
     end
 
     it "records the block-form attr in exposed_attrs" do
-      expect(vm_class.exposed_attrs).to eq([:name, :greeting])
+      expect(vm_class.exposed_attrs).to eq([ :name, :greeting ])
     end
 
     it "raises if a block is given with multiple attr names" do
@@ -97,12 +97,12 @@ RSpec.describe ApplicationViewModel, type: :view_model do
 
       friends = [
         record_class.new(name: "Grace", email: nil, secret: nil),
-        record_class.new(name: "Linus", email: nil, secret: nil),
+        record_class.new(name: "Linus", email: nil, secret: nil)
       ]
       record_with_friends = Struct.new(:friends, keyword_init: true).new(friends: friends)
 
       vm = outer_class.new(record_with_friends)
-      expect(vm.to_h).to eq(friends: [{ name: "Grace" }, { name: "Linus" }])
+      expect(vm.to_h).to eq(friends: [ { name: "Grace" }, { name: "Linus" } ])
     end
   end
 end

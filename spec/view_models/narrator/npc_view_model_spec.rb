@@ -11,7 +11,7 @@ RSpec.describe Narrator::NpcViewModel, type: :view_model do
 
   describe "exposed attrs" do
     it "exposes the public set plus secrets" do
-      expect(described_class.exposed_attrs).to eq([:id, :name, :public_description, :location, :secrets])
+      expect(described_class.exposed_attrs).to eq([ :id, :name, :public_description, :location, :secrets ])
     end
   end
 
@@ -25,8 +25,8 @@ RSpec.describe Narrator::NpcViewModel, type: :view_model do
 
     it "wraps secrets in Narrator::NpcSecretViewModel" do
       expect(vm.secrets).to all(be_a(Narrator::NpcSecretViewModel))
-      expect(vm.secrets.map(&:label)).to eq(["true identity"])
-      expect(vm.secrets.map(&:content)).to eq(["is a doppelganger"])
+      expect(vm.secrets.map(&:label)).to eq([ "true identity" ])
+      expect(vm.secrets.map(&:content)).to eq([ "is a doppelganger" ])
     end
   end
 

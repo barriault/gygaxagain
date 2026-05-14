@@ -6,7 +6,7 @@ RSpec.describe Narrator::FactionSecretViewModel, type: :view_model do
   let(:vm)      { described_class.new(secret) }
 
   describe "exposed attrs" do
-    it { expect(described_class.exposed_attrs).to eq([:id, :label, :content]) }
+    it { expect(described_class.exposed_attrs).to eq([ :id, :label, :content ]) }
   end
 
   describe "values" do

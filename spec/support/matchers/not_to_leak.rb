@@ -44,7 +44,7 @@ RSpec::Matchers.define :leak_secrets_of do |*records|
   def collect_secret_strings(records)
     records.flat_map do |r|
       next [] unless r.respond_to?(:secrets)
-      r.secrets.flat_map { |s| [s.label, s.content] }
+      r.secrets.flat_map { |s| [ s.label, s.content ] }
     end
   end
 
@@ -56,7 +56,7 @@ RSpec::Matchers.define :leak_secrets_of do |*records|
 
   def deep_stringify(value)
     case value
-    when Hash  then value.flat_map { |k, v| [k.to_s, deep_stringify(v)] }.join(" ")
+    when Hash  then value.flat_map { |k, v| [ k.to_s, deep_stringify(v) ] }.join(" ")
     when Array then value.map { |v| deep_stringify(v) }.join(" ")
     when nil   then ""
     else            value.to_s

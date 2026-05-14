@@ -21,7 +21,7 @@ class ApplicationViewModel
     private
 
     def record_exposed(attr)
-      @exposed_attrs = (@exposed_attrs || []) + [attr]
+      @exposed_attrs = (@exposed_attrs || []) + [ attr ]
     end
   end
 

@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: npcs
+#
+#  id                 :bigint           not null, primary key
+#  location           :string
+#  name               :string           not null
+#  public_description :text
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  campaign_id        :bigint           not null
+#
+# Indexes
+#
+#  index_npcs_on_campaign_id  (campaign_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (campaign_id => campaigns.id) ON DELETE => cascade
+#
 FactoryBot.define do
   factory :npc do
     campaign

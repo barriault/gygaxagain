@@ -6,7 +6,7 @@ RSpec.describe Player::FactionViewModel, type: :view_model do
   let(:vm)       { described_class.new(faction) }
 
   describe "exposed attrs" do
-    it { expect(described_class.exposed_attrs).to eq([:id, :name, :public_description]) }
+    it { expect(described_class.exposed_attrs).to eq([ :id, :name, :public_description ]) }
   end
 
   describe "values" do

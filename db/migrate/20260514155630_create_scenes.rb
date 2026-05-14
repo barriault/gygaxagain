@@ -8,6 +8,6 @@ class CreateScenes < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :scenes, [:campaign_id, :position]
+    add_index :scenes, [ :campaign_id, :position ]
   end
 end

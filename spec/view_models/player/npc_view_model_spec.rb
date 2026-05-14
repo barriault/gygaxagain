@@ -6,7 +6,7 @@ RSpec.describe Player::NpcViewModel, type: :view_model do
   let(:vm)       { described_class.new(npc) }
 
   describe "exposed attrs" do
-    it { expect(described_class.exposed_attrs).to eq([:id, :name, :public_description, :location]) }
+    it { expect(described_class.exposed_attrs).to eq([ :id, :name, :public_description, :location ]) }
   end
 
   describe "values" do

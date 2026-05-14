@@ -1,3 +1,24 @@
+# == Schema Information
+#
+# Table name: scenes
+#
+#  id          :bigint           not null, primary key
+#  position    :integer          not null
+#  summary     :text
+#  title       :string           not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  campaign_id :bigint           not null
+#
+# Indexes
+#
+#  index_scenes_on_campaign_id               (campaign_id)
+#  index_scenes_on_campaign_id_and_position  (campaign_id,position)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (campaign_id => campaigns.id) ON DELETE => cascade
+#
 require "rails_helper"
 
 RSpec.describe Scene, type: :model do
@@ -21,7 +42,7 @@ RSpec.describe Scene, type: :model do
     let!(:third)   { create(:scene, campaign: campaign, title: "Third") }
 
     it "auto-assigns sequential positions within a campaign" do
-      expect([first.reload.position, second.reload.position, third.reload.position]).to eq([1, 2, 3])
+      expect([ first.reload.position, second.reload.position, third.reload.position ]).to eq([ 1, 2, 3 ])
     end
 
     it "scopes positions to the campaign (a second campaign's scenes restart at 1)" do
@@ -32,7 +53,7 @@ RSpec.describe Scene, type: :model do
 
     it "reorders via move_higher!" do
       third.move_higher
-      expect([first.reload.position, second.reload.position, third.reload.position]).to eq([1, 3, 2])
+      expect([ first.reload.position, second.reload.position, third.reload.position ]).to eq([ 1, 3, 2 ])
     end
 
     it "first? and last? report position correctly" do

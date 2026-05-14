@@ -1,3 +1,25 @@
+# == Schema Information
+#
+# Table name: events
+#
+#  id          :bigint           not null, primary key
+#  kind        :string           not null
+#  occurred_at :datetime         not null
+#  payload     :jsonb            not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  scene_id    :bigint           not null
+#
+# Indexes
+#
+#  index_events_on_kind                      (kind)
+#  index_events_on_scene_id                  (scene_id)
+#  index_events_on_scene_id_and_occurred_at  (scene_id,occurred_at)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (scene_id => scenes.id) ON DELETE => cascade
+#
 require "rails_helper"
 
 RSpec.describe Event, type: :model do

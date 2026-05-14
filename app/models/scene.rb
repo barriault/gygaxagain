@@ -1,3 +1,24 @@
+# == Schema Information
+#
+# Table name: scenes
+#
+#  id          :bigint           not null, primary key
+#  position    :integer          not null
+#  summary     :text
+#  title       :string           not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  campaign_id :bigint           not null
+#
+# Indexes
+#
+#  index_scenes_on_campaign_id               (campaign_id)
+#  index_scenes_on_campaign_id_and_position  (campaign_id,position)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (campaign_id => campaigns.id) ON DELETE => cascade
+#
 class Scene < ApplicationRecord
   belongs_to :campaign
   has_many :events, dependent: :destroy

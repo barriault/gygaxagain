@@ -32,6 +32,7 @@
 # Foreign Keys
 #
 #  fk_rails_...  (campaign_id => campaigns.id) ON DELETE => cascade
+#  fk_rails_...  (scene_id => scenes.id) ON DELETE => nullify
 #  fk_rails_...  (user_id => users.id) ON DELETE => cascade
 #
 require "rails_helper"

@@ -12,7 +12,7 @@ RSpec.describe Narrator::FactionViewModel, type: :view_model do
 
   describe "exposed attrs" do
     it "exposes the public set plus secrets" do
-      expect(described_class.exposed_attrs).to eq([:id, :name, :public_description, :secrets])
+      expect(described_class.exposed_attrs).to eq([ :id, :name, :public_description, :secrets ])
     end
   end
 
