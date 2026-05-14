@@ -153,6 +153,77 @@ RSpec.describe Llm::Providers::Anthropic do
     end
   end
 
+  describe "cache_breakpoints" do
+    let(:adapter) { described_class.new(model: "claude-sonnet-4-6") }
+
+    before do
+      stub_request(:post, "https://api.anthropic.com/v1/messages")
+        .to_return(
+          status: 200,
+          body: {
+            id: "msg_x",
+            type: "message",
+            role: "assistant",
+            model: "claude-sonnet-4-6",
+            content: [ { type: "text", text: "hi" } ],
+            stop_reason: "end_turn",
+            usage: {
+              input_tokens: 1,
+              output_tokens: 1,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0
+            }
+          }.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+    end
+
+    it "decorates the indicated system block with ephemeral 5m cache_control" do
+      adapter.call(
+        system: [ { type: "text", text: "rules" }, { type: "text", text: "roster" } ],
+        messages: [ { role: "user", content: "hi" } ],
+        cache_breakpoints: [ 0 ]
+      )
+
+      expect(WebMock).to have_requested(:post, "https://api.anthropic.com/v1/messages")
+        .with { |req|
+          body = JSON.parse(req.body)
+          body["system"][0]["cache_control"] == { "type" => "ephemeral", "ttl" => "5m" } &&
+            !body["system"][1].key?("cache_control")
+        }
+    end
+
+    it "supports per-breakpoint TTL via Hash form" do
+      adapter.call(
+        system: [ { type: "text", text: "rules" }, { type: "text", text: "roster" } ],
+        messages: [ { role: "user", content: "hi" } ],
+        cache_breakpoints: [ { index: 1, ttl: :ephemeral_1h } ]
+      )
+
+      expect(WebMock).to have_requested(:post, "https://api.anthropic.com/v1/messages")
+        .with { |req|
+          body = JSON.parse(req.body)
+          body["system"][1]["cache_control"] == { "type" => "ephemeral", "ttl" => "1h" }
+        }
+    end
+
+    it "wraps a String system into a single typed block when cache_breakpoints empty" do
+      adapter.call(system: "just a string", messages: [ { role: "user", content: "hi" } ])
+
+      expect(WebMock).to have_requested(:post, "https://api.anthropic.com/v1/messages")
+        .with { |req|
+          body = JSON.parse(req.body)
+          body["system"] == "just a string"
+        }
+    end
+
+    it "raises ConfigError when cache_breakpoints is set without a system" do
+      expect {
+        adapter.call(messages: [ { role: "user", content: "hi" } ], cache_breakpoints: [ 0 ])
+      }.to raise_error(Llm::ConfigError, /cache_breakpoints requires/)
+    end
+  end
+
   describe "#call (config errors)" do
     it "raises Llm::ConfigError when the API key is missing from credentials" do
       allow(described_class).to receive(:api_key).and_return(nil)
