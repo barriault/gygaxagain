@@ -1,0 +1,28 @@
+<li class="py-4 flex items-start justify-between gap-4">
+  <div class="flex-1 min-w-0">
+    <p class="text-lg font-semibold"><%= scene.title %></p>
+    <% if scene.summary.present? %>
+      <p class="mt-1 text-sm text-slate-400 line-clamp-2"><%= scene.summary %></p>
+    <% end %>
+  </div>
+  <div class="flex items-center gap-2 shrink-0">
+    <%= button_to "Up",
+                  helpers.move_up_admin_campaign_scene_path(campaign, scene),
+                  method: :post,
+                  disabled: first?,
+                  class: "rounded px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed bg-slate-800" %>
+    <%= button_to "Down",
+                  helpers.move_down_admin_campaign_scene_path(campaign, scene),
+                  method: :post,
+                  disabled: last?,
+                  class: "rounded px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed bg-slate-800" %>
+    <%= link_to "Edit",
+                helpers.edit_admin_campaign_scene_path(campaign, scene),
+                class: "text-sm text-slate-300 hover:text-slate-100" %>
+    <%= button_to "Delete",
+                  helpers.admin_campaign_scene_path(campaign, scene),
+                  method: :delete,
+                  data: { turbo_confirm: "Delete '#{scene.title}'? This cannot be undone." },
+                  class: "text-sm text-rose-400 hover:text-rose-200" %>
+  </div>
+</li>
