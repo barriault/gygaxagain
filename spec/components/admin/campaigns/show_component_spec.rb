@@ -35,4 +35,22 @@ RSpec.describe Admin::Campaigns::ShowComponent, type: :component do
 
     expect(page).to have_link("Back to campaigns", href: admin_campaigns_path)
   end
+
+  describe "with scenes" do
+    let!(:scene_a) { create(:scene, campaign: campaign, title: "Scene Alpha") }
+    let!(:scene_b) { create(:scene, campaign: campaign, title: "Scene Beta") }
+
+    it "renders each scene as a row" do
+      render_inline(described_class.new(campaign: campaign))
+
+      expect(page).to have_text("Scene Alpha")
+      expect(page).to have_text("Scene Beta")
+    end
+
+    it "does NOT render the empty-state copy" do
+      render_inline(described_class.new(campaign: campaign))
+
+      expect(page).not_to have_text(/no scenes yet/i)
+    end
+  end
 end
