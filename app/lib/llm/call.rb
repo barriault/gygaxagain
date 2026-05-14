@@ -6,25 +6,49 @@ module Llm
     # missing API key or unknown purpose / model override. Never raises
     # on HTTP errors — those are persisted into the row's response_payload.
     def self.execute(purpose:, messages:, system: nil, max_tokens: 1024,
+                     cache_breakpoints: [], cache_ttl: :ephemeral_5m,
                      user:, campaign: nil, scene: nil, model: nil)
       adapter = Llm::Provider.for(purpose)
       adapter = override_model(adapter, model) if model
 
-      result = adapter.call(system: system, messages: messages, max_tokens: max_tokens)
+      result = adapter.call(
+        system: system, messages: messages, max_tokens: max_tokens,
+        cache_breakpoints: cache_breakpoints
+      )
 
-      cost_cents = if result.successful?
-                     Llm::Pricing.cost_cents(
-                       usage: {
-                         input:          result.input_tokens,
-                         output:         result.output_tokens,
-                         cache_creation: result.cache_creation_tokens,
-                         cache_read:     result.cache_read_tokens
-                       },
-                       model: adapter.model
-                     )
-      else
-                     0
-      end
+      persist!(adapter: adapter, purpose: purpose, result: result, cache_ttl: cache_ttl,
+               user: user, campaign: campaign, scene: scene)
+    end
+
+    # Streaming variant. Yields each text delta to &on_chunk as { text: String }.
+    # Returns the persisted LlmCall record.
+    def self.execute_streaming(purpose:, messages:, system: nil, max_tokens: 4096,
+                               cache_breakpoints: [], cache_ttl: :ephemeral_5m,
+                               user:, campaign: nil, scene: nil, model: nil,
+                               &on_chunk)
+      adapter = Llm::Provider.for(purpose)
+      adapter = override_model(adapter, model) if model
+
+      result = adapter.call_streaming(
+        system: system, messages: messages, max_tokens: max_tokens,
+        cache_breakpoints: cache_breakpoints, &on_chunk
+      )
+
+      persist!(adapter: adapter, purpose: purpose, result: result, cache_ttl: cache_ttl,
+               user: user, campaign: campaign, scene: scene)
+    end
+
+    def self.override_model(adapter, model)
+      raise Llm::ConfigError, "Unknown model: #{model}" unless Llm::Pricing.known_models.include?(model)
+      adapter.class.new(model: model)
+    end
+
+    def self.provider_name_for(purpose)
+      Llm::Provider::PURPOSES.fetch(purpose)[:provider].to_s
+    end
+
+    def self.persist!(adapter:, purpose:, result:, cache_ttl:, user:, campaign:, scene:)
+      cost_cents = compute_cost_cents(result, adapter.model, cache_ttl)
 
       LlmCall.create!(
         user:                  user,
@@ -45,13 +69,19 @@ module Llm
       )
     end
 
-    def self.override_model(adapter, model)
-      raise Llm::ConfigError, "Unknown model: #{model}" unless Llm::Pricing.known_models.include?(model)
-      adapter.class.new(model: model)
-    end
+    def self.compute_cost_cents(result, model, cache_ttl)
+      return 0 unless result.successful?
 
-    def self.provider_name_for(purpose)
-      Llm::Provider::PURPOSES.fetch(purpose)[:provider].to_s
+      Llm::Pricing.cost_cents(
+        usage: {
+          input:          result.input_tokens,
+          output:         result.output_tokens,
+          cache_creation: result.cache_creation_tokens,
+          cache_read:     result.cache_read_tokens
+        },
+        model: model,
+        cache_ttl: cache_ttl
+      )
     end
   end
 end

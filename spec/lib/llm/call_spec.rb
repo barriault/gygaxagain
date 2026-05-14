@@ -139,4 +139,45 @@ RSpec.describe Llm::Call do
       }.to raise_error(Llm::ConfigError, /Unknown purpose/)
     end
   end
+
+  describe ".execute_streaming" do
+    let(:user) { create(:user) }
+
+    before do
+      allow(Rails.application.credentials).to receive(:dig).with(:anthropic, :api_key).and_return("sk-test")
+      Llm::Providers::Anthropic.reset_client!
+    end
+
+    it "writes an LlmCall row with streamed content" do
+      stub_anthropic_streaming(text_chunks: ["Hi ", "there."], input_tokens: 5, output_tokens: 3)
+
+      received = []
+      call = Llm::Call.execute_streaming(
+        purpose: :narration,
+        messages: [{ role: "user", content: "x" }],
+        user: user
+      ) { |text:| received << text }
+
+      expect(received).to eq(["Hi ", "there."])
+      expect(call).to be_persisted
+      expect(call.purpose).to eq("narration")
+      expect(call.text).to eq("Hi there.")
+      expect(call.input_tokens).to eq(5)
+      expect(call.output_tokens).to eq(3)
+      expect(call.successful?).to be(true)
+    end
+
+    it "writes a row with error info when the stream fails" do
+      stub_anthropic_streaming_error(status: 500, message: "boom")
+
+      call = Llm::Call.execute_streaming(
+        purpose: :narration,
+        messages: [{ role: "user", content: "x" }],
+        user: user
+      )
+
+      expect(call.successful?).to be(false)
+      expect(call.error_message).to include("boom")
+    end
+  end
 end
