@@ -6,6 +6,10 @@ constraints subdomain: "" do
   scope module: "play" do
     resources :campaigns, only: [ :index ] do
       member { get :play }
+
+      resources :scenes, only: [] do
+        member { get :play }
+      end
     end
   end
 end
