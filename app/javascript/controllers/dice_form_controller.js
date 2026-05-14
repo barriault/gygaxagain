@@ -35,6 +35,12 @@ export default class extends Controller {
     this.#render()
   }
 
+  clearAll() {
+    this.state = this.#initialState()
+    this.preserved = { count: 0, keep: 0 }
+    this.#render()
+  }
+
   #initialState() {
     return { die: null, count: 0, modifier: 0, keep: 0, mode: "normal" }
   }

@@ -102,5 +102,18 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       click_button "d10"  # Capybara fires the click even on aria-disabled buttons.
       expect(page).to have_field("dice_roll[expression]", with: "1d6")
     end
+
+    it "resets state and re-enables dice when clear is tapped" do
+      click_button "d6"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+1")
+
+      click_button "clear"
+      expect(page).to have_field("dice_roll[expression]", with: "")
+      expect(page.find_button("d10")["aria-disabled"]).to eq("false")
+
+      click_button "d10"
+      expect(page).to have_field("dice_roll[expression]", with: "1d10")
+    end
   end
 end
