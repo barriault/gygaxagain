@@ -42,8 +42,8 @@ RSpec.describe "Campaign authoring (end-to-end)", type: :system do
     expect(current_url).to include("admin.gygaxagain.com/campaigns")
     expect(page).to have_text(/no campaigns yet/i)
 
-    # Sign out from admin → lands on apex root.
+    # Sign out from admin → redirected to sign-in (apex root now requires auth).
     click_button "Sign out"
-    expect(current_url).to eq("http://gygaxagain.com/")
+    expect(current_url).to include("/users/sign_in")
   end
 end

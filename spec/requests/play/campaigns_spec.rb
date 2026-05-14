@@ -25,6 +25,13 @@ RSpec.describe "Play::Campaigns", type: :request do
         expect(response.body).to include("Mine")
         expect(response.body).not_to include("Theirs")
       end
+
+      it "renders an Admin link in the apex nav chrome" do
+        get "/campaigns"
+
+        expect(response.body).to include("admin.gygaxagain.com/campaigns")
+        expect(response.body).to match(%r{>\s*Admin\s*</a>})
+      end
     end
   end
 
