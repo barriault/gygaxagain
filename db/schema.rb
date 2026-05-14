@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_155630) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_14_155903) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_155630) do
     t.bigint "user_id", null: false
     t.index "user_id, lower((name)::text)", name: "index_campaigns_on_user_id_and_lower_name", unique: true
     t.index ["user_id"], name: "index_campaigns_on_user_id"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.datetime "occurred_at", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.bigint "scene_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_events_on_kind"
+    t.index ["scene_id", "occurred_at"], name: "index_events_on_scene_id_and_occurred_at"
+    t.index ["scene_id"], name: "index_events_on_scene_id"
   end
 
   create_table "faction_secrets", force: :cascade do |t|
@@ -122,6 +134,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_155630) do
   end
 
   add_foreign_key "campaigns", "users", on_delete: :cascade
+  add_foreign_key "events", "scenes", on_delete: :cascade
   add_foreign_key "faction_secrets", "factions", on_delete: :cascade
   add_foreign_key "factions", "campaigns", on_delete: :cascade
   add_foreign_key "llm_calls", "campaigns", on_delete: :cascade
