@@ -34,6 +34,46 @@ RSpec.describe Play::Events::OracleQueryComponent, type: :component do
     expect(page).to have_text(/chaos.*5/i)
   end
 
+  describe "random event badge" do
+    it "renders a ✦ random event badge when random_event_triggered is true" do
+      event = create(:event, :oracle_query,
+                     scene: scene,
+                     payload: {
+                       "question" => "Q?", "answer" => "Yes", "likelihood" => "50_50",
+                       "chaos" => 5, "outcome" => "yes", "roll" => 33,
+                       "random_event_triggered" => true
+                     })
+
+      render_inline(described_class.new(event: event))
+
+      expect(page).to have_text(/random event/i)
+    end
+
+    it "omits the badge when random_event_triggered is false" do
+      event = create(:event, :oracle_query,
+                     scene: scene,
+                     payload: {
+                       "question" => "Q?", "answer" => "Yes", "likelihood" => "50_50",
+                       "chaos" => 5, "outcome" => "yes", "roll" => 32,
+                       "random_event_triggered" => false
+                     })
+
+      render_inline(described_class.new(event: event))
+
+      expect(page).not_to have_text(/random event/i)
+    end
+
+    it "omits the badge when random_event_triggered is absent (legacy payload)" do
+      event = create(:event, :oracle_query,
+                     scene: scene,
+                     payload: { "question" => "Q?", "answer" => "Yes", "likelihood" => "50_50", "chaos" => 5 })
+
+      render_inline(described_class.new(event: event))
+
+      expect(page).not_to have_text(/random event/i)
+    end
+  end
+
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }

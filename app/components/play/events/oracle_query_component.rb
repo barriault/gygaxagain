@@ -26,6 +26,10 @@ module Play
       def relative_time
         helpers.time_ago_in_words(event.occurred_at) + " ago"
       end
+
+      def random_event_triggered?
+        event.payload["random_event_triggered"] == true
+      end
     end
   end
 end
