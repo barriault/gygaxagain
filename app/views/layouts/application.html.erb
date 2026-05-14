@@ -32,11 +32,6 @@
             <%= link_to "Admin",
                         admin_campaigns_url(subdomain: "admin"),
                         class: "text-xs uppercase tracking-widest text-slate-300 hover:text-slate-100" %>
-            <% if Rails.env.development? %>
-              <%= link_to "Lookbook", "/lookbook",
-                          target: "_blank", rel: "noopener",
-                          class: "text-xs uppercase tracking-widest text-slate-300 hover:text-slate-100" %>
-            <% end %>
             <%= button_to "Sign out",
                           destroy_user_session_url(subdomain: ""),
                           method: :delete,
