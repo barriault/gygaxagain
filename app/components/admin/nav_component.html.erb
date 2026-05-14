@@ -7,6 +7,11 @@
     <%= link_to "Diagnostics → LLM", "/diagnostics/llm",
                 class: link_classes(diagnostics_active?),
                 **(diagnostics_active? ? { aria: { current: "page" } } : {}) %>
+    <% if Rails.env.development? %>
+      <%= link_to "Lookbook", "/lookbook",
+                  target: "_blank", rel: "noopener",
+                  class: link_classes(false) %>
+    <% end %>
     <div class="ml-auto">
       <%= button_to "Sign out",
                     helpers.destroy_user_session_url(subdomain: ""),
