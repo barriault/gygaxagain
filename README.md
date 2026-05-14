@@ -60,6 +60,19 @@ Password reset is wired but requires SMTP config (`SMTP_HOST`, `SMTP_PORT`,
 `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` env vars on Heroku). These are blank
 in alpha; reset requests appear to succeed but no email is sent.
 
+### Campaigns
+
+Campaign authoring lives on the admin subdomain at
+`https://admin.gygaxagain.com/campaigns`. Each user owns their campaigns;
+there is no sharing. The first time you sign in with no campaigns, you'll
+land on the new-campaign form on admin.
+
+The play surface for a campaign is at
+`https://gygaxagain.com/campaigns/:id/play`. In Phase 3 this is a
+placeholder; the real chat-style UI lands in Phase 6. Visiting a play URL
+sets your `last_played_campaign_id`, so subsequent sign-ins drop you
+straight back into that campaign.
+
 ## Deploy
 
 The Heroku app is `gygaxagain` (region `us`). Add the heroku remote:

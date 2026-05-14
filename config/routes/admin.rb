@@ -3,6 +3,6 @@ constraints subdomain: "admin" do
     root "dashboard#show"
     get "/dashboard", to: "dashboard#show", as: :dashboard
 
-    resources :campaigns, except: [:show]
+    resources :campaigns, except: [ :show ]
   end
 end

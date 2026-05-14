@@ -3,8 +3,8 @@ require "rails_helper"
 RSpec.describe Admin::Campaigns::IndexComponent, type: :component do
   it "renders one row per campaign" do
     user = create(:user)
-    campaigns = [create(:campaign, user: user, name: "Alpha"),
-                 create(:campaign, user: user, name: "Beta")]
+    campaigns = [ create(:campaign, user: user, name: "Alpha"),
+                 create(:campaign, user: user, name: "Beta") ]
     render_inline(described_class.new(campaigns: campaigns))
     expect(page).to have_text("Alpha")
     expect(page).to have_text("Beta")

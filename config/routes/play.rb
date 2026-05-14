@@ -1,10 +1,10 @@
 constraints subdomain: "" do
-  devise_for :users, skip: [:registrations], controllers: { sessions: "users/sessions" }
+  devise_for :users, skip: [ :registrations ], controllers: { sessions: "users/sessions" }
 
   root "play/home#show"
 
   scope module: "play" do
-    resources :campaigns, only: [:index] do
+    resources :campaigns, only: [ :index ] do
       member { get :play }
     end
   end

@@ -1,6 +1,6 @@
 module Admin
   class CampaignsController < ::ApplicationController
-    before_action :load_campaign, only: [:edit, :update, :destroy]
+    before_action :load_campaign, only: [ :edit, :update, :destroy ]
 
     def index
       @campaigns = current_user.campaigns.order(:name)
