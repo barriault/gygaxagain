@@ -4,7 +4,7 @@
     <%= link_to "Campaigns", "/campaigns",
                 class: link_classes(campaigns_active?),
                 **(campaigns_active? ? { aria: { current: "page" } } : {}) %>
-    <%= link_to "Diagnostics", "/diagnostics/llm",
+    <%= link_to "Diagnostics → LLM", "/diagnostics/llm",
                 class: link_classes(diagnostics_active?),
                 **(diagnostics_active? ? { aria: { current: "page" } } : {}) %>
   </div>

@@ -8,7 +8,7 @@ RSpec.describe Admin::NavComponent, type: :component do
 
   it "renders a Diagnostics link" do
     render_inline(described_class.new(current_path: "/dashboard"))
-    expect(page).to have_link("Diagnostics", href: "/diagnostics/llm")
+    expect(page).to have_link("Diagnostics → LLM", href: "/diagnostics/llm")
   end
 
   it "marks the Campaigns link as active when path matches" do
