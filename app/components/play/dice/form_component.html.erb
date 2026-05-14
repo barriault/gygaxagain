@@ -23,7 +23,7 @@
       <p class="mt-2 text-xs text-rose-400"><%= error %></p>
     <% end %>
 
-    <div class="mt-3 flex flex-wrap gap-2" data-dice-form-target="dieRow">
+    <div class="mt-3 flex flex-wrap gap-2">
       <% die_chips.each do |die| %>
         <button type="button"
                 data-action="click->dice-form#pickDie"
@@ -40,9 +40,9 @@
       <% modifier_chips.each do |chip| %>
         <button type="button"
                 data-action="click->dice-form#<%= chip[:action] %>"
-                <% chip[:params].each do |param_key, param_value| %>
-                  data-dice-form-<%= param_key %>-param="<%= param_value %>"
-                <% end %>
+                <% chip[:params].each do |param_key, param_value| -%>
+data-dice-form-<%= param_key %>-param="<%= param_value %>"
+                <% end -%>
                 data-dice-form-target="<%= chip[:key] %>Chip"
                 class="rounded bg-slate-800 px-2 py-1 text-xs text-slate-300 hover:bg-slate-700">
           <span><%= chip[:label] %></span><span class="ml-1 text-amber-300" data-dice-form-target="<%= chip[:key] %>Badge"></span>
