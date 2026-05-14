@@ -16,8 +16,6 @@
 
     <%= render Play::Scenes::LogComponent.new(scene: scene) %>
 
-    <%# Reserved structural space for the Phase 9+ right-pane tabs
-        (character sheet, scene images, narrator-side faction sidebar).
-        Empty in Phase 6. %>
+    <%= render Play::Scenes::InputDockComponent.new(scene: scene) %>
   </div>
 </div>

@@ -36,6 +36,13 @@ RSpec.describe Play::Scenes::PlayComponent, type: :component do
     expect(page).to have_link("← Back to #{campaign.name}", href: play_campaign_path(campaign))
   end
 
+  it "renders the input dock (dice + oracle forms)" do
+    render_inline(described_class.new(scene: scene))
+
+    expect(page).to have_text(/roll dice/i)
+    expect(page).to have_text(/ask the oracle/i)
+  end
+
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }
