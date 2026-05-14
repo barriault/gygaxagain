@@ -60,6 +60,10 @@ module Llm
         end
       end
 
+      # Memoized for the life of the process. Credentials are read once at
+      # first call; rotating the key requires a process restart (handled
+      # automatically by Heroku release phase on every deploy). `reset_client!`
+      # exists for test isolation only.
       def self.sdk_client
         @sdk_client ||= ::Anthropic::Client.new(api_key: api_key)
       end

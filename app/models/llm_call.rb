@@ -35,6 +35,11 @@
 #  fk_rails_...  (user_id => users.id) ON DELETE => cascade
 #
 class LlmCall < ApplicationRecord
+  # Redact user-content payloads from #inspect and SQL bind logs.
+  # Set explicitly (not `+=`) so the global :token filter doesn't false-match
+  # our *_tokens count columns.
+  self.filter_attributes = [ :prompt_payload, :response_payload ]
+
   belongs_to :user
   belongs_to :campaign, optional: true
   # belongs_to :scene, optional: true  # uncomment in Phase 5 when Scene model exists
