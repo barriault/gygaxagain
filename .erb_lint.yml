@@ -1,4 +1,6 @@
 ---
+exclude:
+  - "vendor/**/*"
 linters:
   ErbSafety:
     enabled: true

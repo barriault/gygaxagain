@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe Llm::Providers::Anthropic do
   let(:adapter) { described_class.new(model: "claude-sonnet-4-6") }
-  let(:messages) { [{ role: "user", content: "Hello" }] }
+  let(:messages) { [ { role: "user", content: "Hello" } ] }
 
   before do
     ENV["ANTHROPIC_API_KEY"] = "sk-ant-test-key"
@@ -16,7 +16,7 @@ RSpec.describe Llm::Providers::Anthropic do
         type: "message",
         role: "assistant",
         model: "claude-sonnet-4-6",
-        content: [{ type: "text", text: "Hi there!" }],
+        content: [ { type: "text", text: "Hi there!" } ],
         stop_reason: "end_turn",
         usage: {
           input_tokens: 12,
@@ -62,7 +62,7 @@ RSpec.describe Llm::Providers::Anthropic do
         "model" => "claude-sonnet-4-6",
         "max_tokens" => 256,
         "system" => "You are a narrator.",
-        "messages" => [{ "role" => "user", "content" => "Hello" }]
+        "messages" => [ { "role" => "user", "content" => "Hello" } ]
       )
     end
 
@@ -70,7 +70,7 @@ RSpec.describe Llm::Providers::Anthropic do
       result = adapter.call(messages: messages)
       expect(result.response_payload).to include(
         "id" => "msg_01ABCDEF",
-        "content" => [{ "type" => "text", "text" => "Hi there!" }]
+        "content" => [ { "type" => "text", "text" => "Hi there!" } ]
       )
     end
 

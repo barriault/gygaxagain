@@ -35,10 +35,10 @@ module Llm
       rates = RATES.fetch(model) { raise Llm::ConfigError, "Unknown model: #{model}" }
 
       cache_write_rate = case cache_ttl
-                         when :ephemeral_5m then rates[:cache_write_5m]
-                         when :ephemeral_1h then rates[:cache_write_1h]
-                         else raise Llm::ConfigError, "Unknown cache_ttl: #{cache_ttl}"
-                         end
+      when :ephemeral_5m then rates[:cache_write_5m]
+      when :ephemeral_1h then rates[:cache_write_1h]
+      else raise Llm::ConfigError, "Unknown cache_ttl: #{cache_ttl}"
+      end
 
       total_usd = BigDecimal("0")
       total_usd += BigDecimal(usage[:input].to_s)          * BigDecimal(rates[:input].to_s)         / PER_MTOK

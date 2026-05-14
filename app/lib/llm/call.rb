@@ -22,9 +22,9 @@ module Llm
                        },
                        model: adapter.model
                      )
-                   else
+      else
                      0
-                   end
+      end
 
       LlmCall.create!(
         user:                  user,

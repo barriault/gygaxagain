@@ -1,6 +1,6 @@
 class AddCaseInsensitiveCampaignNameIndex < ActiveRecord::Migration[8.1]
   def change
-    remove_index :campaigns, [:user_id, :name], unique: true
+    remove_index :campaigns, [ :user_id, :name ], unique: true
     add_index :campaigns,
               "user_id, LOWER(name)",
               unique: true,

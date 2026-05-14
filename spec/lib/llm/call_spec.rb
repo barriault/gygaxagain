@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe Llm::Call do
   let(:user) { create(:user) }
-  let(:messages) { [{ role: "user", content: "Hello" }] }
+  let(:messages) { [ { role: "user", content: "Hello" } ] }
 
   before do
     ENV["ANTHROPIC_API_KEY"] = "sk-ant-test-key"
@@ -15,7 +15,7 @@ RSpec.describe Llm::Call do
         type: "message",
         role: "assistant",
         model: "claude-sonnet-4-6",
-        content: [{ type: "text", text: "Hi!" }],
+        content: [ { type: "text", text: "Hi!" } ],
         stop_reason: "end_turn",
         usage: { input_tokens: 1_000_000, output_tokens: 500_000,
                  cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }

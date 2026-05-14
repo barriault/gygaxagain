@@ -49,14 +49,14 @@ FactoryBot.define do
       {
         "model" => "claude-sonnet-4-6",
         "max_tokens" => 1024,
-        "messages" => [{ "role" => "user", "content" => "Hello" }]
+        "messages" => [ { "role" => "user", "content" => "Hello" } ]
       }
     end
     response_payload do
       {
         "id" => provider_request_id,
         "model" => "claude-sonnet-4-6",
-        "content" => [{ "type" => "text", "text" => "Hi there!" }],
+        "content" => [ { "type" => "text", "text" => "Hi there!" } ],
         "usage" => { "input_tokens" => 100, "output_tokens" => 50 }
       }
     end

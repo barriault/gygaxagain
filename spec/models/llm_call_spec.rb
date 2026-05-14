@@ -54,7 +54,7 @@ RSpec.describe LlmCall, type: :model do
     it "extracts the response content text from response_payload" do
       call = build(:llm_call,
         response_payload: {
-          "content" => [{ "type" => "text", "text" => "Hello, narrator." }]
+          "content" => [ { "type" => "text", "text" => "Hello, narrator." } ]
         }
       )
       expect(call.text).to eq("Hello, narrator.")

@@ -10,7 +10,7 @@ RSpec.describe "Admin::Diagnostics::Llm", type: :request do
       type: "message",
       role: "assistant",
       model: "claude-sonnet-4-6",
-      content: [{ type: "text", text: "Hi from the model." }],
+      content: [ { type: "text", text: "Hi from the model." } ],
       stop_reason: "end_turn",
       usage: { input_tokens: 12, output_tokens: 5,
                cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
