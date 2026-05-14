@@ -5,9 +5,10 @@ class Users::SessionsController < Devise::SessionsController
   skip_before_action :authenticate_user!
 
   # Override create to allow cross-host redirect after sign-in.
-  # after_sign_in_path_for returns admin_dashboard_url which is a different
-  # host (admin.gygaxagain.com). Rails 8+ blocks cross-host redirects by
-  # default via ActionController::Redirecting::OpenRedirectError. We must
+  # after_sign_in_path_for may return a URL on a different host (apex
+  # play surface or admin subdomain depending on the user's campaign
+  # state). Rails 8+ blocks cross-host redirects by default via
+  # ActionController::Redirecting::OpenRedirectError. We must
   # explicitly pass allow_other_host: true.
   #
   # Body copied from devise-5.0.4. Re-check on Devise upgrades.

@@ -16,11 +16,11 @@ RSpec.describe "Cross-subdomain session", type: :request do
     expect(response.location).to include("admin.gygaxagain.com")
 
     host! "admin.gygaxagain.com"
-    get "/dashboard",
+    get "/campaigns",
         headers: { "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to match(/admin dashboard/i)
+    expect(response.body).to match(/campaigns/i)
   end
 
   it "signs out from admin and redirects to apex root" do
@@ -35,7 +35,7 @@ RSpec.describe "Cross-subdomain session", type: :request do
     # the DELETE. This verifies that after_sign_out_path_for returns apex root
     # and that the SessionsController properly handles the cross-host redirect.
     host! "admin.gygaxagain.com"
-    get "/dashboard",
+    get "/campaigns",
         headers: { "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
     expect(response).to have_http_status(:ok)
 
@@ -50,9 +50,10 @@ RSpec.describe "Cross-subdomain session", type: :request do
   it "redirects already-authenticated users away from sign-in (Devise's require_no_authentication filter, cross-host)" do
     # Regression: hitting /users/sign_in while already signed in triggers
     # Devise's require_no_authentication filter, which redirects to
-    # after_sign_in_path_for (= admin dashboard, cross-host from apex).
-    # Without raise_on_open_redirects = false in config/application.rb,
-    # Rails 8 raises OpenRedirectError → 500.
+    # after_sign_in_path_for (cross-host from apex — admin or apex play
+    # depending on the user's campaign state). Without
+    # raise_on_open_redirects = false in config/application.rb, Rails 8
+    # raises OpenRedirectError → 500.
     sign_in user
 
     host! "gygaxagain.com"
@@ -64,8 +65,8 @@ RSpec.describe "Cross-subdomain session", type: :request do
   end
 
   it "allows sign-out when the form was rendered on a different subdomain (cross-origin Origin header)" do
-    # Regression: in production, the admin dashboard renders a sign-out form
-    # that POSTs to gygaxagain.com/users/sign_out. The browser sends
+    # Regression: in production, the admin campaigns index renders a sign-out
+    # form that POSTs to gygaxagain.com/users/sign_out. The browser sends
     # Origin: https://admin.gygaxagain.com. Rails' default CSRF origin check
     # rejects with 422 because origin-host != request-host. We turn that check
     # off in config/application.rb because the same-session token check still

@@ -1,7 +1,6 @@
 constraints subdomain: "admin" do
   scope module: "admin", as: :admin do
-    root "dashboard#show"
-    get "/dashboard", to: "dashboard#show", as: :dashboard
+    root to: redirect("/campaigns")
 
     resources :campaigns, except: [ :show ]
   end
