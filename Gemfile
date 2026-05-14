@@ -4,6 +4,7 @@ ruby "4.0.2"
 
 gem "rails", "~> 8.1.3"
 
+gem "acts_as_list"
 gem "anthropic"
 gem "bootsnap", require: false
 gem "cssbundling-rails"
