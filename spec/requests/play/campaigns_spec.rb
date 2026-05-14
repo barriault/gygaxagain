@@ -46,7 +46,7 @@ RSpec.describe "Play::Campaigns", type: :request do
         get "/campaigns/#{campaign.id}/play"
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Strahd")
-        expect(response.body).to match(/phase 6|coming/i)
+        expect(response.body).to match(/no scenes yet/i)
       end
 
       it "updates last_played_campaign_id" do

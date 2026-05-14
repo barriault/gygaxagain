@@ -1,0 +1,28 @@
+<div class="min-h-screen bg-slate-900 text-slate-100 px-4 py-12">
+  <div class="mx-auto max-w-xl">
+    <p class="text-xs uppercase tracking-widest text-slate-500">Now playing</p>
+    <h1 class="mt-2 text-3xl font-bold tracking-tight"><%= campaign.name %></h1>
+
+    <h2 class="mt-10 text-lg font-semibold">Choose a scene</h2>
+
+    <ul class="mt-4 space-y-3">
+      <% scenes.each do |scene| %>
+        <li>
+          <%= link_to helpers.play_campaign_scene_path(campaign, scene),
+                      class: "block rounded bg-slate-800 px-4 py-3 hover:bg-slate-700" do %>
+            <p class="font-semibold"><%= scene.title %></p>
+            <% if scene.summary.present? %>
+              <p class="mt-1 text-sm text-slate-400 line-clamp-2"><%= scene.summary %></p>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+
+    <div class="mt-12">
+      <%= link_to "Back to campaigns",
+                  helpers.campaigns_path,
+                  class: "text-sm text-slate-400 hover:text-slate-200" %>
+    </div>
+  </div>
+</div>

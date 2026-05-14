@@ -4,18 +4,13 @@
     <h1 class="mt-2 text-3xl font-bold tracking-tight"><%= campaign.name %></h1>
 
     <p class="mt-8 text-slate-300">
-      The real play surface lands in Phase 6. This is a placeholder so the
-      after-sign-in redirect has somewhere to go.
+      No scenes yet. Create one in admin to start playing.
     </p>
 
-    <div class="mt-12 flex items-center gap-4">
+    <div class="mt-12">
       <%= link_to "Back to campaigns",
                   helpers.campaigns_path,
                   class: "text-sm text-slate-300 hover:text-slate-100" %>
-      <%= button_to "Sign out",
-                    helpers.destroy_user_session_url(subdomain: ""),
-                    method: :delete,
-                    class: "text-xs uppercase tracking-widest text-slate-500 hover:text-slate-300" %>
     </div>
   </div>
 </div>
