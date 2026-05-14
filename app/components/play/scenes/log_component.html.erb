@@ -1,11 +1,15 @@
-<div class="space-y-1">
-  <% if empty? %>
-    <p class="py-8 text-center text-sm text-slate-500">
-      The scene is set, but nothing has happened yet.
-    </p>
-  <% else %>
-    <% events.each do |event| %>
-      <%= render component_for(event) %>
+<turbo-frame id="<%= frame_dom_id %>">
+  <div class="space-y-1">
+    <% if empty? %>
+      <div id="<%= empty_state_dom_id %>">
+        <p class="py-8 text-center text-sm text-slate-500">
+          The scene is set, but nothing has happened yet.
+        </p>
+      </div>
+    <% else %>
+      <% events.each do |event| %>
+        <%= render component_for(event) %>
+      <% end %>
     <% end %>
-  <% end %>
-</div>
+  </div>
+</turbo-frame>

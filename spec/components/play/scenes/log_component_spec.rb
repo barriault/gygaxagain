@@ -53,6 +53,28 @@ RSpec.describe Play::Scenes::LogComponent, type: :component do
     end
   end
 
+  describe "turbo-frame structure" do
+    it "wraps the events list in <turbo-frame id='scene_log_<id>'>" do
+      render_inline(described_class.new(scene: scene))
+
+      expect(page).to have_css("turbo-frame##{ApplicationController.helpers.dom_id(scene, :log)}")
+    end
+
+    it "gives the empty-state placeholder its own dom_id'd container" do
+      render_inline(described_class.new(scene: scene))
+
+      expect(page).to have_css("##{ApplicationController.helpers.dom_id(scene, :log_empty)}")
+    end
+
+    it "omits the empty-state container when events are present" do
+      create(:event, scene: scene, kind: "narration", payload: { "text" => "An event." })
+
+      render_inline(described_class.new(scene: scene))
+
+      expect(page).not_to have_css("##{ApplicationController.helpers.dom_id(scene, :log_empty)}")
+    end
+  end
+
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }
