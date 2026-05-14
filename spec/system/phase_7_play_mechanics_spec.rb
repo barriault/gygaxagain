@@ -115,5 +115,19 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       click_button "d10"
       expect(page).to have_field("dice_roll[expression]", with: "1d10")
     end
+
+    it "increments and decrements the modifier across zero" do
+      click_button "d6"
+      click_button "+"
+      click_button "+"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+2")
+
+      click_button "−"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6+1")
+
+      click_button "−"
+      click_button "−"
+      expect(page).to have_field("dice_roll[expression]", with: "1d6-1")
+    end
   end
 end
