@@ -3,6 +3,7 @@
 # Table name: scenes
 #
 #  id          :bigint           not null, primary key
+#  closed_at   :datetime
 #  position    :integer          not null
 #  summary     :text
 #  title       :string           not null
@@ -14,6 +15,7 @@
 #
 #  index_scenes_on_campaign_id               (campaign_id)
 #  index_scenes_on_campaign_id_and_position  (campaign_id,position)
+#  index_scenes_on_closed_at                 (closed_at)
 #
 # Foreign Keys
 #
@@ -68,6 +70,18 @@ RSpec.describe Scene, type: :model do
       scene = create(:scene, campaign: campaign)
       ActiveRecord::Base.connection.execute("DELETE FROM campaigns WHERE id = #{campaign.id}")
       expect(Scene.where(id: scene.id)).to be_empty
+    end
+  end
+
+  describe "#closed?" do
+    it "is false when closed_at is nil" do
+      scene = build(:scene, closed_at: nil)
+      expect(scene.closed?).to be(false)
+    end
+
+    it "is true when closed_at is set" do
+      scene = build(:scene, closed_at: Time.current)
+      expect(scene.closed?).to be(true)
     end
   end
 end

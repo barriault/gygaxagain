@@ -3,6 +3,7 @@
 # Table name: scenes
 #
 #  id          :bigint           not null, primary key
+#  closed_at   :datetime
 #  position    :integer          not null
 #  summary     :text
 #  title       :string           not null
@@ -14,6 +15,7 @@
 #
 #  index_scenes_on_campaign_id               (campaign_id)
 #  index_scenes_on_campaign_id_and_position  (campaign_id,position)
+#  index_scenes_on_closed_at                 (closed_at)
 #
 # Foreign Keys
 #
@@ -27,4 +29,8 @@ class Scene < ApplicationRecord
   acts_as_list scope: :campaign
 
   validates :title, presence: true, length: { maximum: 100 }
+
+  def closed?
+    closed_at.present?
+  end
 end
