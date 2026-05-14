@@ -12,6 +12,7 @@
     "bunx:clear-cache": "bun pm cache rm --all"
   },
   "dependencies": {
+    "@hotwired/stimulus": "^3.2.2",
     "@tailwindcss/cli": "4.1.13",
     "tailwindcss": "4.1.13"
   },

@@ -114,6 +114,15 @@ RSpec.describe "Admin::Campaigns", type: :request do
         expect(created.description).to eq("Ravenloft")
       end
 
+      it "renders the flash notice with Stimulus dismissal wiring on the followed redirect" do
+        post "/campaigns", params: { campaign: { name: "Strahd" } }
+        follow_redirect!
+
+        expect(response.body).to include("Campaign created.")
+        expect(response.body).to include('data-controller="flash"')
+        expect(response.body).to include('data-action="click->flash#dismiss"')
+      end
+
       it "rerenders the form with 422 on invalid input" do
         post "/campaigns", params: { campaign: { name: "" } }
         expect(response).to have_http_status(:unprocessable_entity)

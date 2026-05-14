@@ -80,3 +80,6 @@ yarn-error.log
 
 # Claude Code per-machine local settings.
 .claude/settings.local.json
+
+# Superpowers visual companion / brainstorm session artifacts.
+.superpowers/

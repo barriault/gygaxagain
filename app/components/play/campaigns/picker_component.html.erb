@@ -15,10 +15,5 @@
     <% else %>
       <p class="mt-8 text-slate-400">No campaigns yet.</p>
     <% end %>
-
-    <%= button_to "Sign out",
-                  helpers.destroy_user_session_url(subdomain: ""),
-                  method: :delete,
-                  class: "mt-12 text-xs uppercase tracking-widest text-slate-500 hover:text-slate-300" %>
   </div>
 </div>

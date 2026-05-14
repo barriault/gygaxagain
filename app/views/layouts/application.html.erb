@@ -23,15 +23,32 @@
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
-    <% if flash[:notice].present? %>
-      <div class="fixed top-4 right-4 z-50 rounded bg-emerald-800 px-4 py-2 text-sm text-emerald-100 shadow-lg">
-        <%= flash[:notice] %>
-      </div>
+  <body class="bg-slate-900 text-slate-100">
+    <% if user_signed_in? %>
+      <nav class="bg-slate-900 border-b border-slate-800">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <%= link_to "Gygaxagain", campaigns_path, class: "font-semibold text-slate-100 hover:text-white" %>
+          <%= button_to "Sign out",
+                        destroy_user_session_url(subdomain: ""),
+                        method: :delete,
+                        class: "text-xs uppercase tracking-widest text-slate-400 hover:text-slate-200" %>
+        </div>
+      </nav>
     <% end %>
-    <% if flash[:alert].present? %>
-      <div class="fixed top-4 right-4 z-50 rounded bg-rose-800 px-4 py-2 text-sm text-rose-100 shadow-lg">
-        <%= flash[:alert] %>
+    <% if flash[:notice].present? || flash[:alert].present? %>
+      <div class="max-w-xl mx-auto px-4 pt-4">
+        <% if flash[:notice].present? %>
+          <div class="mb-4 flex items-center justify-between rounded border border-emerald-700/40 bg-emerald-900/30 px-4 py-3 text-sm text-emerald-100" data-controller="flash">
+            <span><%= flash[:notice] %></span>
+            <button type="button" class="ml-4 text-emerald-300 hover:text-white" aria-label="Dismiss" data-action="click->flash#dismiss">×</button>
+          </div>
+        <% end %>
+        <% if flash[:alert].present? %>
+          <div class="mb-4 flex items-center justify-between rounded border border-rose-700/40 bg-rose-900/30 px-4 py-3 text-sm text-rose-100" data-controller="flash">
+            <span><%= flash[:alert] %></span>
+            <button type="button" class="ml-4 text-rose-300 hover:text-white" aria-label="Dismiss" data-action="click->flash#dismiss">×</button>
+          </div>
+        <% end %>
       </div>
     <% end %>
     <%= yield %>
