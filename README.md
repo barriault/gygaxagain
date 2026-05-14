@@ -73,6 +73,22 @@ placeholder; the real chat-style UI lands in Phase 6. Visiting a play URL
 sets your `last_played_campaign_id`, so subsequent sign-ins drop you
 straight back into that campaign.
 
+## Operations
+
+### LLM diagnostics
+
+The admin diagnostics tool at `https://admin.gygaxagain.com/diagnostics/llm`
+lets a signed-in user submit a free-form prompt to the configured LLM
+provider, see the response, and inspect the `llm_calls` row that was
+written.
+
+Requires `ANTHROPIC_API_KEY` to be set in the environment. In dev, copy
+`.env.example` to `.env` (gitignored) and fill in a real key. In prod,
+set via `heroku config:set ANTHROPIC_API_KEY=sk-ant-...`.
+
+The model dropdown is populated from `Llm::Pricing::RATES.keys`. Adding a
+new model in `app/lib/llm/pricing.rb` automatically exposes it in the UI.
+
 ## Deploy
 
 The Heroku app is `gygaxagain` (region `us`). Add the heroku remote:
