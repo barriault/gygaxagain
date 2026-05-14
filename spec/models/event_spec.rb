@@ -40,6 +40,22 @@ RSpec.describe Event, type: :model do
     end
   end
 
+  describe "kind enum with player_action" do
+    it "accepts player_action as a valid kind" do
+      scene = create(:scene)
+      event = scene.events.build(kind: "player_action", payload: { "text" => "hi" })
+      expect(event).to be_valid
+    end
+
+    it "preserves the existing four kinds" do
+      expect(Event::KINDS).to include("narration", "dice_roll", "oracle_query", "scene_transition")
+    end
+
+    it "lists exactly the five expected kinds" do
+      expect(Event::KINDS).to match_array(%w[narration player_action dice_roll oracle_query scene_transition])
+    end
+  end
+
   describe "occurred_at default" do
     it "defaults to Time.current on create when not provided" do
       freeze_time = Time.parse("2026-05-14 12:00:00 UTC")
