@@ -13,16 +13,12 @@ module Llm
       # Returns Llm::Result. Never raises on HTTP/transport errors —
       # those are captured into result.error. Raises Llm::ConfigError
       # if the API key is missing from Rails credentials.
-      def call(system: nil, messages:, max_tokens: 1024)
+      def call(system: nil, messages:, max_tokens: 1024, cache_breakpoints: [])
         api_key = self.class.api_key
         raise Llm::ConfigError, "Anthropic API key not configured (credentials.anthropic.api_key)" if api_key.blank?
 
-        request_body = {
-          model: model,
-          max_tokens: max_tokens,
-          messages: messages
-        }
-        request_body[:system] = system if system.present?
+        request_body = build_request_body(system: system, messages: messages,
+                                          max_tokens: max_tokens, cache_breakpoints: cache_breakpoints)
 
         started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
@@ -77,6 +73,48 @@ module Llm
       end
 
       private
+
+      def build_request_body(system:, messages:, max_tokens:, cache_breakpoints:)
+        body = {
+          model: model,
+          max_tokens: max_tokens,
+          messages: messages
+        }
+        if system.present?
+          body[:system] = if cache_breakpoints.any?
+                            normalize_system(system, cache_breakpoints)
+                          else
+                            system
+                          end
+        elsif cache_breakpoints.any?
+          raise Llm::ConfigError, "cache_breakpoints requires a non-nil system parameter"
+        end
+        body
+      end
+
+      def normalize_system(system, cache_breakpoints)
+        blocks = case system
+                 when String then [{ type: "text", text: system }]
+                 when Array  then system.map(&:dup)
+                 else             raise Llm::ConfigError, "system must be a String or Array of typed blocks"
+                 end
+        cache_breakpoints.each do |bp|
+          index, ttl = case bp
+                       when Integer then [bp, :ephemeral_5m]
+                       when Hash    then [bp.fetch(:index), bp.fetch(:ttl, :ephemeral_5m)]
+                       end
+          blocks[index][:cache_control] = { type: "ephemeral", ttl: ttl_to_anthropic(ttl) }
+        end
+        blocks
+      end
+
+      def ttl_to_anthropic(ttl)
+        case ttl
+        when :ephemeral_5m then "5m"
+        when :ephemeral_1h then "1h"
+        else raise Llm::ConfigError, "Unknown cache TTL: #{ttl.inspect}"
+        end
+      end
 
       def elapsed_ms(started_at)
         ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).round
