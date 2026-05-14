@@ -36,6 +36,18 @@ RSpec.describe Admin::Campaigns::ShowComponent, type: :component do
     expect(page).to have_link("Back to campaigns", href: admin_campaigns_path)
   end
 
+  describe "chaos factor panel" do
+    let(:user) { create(:user) }
+    let(:campaign) { create(:campaign, user: user, chaos_factor: 4) }
+
+    it "renders the chaos factor component" do
+      render_inline(described_class.new(campaign: campaign))
+
+      expect(page).to have_text(/chaos factor/i)
+      expect(page).to have_text("4")
+    end
+  end
+
   describe "with scenes" do
     let!(:scene_a) { create(:scene, campaign: campaign, title: "Scene Alpha") }
     let!(:scene_b) { create(:scene, campaign: campaign, title: "Scene Beta") }

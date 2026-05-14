@@ -11,6 +11,8 @@
       <p class="mt-3 text-slate-300"><%= campaign.description %></p>
     <% end %>
 
+    <%= render Admin::Campaigns::ChaosFactorComponent.new(campaign: campaign) %>
+
     <div class="mt-10">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">Scenes</h2>
