@@ -97,4 +97,21 @@ RSpec.describe Campaign, type: :model do
       expect { campaign.save! }.not_to raise_error
     end
   end
+
+  describe "#scene_audits" do
+    it "reaches audits across scenes" do
+      campaign = create(:campaign)
+      scene_a  = create(:scene, campaign: campaign)
+      scene_b  = create(:scene, campaign: campaign)
+      audit_a  = create(:scene_audit, scene: scene_a)
+      create(:scene_audit, scene: scene_b)
+
+      expect(campaign.scene_audits).to contain_exactly(audit_a, scene_b.audit)
+    end
+
+    it "is empty for a fresh campaign with no closed scenes" do
+      campaign = create(:campaign)
+      expect(campaign.scene_audits).to be_empty
+    end
+  end
 end
