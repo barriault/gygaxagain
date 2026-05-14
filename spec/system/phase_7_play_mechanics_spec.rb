@@ -74,4 +74,22 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
     visit play_campaign_scene_path(campaign, scene)
     expect(page).to have_text("chaos 6")
   end
+
+  describe "dice builder chips" do
+    before do
+      visit play_campaign_scene_path(campaign, scene)
+    end
+
+    it "builds 2d6+3 by tapping d6 twice and + three times, without submitting" do
+      click_button "d6"
+      click_button "d6"
+      click_button "+"
+      click_button "+"
+      click_button "+"
+
+      expect(page).to have_field("dice_roll[expression]", with: "2d6+3")
+      # No event card appended — the dice scene log placeholder is still visible.
+      expect(page).to have_text(/the scene is set/i)
+    end
+  end
 end
