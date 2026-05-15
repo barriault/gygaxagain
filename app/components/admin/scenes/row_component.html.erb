@@ -16,6 +16,14 @@
                   method: :post,
                   disabled: last?,
                   class: "rounded px-2 py-1 text-xs text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed bg-slate-800" %>
+    <%= render Admin::Scenes::CloseButtonComponent.new(scene: scene) %>
+
+    <% if scene.closed? %>
+      <%= link_to "View audit",
+                  helpers.admin_campaign_scene_audit_path(campaign, scene),
+                  class: "rounded bg-slate-700 px-3 py-1 text-xs uppercase tracking-widest text-slate-300 hover:text-slate-100" %>
+    <% end %>
+
     <%= link_to "Edit",
                 helpers.edit_admin_campaign_scene_path(campaign, scene),
                 class: "text-sm text-slate-300 hover:text-slate-100" %>

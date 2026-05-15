@@ -48,4 +48,22 @@ RSpec.describe Admin::Scenes::RowComponent, type: :component do
 
     expect(page).to have_link("Edit", href: edit_admin_campaign_scene_path(campaign, middle_scene))
   end
+
+  describe "scene closure UI" do
+    let(:campaign) { create(:campaign) }
+
+    it "renders the End scene button when scene is open" do
+      scene = create(:scene, campaign: campaign)
+      rendered = render_inline(described_class.new(scene: scene))
+      expect(rendered.text).to include("End scene")
+      expect(rendered.text).not_to include("View audit")
+    end
+
+    it "renders the View audit link when scene is closed" do
+      scene = create(:scene, campaign: campaign, closed_at: Time.current)
+      rendered = render_inline(described_class.new(scene: scene))
+      expect(rendered.text).to include("Closed")
+      expect(rendered.text).to include("View audit")
+    end
+  end
 end
