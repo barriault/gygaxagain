@@ -18,7 +18,7 @@ class Users::SessionsController < Devise::SessionsController
     sign_in(resource_name, resource)
     yield resource if block_given?
     redirect_to after_sign_in_path_for(resource), allow_other_host: true,
-                                                   status: Devise.responder.redirect_status
+                                                   status: :see_other
   end
 
   # Override destroy for the same reason: after_sign_out_path_for returns
@@ -32,6 +32,6 @@ class Users::SessionsController < Devise::SessionsController
     yield if block_given?
     redirect_to after_sign_out_path_for(resource_name),
                 allow_other_host: true,
-                status: Devise.responder.redirect_status
+                status: :see_other
   end
 end

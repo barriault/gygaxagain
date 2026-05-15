@@ -5,7 +5,7 @@
       <p class="mt-2 text-xs uppercase tracking-widest text-slate-500">private alpha &middot; sign in</p>
     </div>
 
-    <%= form_with model: resource, url: session_path(resource_name), local: true, class: "mt-10 space-y-6" do |f| %>
+    <%= form_with model: resource, url: session_path(resource_name), data: { turbo: false }, class: "mt-10 space-y-6" do |f| %>
       <div>
         <%= f.label :email, class: "block text-sm uppercase tracking-widest text-slate-400" %>
         <%= f.email_field :email,
