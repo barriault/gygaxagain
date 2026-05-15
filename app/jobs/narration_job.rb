@@ -1,9 +1,5 @@
 class NarrationJob < ApplicationJob
   queue_as :narration
-  # Llm::ConfigError is side-defined in llm/error.rb alongside Llm::Error.
-  # Zeitwerk only autoloads the primary constant per file, so we must trigger
-  # the load of Llm::Error first to make Llm::ConfigError available here.
-  Llm::Error # rubocop:disable Lint/Void
   discard_on ActiveRecord::RecordNotFound, KeyError, Llm::ConfigError
 
   FLUSH_MS    = 80
