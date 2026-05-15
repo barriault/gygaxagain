@@ -71,4 +71,25 @@ RSpec.describe "Asymmetry coverage", type: :meta do
         -> { "Player ViewModel coverage gaps:\n" + problems.map { |p| "  - #{p}" }.join("\n") }
     end
   end
+
+  describe "Play::*Component coverage" do
+    it "every non-exempt Play::*Component has a leak_secrets_of assertion in its spec" do
+      components = descendants_of(Play)
+        .select { |c| c.is_a?(Class) && c < ViewComponent::Base }
+
+      expect(components).not_to be_empty,
+        "Sanity: no Play::*Component classes were discovered."
+
+      non_exempt = components.reject { |c| EXEMPT_COMPONENTS.key?(c.name) }
+      problems   = non_exempt.map { |c| assert_coverage_for(c) }.compact
+
+      expect(problems).to be_empty,
+        -> {
+          "Play component coverage gaps:\n" +
+            problems.map { |p| "  - #{p}" }.join("\n") +
+            "\n\nAdd asymmetry coverage or — if intentionally exempt — " \
+              "extend EXEMPT_COMPONENTS in spec/asymmetry/coverage_spec.rb with a reason."
+        }
+    end
+  end
 end
