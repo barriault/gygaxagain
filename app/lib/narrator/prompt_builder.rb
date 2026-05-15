@@ -76,11 +76,15 @@ module Narrator
     end
 
     def recent_events_window
-      @recent_events_window ||= scene_vm.events.last(RECENT_EVENT_WINDOW)
+      @recent_events_window ||= all_events.last(RECENT_EVENT_WINDOW)
     end
 
     def omitted_count
-      [ scene_vm.events.size - RECENT_EVENT_WINDOW, 0 ].max
+      [ all_events.size - RECENT_EVENT_WINDOW, 0 ].max
+    end
+
+    def all_events
+      @all_events ||= scene_vm.events
     end
 
     def event_md(event_vm)

@@ -5,6 +5,13 @@ module Play
     def create
       text = params.require(:narration).permit(:text).fetch(:text, "").to_s.strip
 
+      if @scene.closed?
+        return render turbo_stream: turbo_stream.replace(
+          helpers.dom_id(@scene, :narration_form),
+          Play::Narration::FormComponent.new(scene: @scene, text: text, error: "this scene is closed")
+        ), status: :forbidden
+      end
+
       if text.blank?
         return render turbo_stream: turbo_stream.replace(
           helpers.dom_id(@scene, :narration_form),

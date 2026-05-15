@@ -55,6 +55,13 @@ RSpec.describe Play::Scenes::PlayComponent, type: :component do
     expect(rendered.css("[data-controller='scene-log-scroll']")).to be_present
   end
 
+  it "hides the narration form when the scene is closed" do
+    scene = create(:scene, closed_at: Time.current)
+    rendered = render_inline(described_class.new(scene: scene))
+    expect(rendered.css("[data-controller='narration-form']")).to be_empty
+    expect(rendered.text).to include("scene has been closed")
+  end
+
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }

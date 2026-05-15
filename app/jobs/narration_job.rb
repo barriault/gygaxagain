@@ -1,5 +1,6 @@
 class NarrationJob < ApplicationJob
   queue_as :narration
+  discard_on ActiveRecord::RecordNotFound, KeyError
 
   FLUSH_MS    = 80
   FLUSH_BYTES = 25

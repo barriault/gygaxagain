@@ -20,7 +20,13 @@
     </div>
 
     <div class="mt-8">
-      <%= render Play::Narration::FormComponent.new(scene: scene) %>
+      <% if scene.closed? %>
+        <div class="rounded-lg border border-slate-700 bg-slate-900/50 p-4 text-sm text-slate-400">
+          This scene has been closed. To continue play, open a new scene from admin.
+        </div>
+      <% else %>
+        <%= render Play::Narration::FormComponent.new(scene: scene) %>
+      <% end %>
     </div>
 
     <%= render Play::Scenes::InputDockComponent.new(scene: scene) %>

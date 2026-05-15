@@ -57,6 +57,17 @@ RSpec.describe "Play::Narrations", type: :request do
       expect(response.body).to include("type something")
     end
 
+    it "rejects narrations against a closed scene" do
+      scene.update!(closed_at: Time.current)
+      expect {
+        post path, params: { narration: { text: "x" } },
+             headers: { "Accept" => "text/vnd.turbo-stream.html" }
+      }.not_to change(Event, :count)
+
+      expect(response).to have_http_status(:forbidden)
+      expect(response.body).to include("scene is closed")
+    end
+
     it "returns 404 for cross-user campaign access" do
       post campaign_scene_narrations_path(other_campaign, other_scene),
            params: { narration: { text: "x" } },
