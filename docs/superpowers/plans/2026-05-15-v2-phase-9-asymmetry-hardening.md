@@ -428,13 +428,19 @@ Expected: 3 examples, 0 failures.
 
 - [ ] **Step 2: Temporarily break coverage on PickerComponent**
 
-Open `spec/components/play/campaigns/picker_component_spec.rb`. Comment out the line:
+Open `spec/components/play/campaigns/picker_component_spec.rb`. **Replace** (not comment out — the meta-spec uses substring matching, so a commented-out `leak_secrets_of` still satisfies the check) the line:
 
 ```ruby
       expect(rendered).not_to leak_secrets_of(faction, npc)
 ```
 
-(One line, inside the `describe "asymmetry"` block added in Task 1.)
+with:
+
+```ruby
+      expect(rendered).to be_a(String)
+```
+
+This removes the string `leak_secrets_of` from the file entirely, which is what the meta-spec's `file.read.include?("leak_secrets_of")` check is looking for.
 
 - [ ] **Step 3: Re-run the meta-spec, confirm it now fails**
 
@@ -451,7 +457,7 @@ If the message is unclear or the path is wrong, the meta-spec's failure-message 
 
 - [ ] **Step 4: Revert the temporary mutation**
 
-Restore the commented-out line:
+Restore the original line:
 
 ```ruby
       expect(rendered).not_to leak_secrets_of(faction, npc)
