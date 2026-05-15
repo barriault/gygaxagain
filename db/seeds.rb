@@ -18,15 +18,98 @@ user  = User.find_by(email: email) or abort(
   "  bin/rails users:create EMAIL=#{email} PASSWORD=<your-password>"
 )
 
-campaign = Campaign.find_or_create_by!(user: user, name: "The Ancient Tomb of Phandalin") do |c|
-  c.description = <<~DESC.strip
-    A 3-hour one-shot dungeon crawl for 1st-level characters set in Phandalin
-    on the Sword Coast. The party is hired by the captain of the city guard
-    to investigate undead attacks emanating from an old cemetery outside town.
-    By Michael Klamerus (DMsGuild, 2016).
-  DESC
-  c.chaos_factor = 5
-end
+campaign_description = <<~DESC.strip
+  A 3-hour one-shot dungeon crawl for 1st-level characters set in Phandalin
+  on the Sword Coast. The party is hired by the captain of the city guard
+  to investigate undead attacks emanating from an old cemetery outside town.
+  By Michael Klamerus (DMsGuild, 2016).
+
+  # Party Roster
+
+  The party is four 1st-level characters, all played by the same player at
+  the table. The narrator should address the group as a party and treat
+  each character as an independent actor whose declared actions the player
+  will narrate.
+
+  ## Aragorn — Human Ranger 1 (Guide background, Chaotic Good, male, Medium)
+  AC 15 (studded leather). HP 10 (1d10). Speed 30 ft.
+  STR 13/+1, DEX 16/+3, CON 10/+0, INT 10/+0, WIS 16/+3, CHA 10/+0.
+  Saves: STR +3, DEX +5. Proficiency +2. Passive Perception 15.
+  Skills: Animal Handling +5, Insight +5, Nature +2, Perception +5,
+  Stealth +5, Survival +5.
+  Languages: Common, Giant, Halfling. Tools: Cartographer's Tools.
+  Weapons: Longbow +5 (1d8+3 piercing, Slow), Shortsword +5 (1d6+3 piercing,
+  Vex), Shortsword +5 (1d6 piercing, dual-wield, Vex), Produce Flame +5
+  (1d8 fire). Unarmed +3 (2 bludgeoning).
+  Features: Favored Enemy — Hunter's Mark always prepared, castable 2x/long
+  rest without a slot. Savage Attacker — once per turn on a weapon hit, roll
+  damage dice twice and use either. Magic Initiate (Druid).
+  Spells (WIS, save DC 13, +5 attack, 2 1st-level slots):
+  - Cantrips: Mending, Produce Flame.
+  - 1st: Hail of Thorns, Cure Wounds (Ranger), Cure Wounds (Druid via Magic
+    Initiate, 1/long rest free), Hunter's Mark (always prepared).
+
+  ## Caine — Goliath Monk 1 (Sage background, Medium)
+  AC 16 (unarmored defense). HP 10 (1d8). Speed 35 ft.
+  STR 14/+2, DEX 16/+3, CON 14/+2, INT 14/+2, WIS 16/+3, CHA 16/+3.
+  Saves: STR +4, DEX +5. Proficiency +2. Passive Perception 13.
+  Skills: Arcana +4, Athletics +4, History +4, Stealth +5.
+  Languages: Common, Giant, Orc. Tools: Calligrapher's Supplies, Flute.
+  Weapons: Katana +5 (1d6+3 slashing, Nick), Shuriken +5 (1d6+3 piercing,
+  thrown 20/60, Nick) ×~14 carried.
+  Features: Martial Arts (Dex for unarmed/Monk weapon attack & damage; 1d6
+  Martial Arts die; unarmed strike as bonus action). Unarmored Defense.
+  Hill's Tumble (Hill Giant ancestry) 2/long rest — on a hit vs. Large or
+  smaller, can knock prone. Large Form (Goliath) — 1/long rest, grow Large
+  for 10 minutes. Powerful Build — count as one size larger for carrying;
+  advantage to end Grappled. Magic Initiate (Wizard).
+  Spells (no spellcasting ability shown — WIS for the feat):
+  - Cantrips: Light, Message.
+  - 1st: False Life (1/long rest free, or via Wizard slots — Caine has none).
+
+  ## Fred — Dwarf Cleric 1 (Acolyte background, Medium)
+  AC 18 (chain mail + shield). HP 11 (1d8 + Dwarven Toughness). Speed 30 ft.
+  STR 14/+2, DEX 8/-1, CON 14/+2, INT 10/+0, WIS 16/+3, CHA 12/+1.
+  Saves: WIS +5, CHA +3. Advantage on saves vs. poison; resistance to
+  poison damage. Proficiency +2. Passive Perception 13. Darkvision 120 ft.
+  Skills: Insight +5, Medicine +5, Religion +2.
+  Languages: Common, Dwarvish, Orc. Tools: Calligrapher's Supplies.
+  Subclass: Protector Cleric (martial weapons + heavy armor proficiency).
+  Weapons: Mace +4 (1d6+2 bludgeoning, Sap). Unarmed +4 (3 bludgeoning).
+  Features: Stonecunning (Tremorsense 60 ft on stone, 2/long rest as bonus
+  action). Magic Initiate (Cleric).
+  Spells (WIS, save DC 13, +5 attack, 2 1st-level slots):
+  - Cantrips: Light, Sacred Flame, Thaumaturgy, Spare the Dying (Magic
+    Initiate), Word of Radiance (Magic Initiate).
+  - 1st prepared: Bless, Cure Wounds, Guiding Bolt, Command, Ceremony [R],
+    Bane, Protection from Evil and Good, Purify Food and Drink [R],
+    Sanctuary, Shield of Faith, Create or Destroy Water, Detect Evil and
+    Good, Detect Poison and Disease [R], Detect Magic [R], Healing Word,
+    Inflict Wounds.
+  - 1st extra (Magic Initiate, 1/long rest free): Healing Word.
+
+  ## Patric — Human Wizard 1 (Charlatan background, Chaotic Good, male,
+  Medium)
+  AC 13 (dex only, no armor). HP 7 (1d6). Speed 30 ft.
+  STR 8/-1, DEX 16/+3, CON 12/+1, INT 15/+2, WIS 9/-1, CHA 14/+2.
+  Saves: INT +4, WIS +1. Proficiency +2. Passive Perception 9.
+  Skills: Arcana +4, Deception +4, Investigation +4, Sleight of Hand +5,
+  Stealth +5.
+  Languages: Common, Nordmaarian. Tools: Disguise Kit, Forgery Kit.
+  Weapons: Dagger +5 (1d4+3 piercing, finesse/thrown 20/60), Dart +5 (1d4+3
+  piercing, thrown 20/60) ×12 carried, Ray of Frost +4 (1d8 cold).
+  Features: Arcane Recovery (1/long rest, after short rest recover slots
+  totalling level 1).
+  Spells (INT, save DC 12, +4 attack, 2 1st-level slots; spellbook below):
+  - Cantrips prepared: Light, Mage Hand, Ray of Frost.
+  - 1st prepared (from spellbook): Burning Hands, Charm Person, Feather
+    Fall, Mage Armor, Magic Missile, Sleep.
+DESC
+
+campaign = Campaign.find_or_initialize_by(user: user, name: "The Ancient Tomb of Phandalin")
+campaign.description  = campaign_description
+campaign.chaos_factor = 5 if campaign.new_record?
+campaign.save!
 
 # Factions ────────────────────────────────────────────────────────────────────
 # Each block: find-or-create the faction, then find-or-create each secret by
