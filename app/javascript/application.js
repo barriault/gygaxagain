@@ -1,3 +1,4 @@
+import "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"
 import FlashController from "./controllers/flash_controller"
 import DiceFormController from "./controllers/dice_form_controller"
