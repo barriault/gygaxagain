@@ -1,6 +1,10 @@
 class NarrationJob < ApplicationJob
   queue_as :narration
-  discard_on ActiveRecord::RecordNotFound, KeyError
+  # Llm::ConfigError is side-defined in llm/error.rb alongside Llm::Error.
+  # Zeitwerk only autoloads the primary constant per file, so we must trigger
+  # the load of Llm::Error first to make Llm::ConfigError available here.
+  Llm::Error # rubocop:disable Lint/Void
+  discard_on ActiveRecord::RecordNotFound, KeyError, Llm::ConfigError
 
   FLUSH_MS    = 80
   FLUSH_BYTES = 25
@@ -41,6 +45,21 @@ class NarrationJob < ApplicationJob
     else
       finalize_error(narration_event, accumulator, llm_call)
     end
+  rescue Exception => e
+    # Mark the event errored so the user sees a clear "failed" state instead
+    # of perma-streaming. Re-raise so ActiveJob can still apply retry/discard.
+    if defined?(narration_event) && narration_event
+      error_message = "#{e.class.name}: #{e.message}".byteslice(0, 500)
+      text          = defined?(accumulator) ? accumulator.to_s : ""
+      narration_event.with_lock do
+        narration_event.update!(payload: narration_event.payload.merge(
+          "text" => text, "status" => "errored", "error_message" => error_message
+        ))
+      end
+      broadcast_replace(narration_event)
+    end
+    Rails.logger.error("[NarrationJob] #{e.class}: #{e.message}\n#{e.backtrace.first(10).join("\n")}")
+    raise
   end
 
   private

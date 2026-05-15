@@ -66,4 +66,35 @@ RSpec.describe NarrationJob, type: :job do
       expect(narration_event.payload["llm_call_id"]).to be_a(Integer)
     end
   end
+
+  describe "untyped exception rescue" do
+    before do
+      call_count = 0
+      allow(Llm::Call).to receive(:execute_streaming) do |**_kwargs, &block|
+        block.call(text: "The ")
+        call_count += 1
+        raise RuntimeError, "boom"
+      end
+    end
+
+    it "re-raises the exception so ActiveJob sees the failure" do
+      expect {
+        described_class.perform_now(narration_event.id)
+      }.to raise_error(RuntimeError, "boom")
+    end
+
+    it "marks the event as errored with the partial text and error message" do
+      begin
+        described_class.perform_now(narration_event.id)
+      rescue RuntimeError
+        # expected
+      end
+
+      narration_event.reload
+      expect(narration_event.payload["status"]).to eq("errored")
+      expect(narration_event.payload["error_message"]).to include("RuntimeError")
+      expect(narration_event.payload["error_message"]).to include("boom")
+      expect(narration_event.payload["text"]).to include("The ")
+    end
+  end
 end
