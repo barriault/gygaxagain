@@ -149,16 +149,16 @@ RSpec.describe Llm::Call do
     end
 
     it "writes an LlmCall row with streamed content" do
-      stub_anthropic_streaming(text_chunks: ["Hi ", "there."], input_tokens: 5, output_tokens: 3)
+      stub_anthropic_streaming(text_chunks: [ "Hi ", "there." ], input_tokens: 5, output_tokens: 3)
 
       received = []
       call = Llm::Call.execute_streaming(
         purpose: :narration,
-        messages: [{ role: "user", content: "x" }],
+        messages: [ { role: "user", content: "x" } ],
         user: user
       ) { |text:| received << text }
 
-      expect(received).to eq(["Hi ", "there."])
+      expect(received).to eq([ "Hi ", "there." ])
       expect(call).to be_persisted
       expect(call.purpose).to eq("narration")
       expect(call.text).to eq("Hi there.")
@@ -172,7 +172,7 @@ RSpec.describe Llm::Call do
 
       call = Llm::Call.execute_streaming(
         purpose: :narration,
-        messages: [{ role: "user", content: "x" }],
+        messages: [ { role: "user", content: "x" } ],
         user: user
       )
 

@@ -43,7 +43,7 @@ FactoryBot.define do
       verdict { "concerns" }
       result {
         { "verdict" => "concerns",
-          "criteria" => [{ "name" => "player_agency", "status" => "concerns", "note" => "..." }],
+          "criteria" => [ { "name" => "player_agency", "status" => "concerns", "note" => "..." } ],
           "summary" => "Some concerns." }
       }
     end

@@ -18,7 +18,7 @@ RSpec.describe Narrator::AuditPromptBuilder do
       prompt = described_class.call(scene: scene)
       expect(prompt.system.length).to eq(1)
       expect(prompt.system[0][:text]).to eq(Narrator::AuditSystemPrompt.text)
-      expect(prompt.cache_breakpoints).to eq([0])
+      expect(prompt.cache_breakpoints).to eq([ 0 ])
     end
 
     it "renders all events in the user message ordered by occurred_at" do

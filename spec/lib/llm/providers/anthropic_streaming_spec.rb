@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe Llm::Providers::Anthropic, "#call_streaming" do
   let(:adapter) { described_class.new(model: "claude-sonnet-4-6") }
-  let(:messages) { [{ role: "user", content: "Hi." }] }
+  let(:messages) { [ { role: "user", content: "Hi." } ] }
 
   before do
     allow(Rails.application.credentials).to receive(:dig).with(:anthropic, :api_key).and_return("sk-test")
@@ -12,7 +12,7 @@ RSpec.describe Llm::Providers::Anthropic, "#call_streaming" do
   describe "happy path" do
     before do
       stub_anthropic_streaming(
-        text_chunks: ["Hello ", "world", "."],
+        text_chunks: [ "Hello ", "world", "." ],
         input_tokens: 12, output_tokens: 7,
         cache_creation_tokens: 100, cache_read_tokens: 200
       )
@@ -21,7 +21,7 @@ RSpec.describe Llm::Providers::Anthropic, "#call_streaming" do
     it "yields each delta in order" do
       received = []
       adapter.call_streaming(messages: messages) { |text:| received << text }
-      expect(received).to eq(["Hello ", "world", "."])
+      expect(received).to eq([ "Hello ", "world", "." ])
     end
 
     it "returns an Llm::Result with concatenated text and tokens" do
@@ -42,13 +42,13 @@ RSpec.describe Llm::Providers::Anthropic, "#call_streaming" do
   end
 
   describe "cache_breakpoints" do
-    before { stub_anthropic_streaming(text_chunks: ["x"]) }
+    before { stub_anthropic_streaming(text_chunks: [ "x" ]) }
 
     it "decorates the indicated system block" do
       adapter.call_streaming(
-        system: [{ type: "text", text: "rules" }, { type: "text", text: "roster" }],
+        system: [ { type: "text", text: "rules" }, { type: "text", text: "roster" } ],
         messages: messages,
-        cache_breakpoints: [0]
+        cache_breakpoints: [ 0 ]
       )
 
       expect(WebMock).to have_requested(:post, "https://api.anthropic.com/v1/messages")

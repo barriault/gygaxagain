@@ -76,7 +76,7 @@ class NarrationJob < ApplicationJob
     user  = scene.campaign.user
 
     Turbo::StreamsChannel.broadcast_replace_to(
-      [scene, user],
+      [ scene, user ],
       target:     ActionView::RecordIdentifier.dom_id(event),
       renderable: Play::Events::NarrationComponent.new(event: event),
       layout:     false

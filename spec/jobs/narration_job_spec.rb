@@ -22,7 +22,7 @@ RSpec.describe NarrationJob, type: :job do
 
   describe "happy path" do
     before do
-      stub_anthropic_streaming(text_chunks: ["Hello ", "there", "."],
+      stub_anthropic_streaming(text_chunks: [ "Hello ", "there", "." ],
                                input_tokens: 10, output_tokens: 4)
     end
 
@@ -49,7 +49,7 @@ RSpec.describe NarrationJob, type: :job do
       described_class.perform_now(narration_event.id)
       replaces = captured_turbo_broadcasts.select { _1[:method] == :broadcast_replace_to }
       expect(replaces).not_to be_empty
-      expect(replaces.first[:args]).to eq([[scene, user]])
+      expect(replaces.first[:args]).to eq([ [ scene, user ] ])
       expect(replaces.first[:kwargs][:target]).to include("event_#{narration_event.id}")
     end
   end

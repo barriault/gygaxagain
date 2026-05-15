@@ -134,9 +134,9 @@ module Llm
         if system.present?
           body[:system] = if cache_breakpoints.any?
                             normalize_system(system, cache_breakpoints)
-                          else
+          else
                             system
-                          end
+          end
         elsif cache_breakpoints.any?
           raise Llm::ConfigError, "cache_breakpoints requires a non-nil system parameter"
         end
@@ -145,15 +145,15 @@ module Llm
 
       def normalize_system(system, cache_breakpoints)
         blocks = case system
-                 when String then [{ type: "text", text: system }]
-                 when Array  then system.map(&:dup)
-                 else             raise Llm::ConfigError, "system must be a String or Array of typed blocks"
-                 end
+        when String then [ { type: "text", text: system } ]
+        when Array  then system.map(&:dup)
+        else             raise Llm::ConfigError, "system must be a String or Array of typed blocks"
+        end
         cache_breakpoints.each do |bp|
           index, ttl = case bp
-                       when Integer then [bp, :ephemeral_5m]
-                       when Hash    then [bp.fetch(:index), bp.fetch(:ttl, :ephemeral_5m)]
-                       end
+          when Integer then [ bp, :ephemeral_5m ]
+          when Hash    then [ bp.fetch(:index), bp.fetch(:ttl, :ephemeral_5m) ]
+          end
           blocks[index][:cache_control] = { type: "ephemeral", ttl: ttl_to_anthropic(ttl) }
         end
         blocks

@@ -19,7 +19,7 @@ RSpec.describe "Phase 8 narrator streaming", type: :system, js: true do
 
     allow(Rails.application.credentials).to receive(:dig).with(:anthropic, :api_key).and_return("sk-test")
     Llm::Providers::Anthropic.reset_client!
-    stub_anthropic_streaming(text_chunks: ["The bartender ", "looks up. ", "He waves you over."],
+    stub_anthropic_streaming(text_chunks: [ "The bartender ", "looks up. ", "He waves you over." ],
                              input_tokens: 50, output_tokens: 12)
     Capybara.app_host = "http://lvh.me"
     sign_in user

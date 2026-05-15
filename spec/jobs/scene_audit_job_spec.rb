@@ -31,7 +31,7 @@ RSpec.describe SceneAuditJob, type: :job do
         headers: { "Content-Type" => "application/json" },
         body: {
           id: "msg_audit_1", type: "message", role: "assistant", model: "claude-sonnet-4-6",
-          content: [{ type: "text", text: audit_json }],
+          content: [ { type: "text", text: audit_json } ],
           stop_reason: "end_turn", stop_sequence: nil,
           usage: { input_tokens: 100, output_tokens: 200,
                    cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
@@ -58,7 +58,7 @@ RSpec.describe SceneAuditJob, type: :job do
         headers: { "Content-Type" => "application/json" },
         body: {
           id: "msg_audit_2", type: "message", role: "assistant", model: "claude-sonnet-4-6",
-          content: [{ type: "text", text: "definitely not json" }],
+          content: [ { type: "text", text: "definitely not json" } ],
           stop_reason: "end_turn", stop_sequence: nil,
           usage: { input_tokens: 50, output_tokens: 5,
                    cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
@@ -86,7 +86,7 @@ RSpec.describe SceneAuditJob, type: :job do
         headers: { "Content-Type" => "application/json" },
         body: {
           id: "msg_audit_3", type: "message", role: "assistant", model: "claude-sonnet-4-6",
-          content: [{ type: "text", text: audit_json }],
+          content: [ { type: "text", text: audit_json } ],
           stop_reason: "end_turn", stop_sequence: nil,
           usage: { input_tokens: 1, output_tokens: 1,
                    cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }

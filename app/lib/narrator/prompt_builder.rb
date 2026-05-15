@@ -15,12 +15,12 @@ module Narrator
       Narrator::Prompt.new(
         system: build_system_blocks,
         messages: build_messages,
-        cache_breakpoints: [0, 1]
+        cache_breakpoints: [ 0, 1 ]
       )
     end
 
     def input_view_models
-      [campaign_vm, scene_vm, *faction_vms, *npc_vms]
+      [ campaign_vm, scene_vm, *faction_vms, *npc_vms ]
     end
 
     private
@@ -34,7 +34,7 @@ module Narrator
     end
 
     def build_messages
-      [{ role: "user", content: @player_action_text }]
+      [ { role: "user", content: @player_action_text } ]
     end
 
     def campaign_and_roster_text
@@ -80,7 +80,7 @@ module Narrator
     end
 
     def omitted_count
-      [scene_vm.events.size - RECENT_EVENT_WINDOW, 0].max
+      [ scene_vm.events.size - RECENT_EVENT_WINDOW, 0 ].max
     end
 
     def event_md(event_vm)

@@ -12,8 +12,8 @@ RSpec.describe Narrator::PromptBuilder do
 
       expect(prompt).to be_a(Narrator::Prompt)
       expect(prompt.system.length).to eq(3)
-      expect(prompt.messages).to eq([{ role: "user", content: "I look around." }])
-      expect(prompt.cache_breakpoints).to eq([0, 1])
+      expect(prompt.messages).to eq([ { role: "user", content: "I look around." } ])
+      expect(prompt.cache_breakpoints).to eq([ 0, 1 ])
     end
 
     it "includes the rules block first" do

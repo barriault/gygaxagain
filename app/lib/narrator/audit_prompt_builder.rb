@@ -10,9 +10,9 @@ module Narrator
 
     def call
       Narrator::Prompt.new(
-        system: [{ type: "text", text: Narrator::AuditSystemPrompt.text }],
-        messages: [{ role: "user", content: scene_transcript }],
-        cache_breakpoints: [0]
+        system: [ { type: "text", text: Narrator::AuditSystemPrompt.text } ],
+        messages: [ { role: "user", content: scene_transcript } ],
+        cache_breakpoints: [ 0 ]
       )
     end
 

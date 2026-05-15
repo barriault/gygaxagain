@@ -5,7 +5,7 @@ module Narrator
     end
 
     def to_s
-      [system_text, messages_text].reject(&:empty?).join("\n\n")
+      [ system_text, messages_text ].reject(&:empty?).join("\n\n")
     end
 
     private
