@@ -40,70 +40,80 @@ What already exists, captured here so the implementation plan doesn't accidental
 - `Narrator::PromptBuilder` — `leak_secrets_of(faction, npc)` against rendered prompt
 - `Narrator::AuditPromptBuilder` — `leak_secrets_of(faction, npc)` against rendered prompt
 
-**Play component asymmetry coverage** (❌ the gap):
-- All 16 `Play::*Component` specs exist (delivered in Phase 6–8) but none currently call `leak_secrets_of`.
+**Play component asymmetry coverage** (mostly ✅; one gap, one genuine exemption):
+- 13 of the 16 `Play::*Component` specs already call `leak_secrets_of` (assertions added during Phase 8 work). Phase 9 inherits these; the verification work is a regression check (should pass for free).
+- `Play::Campaigns::PickerComponent` spec is the one gap — no asymmetry assertion. Adding it is the only new component-level coverage work.
+- `Play::HomeComponent` is the one component that genuinely accepts no campaign-scoped data. It gets a marker comment + entry in the meta-spec's exempt allowlist.
+- `Play::Events::Component` is a `Module`, not a `Class`; filtered out by meta-spec discovery; no action needed.
+
+Note: an earlier draft of this spec assumed all 16 component specs lacked coverage and listed 6 "exempt" form/scaffold components. That was based on an incomplete read of the codebase. The Phase 8 convention was actually "every component that accepts a `scene:` or campaign-scoped input gets a `leak_secrets_of` assertion as cheap insurance," and 13 specs followed that convention. The corrected groups below reflect reality.
 
 ## Component asymmetry sweep
 
-The 16 components split three ways.
+The 16 components split four ways, reflecting the corrected state.
 
-### Group 1 — Renders Player ViewModels directly. Must assert `leak_secrets_of` (8 components)
+### Group A — Already covered. Phase 9 regression check only (13 components)
 
-These accept a Player ViewModel as input and render fields drawn from it. The asymmetry assertion is the load-bearing test for each.
+These specs already call `leak_secrets_of` (added during Phase 8). Phase 9 runs the suite and confirms they still pass. No new spec code.
 
-- `Play::Events::NarrationComponent` — narration event renderer. The riskiest: narration text is LLM-generated and persisted to `events.payload`. If `Narrator::PromptBuilder` ever did leak, this is where the leak surfaces.
+- `Play::Events::NarrationComponent`
 - `Play::Events::PlayerActionComponent`
 - `Play::Events::DiceRollComponent`
 - `Play::Events::OracleQueryComponent`
 - `Play::Events::SceneTransitionComponent`
-- `Play::Scenes::LogComponent` — composite that iterates events through the dispatcher.
-- `Play::Scenes::PlayComponent` — top-level scene wrapper.
-- `Play::Campaigns::ScenePickerComponent` — lists scenes in a campaign.
+- `Play::Scenes::LogComponent`
+- `Play::Scenes::PlayComponent`
+- `Play::Scenes::InputDockComponent`
+- `Play::Campaigns::ScenePickerComponent`
+- `Play::Campaigns::PlaceholderComponent`
+- `Play::Dice::FormComponent`
+- `Play::Oracle::FormComponent`
+- `Play::Narration::FormComponent`
 
-**Standard assertion shape** (each spec adds a context block):
+### Group B — The actual gap (1 component)
+
+- `Play::Campaigns::PickerComponent` — renders a collection of user campaigns. Currently no asymmetry assertion. Add one using the Phase 8 convention (see standard assertion shape below).
+
+**Standard assertion shape** (the convention Phase 8 used; mirrored here for consistency):
 
 ```ruby
-context "asymmetry" do
-  let!(:faction_secret) { create(:faction_secret, faction: faction, label: "Hidden agenda", content: "destroy the city") }
-  let!(:npc_secret)     { create(:npc_secret,     npc: npc,         label: "True name",     content: "...") }
+describe "asymmetry" do
+  let(:faction) { create(:faction, campaign: campaign) }
+  let(:npc)     { create(:npc, campaign: campaign) }
 
-  it "does not leak secrets when rendered with a Player ViewModel" do
-    render_inline(described_class.new(<viewmodel constructed with faction + npc>))
-    expect(rendered_content).not_to leak_secrets_of(faction, npc)
+  before do
+    create(:faction_secret, faction: faction, label: "hidden temple", content: "in the swamp")
+    create(:npc_secret,     npc: npc,         label: "true identity", content: "is a doppelganger")
+  end
+
+  it "does not leak secrets of related records" do
+    rendered = render_inline(described_class.new(campaigns: [ campaign ])).to_s
+    expect(rendered).not_to leak_secrets_of(faction, npc)
   end
 end
 ```
 
-Each component's existing spec factories already construct the right ViewModel shape; only the seeded secrets + assertion are added.
+### Group C — Genuinely exempt (1 component)
 
-### Group 2 — Pure UI scaffolds. Document exemption (6 components)
+- `Play::HomeComponent` — static landing page. Accepts no campaign-scoped input; structurally cannot render hidden state. Gets a one-line marker comment in its spec and an entry in the meta-spec's exempt allowlist.
 
-These either accept no ViewModel input or render no campaign-scoped data. They get a one-line marker comment in their spec and are listed in the meta-spec's exempt allowlist.
-
-- `Play::HomeComponent` — static landing
-- `Play::Dice::FormComponent` — input form
-- `Play::Oracle::FormComponent` — input form
-- `Play::Narration::FormComponent` — input form (action submission only)
-- `Play::Scenes::InputDockComponent` — input dock shell
-- `Play::Campaigns::PlaceholderComponent` — empty-state placeholder
-
-Marker comment template, placed at top of the relevant spec's `describe` block:
+Marker comment template, placed inside the `RSpec.describe` block:
 
 ```ruby
-# Asymmetry-exempt: renders no campaign-scoped data.
-# See spec/asymmetry/coverage_spec.rb EXEMPT_COMPONENTS.
+# Asymmetry-exempt: static landing, no ViewModel input.
+# See EXEMPT_COMPONENTS in spec/asymmetry/coverage_spec.rb.
 ```
 
-### Group 3 — Edge cases (2 components)
+### Group D — Dispatcher (1 component)
 
-- `Play::Campaigns::PickerComponent` — renders the user's campaigns (`Player::CampaignViewModel`-shaped data, name only). Today no leak surface exists, but the matcher costs nothing and guards against future drift. **Treated as Group 1.**
-- `Play::Events::Component` — the dispatcher module. Not a renderable component; its existing spec already asserts REGISTRY routing. **No `leak_secrets_of` assertion needed; not subject to the meta-spec.**
+- `Play::Events::Component` — a `Module`, not a renderable `Class`. Filtered out automatically by the meta-spec's discovery (which requires `is_a?(Class) && c < ViewComponent::Base`). No marker, no assertion needed.
 
 ### Summary count
 
-- Group 1 + Group 3-rendering: **9 components get new asymmetry assertions.**
-- Group 2: **6 components get marker comments only.**
-- Dispatcher: **1 component, no change.**
+- Group A: **13 components, no work** (regression-verify only).
+- Group B: **1 component, new asymmetry assertion.**
+- Group C: **1 component, marker comment + allowlist entry.**
+- Group D: **1 component, naturally excluded.**
 - Total: 16, matches the inventory.
 
 ## Meta-spec — load-time coverage guard
@@ -120,20 +130,15 @@ A single spec walks the player-facing namespaces at load time and asserts covera
 
 3. **`Narrator::*PromptBuilder` coverage.** For every class under `Narrator::` whose name matches `*PromptBuilder`, the spec asserts that its spec file contains `leak_secrets_of`.
 
-**Exempt allowlist (Group 2):**
+**Exempt allowlist (Group C):**
 
 ```ruby
 EXEMPT_COMPONENTS = {
-  "Play::HomeComponent"                   => "static landing, no ViewModel input",
-  "Play::Dice::FormComponent"             => "input form, no campaign-scoped data",
-  "Play::Oracle::FormComponent"           => "input form, no campaign-scoped data",
-  "Play::Narration::FormComponent"        => "input form (action submission only)",
-  "Play::Scenes::InputDockComponent"      => "input dock shell, no campaign-scoped data",
-  "Play::Campaigns::PlaceholderComponent" => "empty-state placeholder"
+  "Play::HomeComponent" => "static landing, no ViewModel input"
 }.freeze
 ```
 
-`Play::Events::Component` (the dispatcher module) is excluded from discovery entirely — it is not a `ViewComponent::Base` subclass and the discovery query filters by ancestry.
+Only one entry today. Future Phase 10+ components that genuinely have no campaign-scoped input will be added here with a one-line reason. `Play::Events::Component` (the dispatcher module) is excluded from discovery entirely — it is a `Module`, not a `Class`, and the discovery query filters by ancestry.
 
 **Discovery technique:** the spec calls `Rails.application.eager_load!` to populate the constant table, then walks `Player.constants` / `Play.constants` recursively. For component discovery, the filter is `c.is_a?(Class) && c < ViewComponent::Base` — this naturally excludes `Play::Events::Component`, which is a `Module`, not a class. For ViewModel discovery, the filter is `c.is_a?(Class) && c.name.end_with?("ViewModel")`. The same walk applies under `Narrator::` for prompt builders, with filter `c.is_a?(Class) && c.name.end_with?("PromptBuilder")`.
 
@@ -239,8 +244,9 @@ Phase 9 closes (and issue #10 closes) when *all* of these are true:
 
 **Coverage:**
 
-- [ ] All 9 Group-1+3 `Play::*Component` specs assert `leak_secrets_of` against a Player ViewModel rendered with at least one `*Secret` row seeded.
-- [ ] All 6 Group-2 exempt components have a marker comment in their spec.
+- [ ] 13 Group A components: existing `leak_secrets_of` assertions still pass (regression check — free).
+- [ ] 1 Group B component (`Play::Campaigns::PickerComponent`): new asymmetry assertion added; spec passes.
+- [ ] 1 Group C component (`Play::HomeComponent`): marker comment added in spec; class is in the meta-spec's `EXEMPT_COMPONENTS` allowlist.
 - [ ] `spec/asymmetry/coverage_spec.rb` exists, runs in CI, currently passes, and demonstrably fails if a new player-facing class lands without coverage (verified via a one-off scratch experiment, then reverted).
 - [ ] All 5 existing `Player::*ViewModel` specs still pass with their existing `leak_secrets_of` assertions (regression check — should be free).
 - [ ] Both prompt-builder specs still pass with their existing `leak_secrets_of` assertions.
@@ -271,24 +277,9 @@ The writing-plans pass will sequence these into ordered tasks. Listed here so th
 **New files (1):**
 - `spec/asymmetry/coverage_spec.rb` — the meta-spec.
 
-**Modified spec files (15):**
-- 9 component specs gain asymmetry contexts:
-  - `spec/components/play/events/narration_component_spec.rb`
-  - `spec/components/play/events/player_action_component_spec.rb`
-  - `spec/components/play/events/dice_roll_component_spec.rb`
-  - `spec/components/play/events/oracle_query_component_spec.rb`
-  - `spec/components/play/events/scene_transition_component_spec.rb`
-  - `spec/components/play/scenes/log_component_spec.rb`
-  - `spec/components/play/scenes/play_component_spec.rb`
-  - `spec/components/play/campaigns/scene_picker_component_spec.rb`
-  - `spec/components/play/campaigns/picker_component_spec.rb`
-- 6 component specs gain marker comments:
-  - `spec/components/play/home_component_spec.rb`
-  - `spec/components/play/dice/form_component_spec.rb`
-  - `spec/components/play/oracle/form_component_spec.rb`
-  - `spec/components/play/narration/form_component_spec.rb`
-  - `spec/components/play/scenes/input_dock_component_spec.rb`
-  - `spec/components/play/campaigns/placeholder_component_spec.rb`
+**Modified spec files (2):**
+- `spec/components/play/campaigns/picker_component_spec.rb` — gains an asymmetry context (Group B).
+- `spec/components/play/home_component_spec.rb` — gains the marker comment (Group C).
 
 **Playtest artifact:**
 - `docs/superpowers/playtests/2026-05-DD-phase-9-shake-out.md` — created at session time.
