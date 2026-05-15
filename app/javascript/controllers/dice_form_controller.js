@@ -6,7 +6,7 @@ const ACTIVE_CLASSES = ["bg-amber-500/20", "ring-1", "ring-amber-400", "text-amb
 export default class extends Controller {
   static targets = [
     "expression",
-    "dieChip", "dieCountBadge",
+    "dieChip",
     "plusChip", "plusBadge",
     "minusChip", "minusBadge",
     "keepChip", "keepBadge",
@@ -137,12 +137,6 @@ export default class extends Controller {
       if (isDisabled) chip.classList.add(...disabledClasses)
       chip.setAttribute("aria-disabled", isDisabled ? "true" : "false")
       chip.setAttribute("aria-pressed", isActive ? "true" : "false")
-    })
-
-    this.dieCountBadgeTargets.forEach((badge) => {
-      const chip = badge.closest("button[data-die]")
-      const die = chip && chip.dataset.die
-      badge.textContent = (this.state.die === die && this.state.count > 1) ? this.state.count : ""
     })
   }
 
