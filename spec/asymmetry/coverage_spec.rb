@@ -92,4 +92,19 @@ RSpec.describe "Asymmetry coverage", type: :meta do
         }
     end
   end
+
+  describe "Narrator::*PromptBuilder coverage" do
+    it "every Narrator::*PromptBuilder has a leak_secrets_of assertion in its spec" do
+      builders = descendants_of(Narrator)
+        .select { |c| c.is_a?(Class) && c.name.end_with?("PromptBuilder") }
+
+      expect(builders).not_to be_empty,
+        "Sanity: no Narrator::*PromptBuilder classes were discovered."
+
+      problems = builders.map { |b| assert_coverage_for(b) }.compact
+
+      expect(problems).to be_empty,
+        -> { "Narrator PromptBuilder coverage gaps:\n" + problems.map { |p| "  - #{p}" }.join("\n") }
+    end
+  end
 end
