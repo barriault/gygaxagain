@@ -3,6 +3,7 @@ module Play
     module Component
       REGISTRY = {
         "narration"        => NarrationComponent,
+        "player_action"    => PlayerActionComponent,
         "dice_roll"        => DiceRollComponent,
         "oracle_query"     => OracleQueryComponent,
         "scene_transition" => SceneTransitionComponent

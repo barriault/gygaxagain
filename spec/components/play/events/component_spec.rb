@@ -10,6 +10,12 @@ RSpec.describe Play::Events::Component do
       expect(described_class.for(event)).to eq(Play::Events::NarrationComponent)
     end
 
+    it "resolves player_action to PlayerActionComponent" do
+      scene = create(:scene)
+      event = create(:event, scene: scene, kind: "player_action", payload: { "text" => "x" })
+      expect(described_class.for(event)).to eq(Play::Events::PlayerActionComponent)
+    end
+
     it "returns DiceRollComponent for kind=dice_roll" do
       event = build(:event, scene: scene, kind: "dice_roll")
       expect(described_class.for(event)).to eq(Play::Events::DiceRollComponent)
@@ -40,19 +46,8 @@ RSpec.describe Play::Events::Component do
       expect(described_class::REGISTRY).to be_frozen
     end
 
-    it "covers all four event kinds" do
-      expect(described_class::REGISTRY.keys).to contain_exactly(
-        "narration", "dice_roll", "oracle_query", "scene_transition"
-      )
-    end
-
-    it "REGISTRY keys are a subset of Event::KINDS" do
-      # We assert subset (not equality) so a new Event kind can be introduced
-      # in one commit and its component dispatcher entry added in a later one
-      # without leaving an intermediate broken state. The reverse direction —
-      # "every kind has a component" — is enforced at runtime by `.for(event)`
-      # raising on unknown kinds.
-      expect(described_class::REGISTRY.keys - Event::KINDS).to be_empty
+    it "REGISTRY keys equal Event::KINDS" do
+      expect(described_class::REGISTRY.keys.sort).to eq(Event::KINDS.sort)
     end
   end
 end
