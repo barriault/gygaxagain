@@ -23,6 +23,35 @@ RSpec.describe Play::Events::NarrationComponent, type: :component do
     expect(page).to have_text(/ago/)
   end
 
+  describe "status branches" do
+    it "renders a streaming cursor when status is streaming" do
+      event = create(:event, scene: scene, kind: "narration",
+                     payload: { "text" => "Halfway through", "status" => "streaming" })
+      rendered = render_inline(described_class.new(event: event))
+      expect(rendered.text).to include("Halfway through")
+      expect(rendered.css("[data-narration-status='streaming']")).to be_present
+    end
+
+    it "renders the final text when status is complete" do
+      event = create(:event, scene: scene, kind: "narration",
+                     payload: { "text" => "All done.", "status" => "complete" })
+      rendered = render_inline(described_class.new(event: event))
+      expect(rendered.text).to include("All done.")
+      expect(rendered.css("[data-narration-status='streaming']")).to be_empty
+    end
+
+    it "renders an error state when status is errored" do
+      event = create(:event, scene: scene, kind: "narration",
+                     payload: { "text" => "Partial",
+                                "status" => "errored",
+                                "error_message" => "boom" })
+      rendered = render_inline(described_class.new(event: event))
+      expect(rendered.text).to include("Partial")
+      expect(rendered.text).to include("the narrator couldn't finish")
+      expect(rendered.css(".border-rose-700, .border-rose-600")).not_to be_empty
+    end
+  end
+
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }
