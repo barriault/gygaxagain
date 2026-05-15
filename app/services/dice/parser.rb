@@ -1,6 +1,6 @@
 module Dice
   module Parser
-    DiceTerm     = Data.define(:count, :sides, :sign, :keep)
+    DiceTerm     = Data.define(:count, :sides, :sign, :keep, :notation)
     ConstantTerm = Data.define(:value, :sign)
 
     MAX_COUNT = 100
@@ -12,7 +12,11 @@ module Dice
       (?<sign>[+-])?\s*
       (?:
         (?<count>\d+)d(?<sides>\d+)
-        (?:k(?<keep>[hl])(?<keep_n>\d+))?
+        (?:
+          k(?<keep_dir>[hl])(?<keep_n>\d+)
+          |
+          d(?<drop_dir>[hl])(?<drop_n>\d*)
+        )?
         |
         (?<const>\d+)
       )
@@ -51,14 +55,9 @@ module Dice
           raise Dice::ParseError, "count must be between 1 and #{MAX_COUNT}, got #{count}" if count < 1 || count > MAX_COUNT
           raise Dice::ParseError, "sides must be between 1 and #{MAX_SIDES}, got #{sides}" if sides < 1 || sides > MAX_SIDES
 
-          keep = nil
-          if match[:keep]
-            keep_n = match[:keep_n].to_i
-            raise Dice::ParseError, "keep count must be >= 1, got #{keep_n}" if keep_n < 1
-            keep = [ match[:keep].to_sym, keep_n ]
-          end
+          keep, notation = parse_modifier(match, count)
 
-          terms << DiceTerm.new(count: count, sides: sides, sign: sign, keep: keep)
+          terms << DiceTerm.new(count: count, sides: sides, sign: sign, keep: keep, notation: notation)
         end
 
         pos += match.end(0)
@@ -69,6 +68,25 @@ module Dice
       raise Dice::ParseError, "no terms parsed from #{expression.inspect}" if terms.empty?
 
       terms
+    end
+
+    def parse_modifier(match, count)
+      if match[:keep_dir]
+        keep_n = match[:keep_n].to_i
+        raise Dice::ParseError, "keep count must be >= 1, got #{keep_n}" if keep_n < 1
+        notation = match[:keep_dir] == "h" ? :kh : :kl
+        [ [ match[:keep_dir].to_sym, keep_n ], notation ]
+      elsif match[:drop_dir]
+        drop_n = match[:drop_n].empty? ? 1 : match[:drop_n].to_i
+        raise Dice::ParseError, "drop count must be >= 1, got #{drop_n}" if drop_n < 1
+        raise Dice::ParseError, "drop count must be < dice count (#{count}), got #{drop_n}" if drop_n >= count
+        # dl<N> = drop lowest N = keep highest (count - N); inverse for dh.
+        keep_dir = match[:drop_dir] == "l" ? :h : :l
+        notation = match[:drop_dir] == "h" ? :dh : :dl
+        [ [ keep_dir, count - drop_n ], notation ]
+      else
+        [ nil, nil ]
+      end
     end
   end
 end

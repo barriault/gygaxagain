@@ -55,6 +55,27 @@ RSpec.describe Dice::Roll do
       expect(result.total).to eq(6)
     end
 
+    it "applies drop-lowest with explicit count" do
+      result = Dice::Random.with_fixed([ 3, 5, 6, 2 ]) { described_class.call("4d6dl1") }
+
+      expect(result.total).to eq(14) # 3 + 5 + 6, drop 2
+      expect(result.breakdown.first).to include("dl1")
+    end
+
+    it "applies drop-lowest without a count (defaults to 1)" do
+      result = Dice::Random.with_fixed([ 19, 2 ]) { described_class.call("2d20dl") }
+
+      expect(result.total).to eq(19) # keep 19, drop 2
+      expect(result.breakdown.first).to include("dl1")
+    end
+
+    it "applies drop-highest without a count (defaults to 1)" do
+      result = Dice::Random.with_fixed([ 19, 2 ]) { described_class.call("2d20dh") }
+
+      expect(result.total).to eq(2) # keep 2, drop 19
+      expect(result.breakdown.first).to include("dh1")
+    end
+
     it "rolls a constant-only expression" do
       result = described_class.call("+5")
       expect(result.total).to eq(5)

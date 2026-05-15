@@ -9,7 +9,6 @@ export default class extends Controller {
     "dieChip",
     "plusChip", "plusBadge",
     "minusChip", "minusBadge",
-    "keepChip", "keepBadge",
     "advChip", "disChip",
     "clearChip"
   ]
@@ -18,7 +17,7 @@ export default class extends Controller {
     // Submit reset is implicit: the server's turbo_stream.replace swaps the
     // form fragment, so Stimulus reconnects and runs this initializer fresh.
     this.state = this.#initialState()
-    this.preserved = { count: 0, keep: 0 }
+    this.preserved = { count: 0 }
     this.programmaticWrite = false
     this.#render()
   }
@@ -27,11 +26,10 @@ export default class extends Controller {
     if (!DICE.includes(die)) return
     if (this.state.die && this.state.die !== die) return  // disabled chip
 
-    // Same die tapped while in adv/dis: exit mode, restore preserved count/keep.
+    // Same die tapped while in adv/dis: exit mode, restore preserved count.
     if (this.state.die === die && this.state.mode !== "normal") {
       this.state.mode = "normal"
       this.state.count = this.preserved.count > 0 ? this.preserved.count : 1
-      this.state.keep = this.preserved.keep
       this.#render()
       return
     }
@@ -47,14 +45,6 @@ export default class extends Controller {
     this.#render()
   }
 
-  bumpKeep() {
-    if (!this.state.die) return
-    if (this.state.mode !== "normal") return
-    const limit = this.state.count + 1  // wrap inclusive of count, exclusive of count+1
-    this.state.keep = (this.state.keep + 1) % limit
-    this.#render()
-  }
-
   setMode({ params: { mode } }) {
     if (mode !== "adv" && mode !== "dis") return
 
@@ -62,14 +52,13 @@ export default class extends Controller {
     if (this.state.mode === mode) {
       this.state.mode = "normal"
       this.state.count = this.preserved.count > 0 ? this.preserved.count : 1
-      this.state.keep = this.preserved.keep
       this.#render()
       return
     }
 
-    // Entering adv/dis (or swapping). Preserve count/keep only on first entry.
+    // Entering adv/dis (or swapping). Preserve count only on first entry.
     if (this.state.mode === "normal") {
-      this.preserved = { count: this.state.count, keep: this.state.keep }
+      this.preserved = { count: this.state.count }
     }
     if (!this.state.die) this.state.die = "d20"
     this.state.mode = mode
@@ -78,21 +67,21 @@ export default class extends Controller {
 
   clearAll() {
     this.state = this.#initialState()
-    this.preserved = { count: 0, keep: 0 }
+    this.preserved = { count: 0 }
     this.#render()
   }
 
   expressionInput(_event) {
     if (this.programmaticWrite) return
     this.state = this.#initialState()
-    this.preserved = { count: 0, keep: 0 }
+    this.preserved = { count: 0 }
     // Don't touch expressionTarget.value — let the user's typing stand.
     this.#renderDieChips()
     this.#renderModifierChips()
   }
 
   #initialState() {
-    return { die: null, count: 0, modifier: 0, keep: 0, mode: "normal" }
+    return { die: null, count: 0, modifier: 0, mode: "normal" }
   }
 
   #render() {
@@ -108,13 +97,12 @@ export default class extends Controller {
   }
 
   #formula() {
-    const { die, count, modifier, keep, mode } = this.state
+    const { die, count, modifier, mode } = this.state
     if (!die) return ""
-    if (mode === "adv") return `2${die}kh1${this.#modifierStr(modifier)}`
-    if (mode === "dis") return `2${die}kl1${this.#modifierStr(modifier)}`
+    if (mode === "adv") return `2${die}dl${this.#modifierStr(modifier)}`
+    if (mode === "dis") return `2${die}dh${this.#modifierStr(modifier)}`
     if (count === 0) return ""
-    const keepStr = keep > 0 ? `kh${keep}` : ""
-    return `${count}${die}${keepStr}${this.#modifierStr(modifier)}`
+    return `${count}${die}${this.#modifierStr(modifier)}`
   }
 
   #modifierStr(modifier) {
@@ -141,19 +129,15 @@ export default class extends Controller {
   }
 
   #renderModifierChips() {
-    const { die, modifier, keep, mode } = this.state
+    const { die, modifier, mode } = this.state
     const hasDie = die !== null
-    const isMode = mode !== "normal"
 
     this.plusBadgeTarget.textContent = modifier > 0 ? `+${modifier}` : ""
     this.minusBadgeTarget.textContent = modifier < 0 ? `${Math.abs(modifier)}` : ""
-    this.keepBadgeTarget.textContent = keep > 0 ? `${keep}` : ""
 
     this.#toggleDisabled(this.plusChipTarget, !hasDie)
     this.#toggleDisabled(this.minusChipTarget, !hasDie)
-    this.#toggleDisabled(this.keepChipTarget, !hasDie || isMode)
 
-    this.#toggleHighlight(this.keepChipTarget, keep > 0)
     this.#toggleHighlight(this.advChipTarget, mode === "adv")
     this.#toggleHighlight(this.disChipTarget, mode === "dis")
     this.#toggleDisabled(this.clearChipTarget, false)

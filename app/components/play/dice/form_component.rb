@@ -6,7 +6,6 @@ module Play
       MODIFIER_CHIPS = [
         { key: "plus",  label: "+",     action: "bumpModifier", params: { delta: 1 } },
         { key: "minus", label: "−",     action: "bumpModifier", params: { delta: -1 } },
-        { key: "keep",  label: "keep",  action: "bumpKeep",     params: {} },
         { key: "adv",   label: "adv",   action: "setMode",      params: { mode: "adv" } },
         { key: "dis",   label: "dis",   action: "setMode",      params: { mode: "dis" } },
         { key: "clear", label: "clear", action: "clearAll",     params: {} }

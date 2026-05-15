@@ -29,10 +29,10 @@ RSpec.describe Play::Dice::FormComponent, type: :component do
     end
   end
 
-  it "renders the six modifier chips" do
+  it "renders the five modifier chips" do
     render_inline(described_class.new(scene: scene))
 
-    [ "+", "−", "keep", "adv", "dis", "clear" ].each do |label|
+    [ "+", "−", "adv", "dis", "clear" ].each do |label|
       expect(page).to have_button(label)
     end
   end
@@ -56,14 +56,6 @@ RSpec.describe Play::Dice::FormComponent, type: :component do
     minus = page.find_button("−")
     expect(minus["data-action"]).to include("click->dice-form#bumpModifier")
     expect(minus["data-dice-form-delta-param"]).to eq("-1")
-  end
-
-  it "wires the keep chip to bumpKeep" do
-    render_inline(described_class.new(scene: scene))
-
-    keep = page.find_button("keep")
-    expect(keep["data-action"]).to include("click->dice-form#bumpKeep")
-    expect(keep["data-dice-form-target"]).to include("keepChip")
   end
 
   it "wires the adv and dis chips to setMode with a mode param" do

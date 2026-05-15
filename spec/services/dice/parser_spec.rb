@@ -35,12 +35,14 @@ RSpec.describe Dice::Parser do
       expect(term.count).to eq(4)
       expect(term.sides).to eq(6)
       expect(term.keep).to eq([ :h, 3 ])
+      expect(term.notation).to eq(:kh)
     end
 
     it "parses keep-lowest" do
       result = described_class.parse("2d20kl1")
       term = result.first
       expect(term.keep).to eq([ :l, 1 ])
+      expect(term.notation).to eq(:kl)
     end
 
     it "parses keep-highest with a trailing constant" do
@@ -48,6 +50,36 @@ RSpec.describe Dice::Parser do
       expect(result.length).to eq(2)
       expect(result[0].keep).to eq([ :h, 3 ])
       expect(result[1].value).to eq(2)
+    end
+
+    it "parses drop-lowest with explicit count" do
+      result = described_class.parse("4d6dl1")
+      term = result.first
+      expect(term.count).to eq(4)
+      expect(term.keep).to eq([ :h, 3 ]) # drop lowest 1 = keep highest 3
+      expect(term.notation).to eq(:dl)
+    end
+
+    it "parses drop-lowest without a count (defaults to 1)" do
+      result = described_class.parse("2d20dl")
+      term = result.first
+      expect(term.keep).to eq([ :h, 1 ]) # drop lowest 1 = keep highest 1
+      expect(term.notation).to eq(:dl)
+    end
+
+    it "parses drop-highest without a count (defaults to 1)" do
+      result = described_class.parse("2d20dh")
+      term = result.first
+      expect(term.keep).to eq([ :l, 1 ])
+      expect(term.notation).to eq(:dh)
+    end
+
+    it "parses drop-lowest with a trailing constant" do
+      result = described_class.parse("2d20dl+5")
+      expect(result.length).to eq(2)
+      expect(result[0].keep).to eq([ :h, 1 ])
+      expect(result[0].notation).to eq(:dl)
+      expect(result[1].value).to eq(5)
     end
 
     it "parses multiple dice terms" do
@@ -111,6 +143,18 @@ RSpec.describe Dice::Parser do
 
       it "raises on kh0 (zero keep count)" do
         expect { described_class.parse("4d6kh0") }.to raise_error(Dice::ParseError, /keep/i)
+      end
+
+      it "raises on dl0 (zero drop count)" do
+        expect { described_class.parse("4d6dl0") }.to raise_error(Dice::ParseError, /drop/i)
+      end
+
+      it "raises when drop count equals dice count (drops everything)" do
+        expect { described_class.parse("4d6dl4") }.to raise_error(Dice::ParseError, /drop/i)
+      end
+
+      it "raises when drop count exceeds dice count" do
+        expect { described_class.parse("2d20dl5") }.to raise_error(Dice::ParseError, /drop/i)
       end
     end
   end

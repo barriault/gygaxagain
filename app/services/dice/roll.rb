@@ -62,8 +62,18 @@ module Dice
 
     def format_dice(term, rolls, kept)
       sign_prefix = term.sign == -1 ? "-" : ""
-      keep_suffix = term.keep ? "k#{term.keep[0]}#{term.keep[1]}" : ""
-      "#{sign_prefix}#{term.count}d#{term.sides}#{keep_suffix} = #{rolls.inspect} = #{kept.sum}"
+      "#{sign_prefix}#{term.count}d#{term.sides}#{format_modifier_suffix(term)} = #{rolls.inspect} = #{kept.sum}"
+    end
+
+    def format_modifier_suffix(term)
+      return "" if term.keep.nil?
+      case term.notation
+      when :kh, :kl
+        "k#{term.keep[0]}#{term.keep[1]}"
+      when :dh, :dl
+        drop_n = term.count - term.keep[1]
+        "d#{term.notation == :dh ? 'h' : 'l'}#{drop_n}"
+      end
     end
   end
 end

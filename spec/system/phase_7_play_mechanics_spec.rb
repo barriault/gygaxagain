@@ -116,25 +116,6 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       expect(page).to have_field("dice_roll[expression]", with: "1d10")
     end
 
-    it "increments keep up to count and wraps to zero on the next tap" do
-      click_button "d20"
-      click_button "d20"
-      click_button "d20"
-      click_button "d20"
-      expect(page).to have_field("dice_roll[expression]", with: "4d20")
-
-      click_button "keep"
-      click_button "keep"
-      expect(page).to have_field("dice_roll[expression]", with: "4d20kh2")
-
-      click_button "keep"
-      click_button "keep"  # keep is now equal to count (4)
-      expect(page).to have_field("dice_roll[expression]", with: "4d20kh4")
-
-      click_button "keep"  # wraps to 0
-      expect(page).to have_field("dice_roll[expression]", with: "4d20")
-    end
-
     it "increments and decrements the modifier across zero" do
       click_button "d6"
       click_button "+"
@@ -151,19 +132,19 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
 
     it "uses d20 as the default die when adv or dis is tapped first" do
       click_button "adv"
-      expect(page).to have_field("dice_roll[expression]", with: "2d20kh1")
+      expect(page).to have_field("dice_roll[expression]", with: "2d20dl")
 
       click_button "clear"
       click_button "dis"
-      expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
+      expect(page).to have_field("dice_roll[expression]", with: "2d20dh")
     end
 
     it "swaps between adv and dis (radio behavior)" do
       click_button "adv"
-      expect(page).to have_field("dice_roll[expression]", with: "2d20kh1")
+      expect(page).to have_field("dice_roll[expression]", with: "2d20dl")
 
       click_button "dis"
-      expect(page).to have_field("dice_roll[expression]", with: "2d20kl1")
+      expect(page).to have_field("dice_roll[expression]", with: "2d20dh")
     end
 
     it "exits adv mode when the selected die is tapped" do
@@ -171,13 +152,13 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       click_button "d6"
       click_button "+"
       click_button "adv"
-      expect(page).to have_field("dice_roll[expression]", with: "2d6kh1+1")
+      expect(page).to have_field("dice_roll[expression]", with: "2d6dl+1")
 
-      click_button "d6"  # the active die exits adv, restoring count/keep
+      click_button "d6"  # the active die exits adv, restoring count
       expect(page).to have_field("dice_roll[expression]", with: "2d6+1")
     end
 
-    it "preserves count and keep when entering adv, and restores them when exiting" do
+    it "preserves count when entering adv and restores it when exiting" do
       click_button "d6"
       click_button "d6"
       click_button "d6"
@@ -186,7 +167,7 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
       expect(page).to have_field("dice_roll[expression]", with: "3d6+2")
 
       click_button "adv"
-      expect(page).to have_field("dice_roll[expression]", with: "2d6kh1+2")
+      expect(page).to have_field("dice_roll[expression]", with: "2d6dl+2")
 
       click_button "adv"  # toggle off
       expect(page).to have_field("dice_roll[expression]", with: "3d6+2")
