@@ -1,0 +1,52 @@
+<div class="mx-auto max-w-3xl px-4 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to #{scene.campaign.name}",
+                admin_campaign_path(scene.campaign),
+                class: "text-xs uppercase tracking-widest text-slate-500 hover:text-slate-300" %>
+  </div>
+
+  <h1 class="text-2xl font-bold tracking-tight"><%= scene.title %> · audit</h1>
+
+  <% if running? %>
+    <div class="mt-6 rounded border border-slate-700 bg-slate-800 p-4 text-slate-300">
+      Audit running… refresh in a few seconds.
+    </div>
+  <% else %>
+    <div class="mt-6 rounded border <%= verdict_classes %> p-4">
+      <p class="text-xs uppercase tracking-widest">Verdict</p>
+      <p class="mt-1 text-3xl font-bold"><%= verdict_label %></p>
+    </div>
+
+    <% if criteria.any? %>
+      <h2 class="mt-8 text-sm uppercase tracking-widest text-slate-500">Criteria</h2>
+      <ul class="mt-2 divide-y divide-slate-800 rounded border border-slate-800">
+        <% criteria.each do |criterion| %>
+          <li class="px-4 py-3">
+            <p class="text-sm font-medium text-slate-200"><%= criterion["name"] %></p>
+            <p class="text-xs uppercase tracking-widest text-slate-500"><%= criterion["status"] %></p>
+            <% if criterion["note"].present? %>
+              <p class="mt-1 text-sm text-slate-300"><%= criterion["note"] %></p>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <% if summary.present? %>
+      <h2 class="mt-8 text-sm uppercase tracking-widest text-slate-500">Summary</h2>
+      <p class="mt-2 text-sm text-slate-200"><%= summary %></p>
+    <% end %>
+
+    <% if audit.result["error"].present? %>
+      <div class="mt-8 rounded border border-rose-700 bg-rose-900/30 p-4">
+        <p class="text-sm font-medium text-rose-300">Audit error: <%= audit.result["error"] %></p>
+        <% if audit.result["raw"].present? %>
+          <details class="mt-2">
+            <summary class="cursor-pointer text-xs text-rose-400">Raw model response</summary>
+            <pre class="mt-2 whitespace-pre-wrap text-xs text-rose-200"><%= audit.result["raw"] %></pre>
+          </details>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

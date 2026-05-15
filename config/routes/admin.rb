@@ -7,6 +7,7 @@ constraints subdomain: "admin" do
 
       resources :scenes do
         resource :closure, only: [ :create ], controller: "scene_closures"
+        resource :audit, only: [ :show ], controller: "scene_audits"
 
         member do
           post :move_up
