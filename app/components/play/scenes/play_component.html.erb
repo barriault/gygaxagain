@@ -14,7 +14,13 @@
 
     <hr class="my-8 border-slate-800">
 
-    <%= render Play::Scenes::LogComponent.new(scene: scene) %>
+    <div data-controller="scene-log-scroll">
+      <%= render Play::Scenes::LogComponent.new(scene: scene) %>
+    </div>
+
+    <div class="mt-8">
+      <%= render Play::Narration::FormComponent.new(scene: scene) %>
+    </div>
 
     <%= render Play::Scenes::InputDockComponent.new(scene: scene) %>
   </div>

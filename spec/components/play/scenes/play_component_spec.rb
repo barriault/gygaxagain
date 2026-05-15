@@ -43,6 +43,18 @@ RSpec.describe Play::Scenes::PlayComponent, type: :component do
     expect(page).to have_text(/ask the oracle/i)
   end
 
+  it "renders the narration form" do
+    scene = create(:scene)
+    rendered = render_inline(described_class.new(scene: scene))
+    expect(rendered.css("[data-controller='narration-form']")).to be_present
+  end
+
+  it "wraps the log in a scene-log-scroll Stimulus container" do
+    scene = create(:scene)
+    rendered = render_inline(described_class.new(scene: scene))
+    expect(rendered.css("[data-controller='scene-log-scroll']")).to be_present
+  end
+
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }
