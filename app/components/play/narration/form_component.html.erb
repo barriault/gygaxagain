@@ -1,0 +1,23 @@
+<div id="<%= form_dom_id %>" class="rounded-lg border border-slate-700 bg-slate-900/50 p-4"
+     data-controller="narration-form">
+  <%= form_with url: submit_path, method: :post, data: { turbo: true } do |f| %>
+    <label class="block text-xs uppercase tracking-widest text-slate-500 mb-2">
+      What do you do?
+    </label>
+    <%= f.text_area "narration[text]",
+        value: text,
+        name: "narration[text]",
+        rows: 3,
+        placeholder: "Narrate your action…",
+        data: { narration_form_target: "text",
+                action: "input->narration-form#autosize keydown->narration-form#handleKeydown" },
+        class: "w-full resize-none bg-slate-950 border border-slate-700 text-slate-100 rounded p-2 focus:border-amber-500 focus:outline-none" %>
+    <% if error.present? %>
+      <p class="mt-2 text-sm text-rose-400"><%= error %></p>
+    <% end %>
+    <div class="mt-2 flex items-center justify-between">
+      <p class="text-xs text-slate-500">⌘+Enter to send</p>
+      <button type="submit" class="rounded bg-amber-600 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-amber-500">Narrate</button>
+    </div>
+  <% end %>
+</div>
