@@ -12,6 +12,7 @@ constraints subdomain: "" do
 
         resources :dice_rolls,     only: [ :create ]
         resources :oracle_queries, only: [ :create ]
+        resources :narrations,     only: [ :create ]
       end
     end
   end
