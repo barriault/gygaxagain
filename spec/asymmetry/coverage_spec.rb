@@ -29,7 +29,10 @@ RSpec.describe "Asymmetry coverage", type: :meta do
   end
 
   # Walks a module recursively, collecting all constants it owns
-  # (transitively). Returns Class and Module objects.
+  # (transitively). Returns Class AND Module objects — callers must
+  # apply `.select { |c| c.is_a?(Class) && ... }` before passing
+  # results to assert_coverage_for, or modules like Play::Events::Component
+  # will match a path regex and fail with "spec missing".
   def descendants_of(mod)
     return [] unless mod.is_a?(Module)
     collected = []
