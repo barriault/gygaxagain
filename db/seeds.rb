@@ -24,6 +24,90 @@ campaign_description = <<~DESC.strip
   to investigate undead attacks emanating from an old cemetery outside town.
   By Michael Klamerus (DMsGuild, 2016).
 
+  # DM Encounter Map
+
+  The narrator sees this section; the player surface never renders campaign
+  description. Use this to stage faithful encounters as the players move
+  through the seeded scenes. Each scene's summary contains only the room
+  architecture the players see on entering — every living or dead occupant
+  is introduced here and revealed through narration.
+
+  ## Scene 1 — Cemetery & Tomb Approach
+  Captain Aldridge is here, waiting at the gate. Two unnamed city soldiers
+  stand at the tomb door. No combat. The captain delivers his briefing
+  (see his NPC entry) and unbars the tomb door at the party's request.
+
+  ## Scene 2 — Tomb Entrance Hall
+  2 Skeletons (MM 272) are at the left door, trying to break through to
+  the side chamber. They do not notice the party at first; will notice
+  if anyone fails a Stealth check or stands too long in the open. CR 1/4
+  each, 100 XP for the pair.
+
+  ## Scene 3 — Tomb West Side Chamber
+  Rewalt Mason (see his NPC entry) is locked inside, alone. He will not
+  open the door until told the skeletons are destroyed. After opening,
+  roleplay per his NPC entry — he conceals he's a thief and his halfling
+  partner is named Leodak, until questioned hard or until the party
+  returns from Floor 2 having found Leodak's body. No combat in this room.
+
+  ## Scene 4 — Tomb North Chamber (Crematorium)
+  3 Zombies (MM 316) wander the room, awakened before they were cremated.
+  CR 1/4 each, 150 XP for the three. The furnace can be lit (wood already
+  underneath); any zombie pushed in is destroyed instantly. The side table
+  holds 20 arrows, two shortswords, and a copper ring (15 cp).
+
+  ## Scene 5 — Tomb East Hallway
+  4 Skeletons (MM 272) ambush the party as they pass the first set of side
+  passages, crawling out of the alcoves (two from each end of the hallway).
+  Characters get a DC 15 Wisdom (Perception) check before triggering the
+  trap to notice two skeletons moving near the first side passage; success
+  avoids the ambush surprise round. CR 1/4 each, 200 XP for the four.
+
+  ## Scene 6 — Tomb Far Chamber
+  2 Skeleton Captains (custom — see stat-block summary in their npc_secret
+  on Kodor; they're CR 1/2 each, 100 XP, AC 14 studded leather, HP 16,
+  Multiattack: two shortsword attacks at +4 for 1d6+2 piercing) stand at
+  the centre of the room. Side rooms left and ahead hold already-opened
+  sarcophagi (looted by Rewalt and Leodak earlier — no treasure left). The
+  staircase right descends to the second floor / caverns.
+
+  ## Scene 7 — Caverns Entrance
+  No encounter here. Leodak's body lies at the foot of the stairs — see
+  his NPC entry. The body has a dagger, 3 gp, and a silver necklace (5 sp).
+
+  ## Scene 8 — Caverns West Tunnel
+  No creatures. The wall trap that killed the previous victim is already
+  sprung (a rusted spear projecting from the side wall, with the impaled
+  skeleton). The skeleton has a silver ring (5 sp). The wooden chest in
+  front of the sarcophagus has a hidden crossbow trap on the lid — DC 15
+  Wisdom (Perception) to spot, DC 10 Dexterity (sleight of hand) to disarm,
+  1d10 piercing damage to whoever opens it untrained. Chest contains 100 sp.
+
+  ## Scene 9 — Caverns East Tunnel
+  Ghoul (MM 148) in the centre of the chamber. CR 1, 200 XP. The opened
+  sarcophagus along the left wall is empty (looted). After defeating it,
+  searching the ghoul yields a gold ring (5 gp). The 60-foot exit tunnel
+  has a magic-missile trap halfway down — a skull statue at the far end
+  fires at the lead character. DC 10 Wisdom (Perception) to spot, DC 10
+  Dexterity to disable, 1d10 force damage on a miss to the lead character
+  only.
+
+  ## Scene 10 — Caverns Deepest Chamber
+  Kodor Drannon (see his NPC entry — full stat block in his npc_secrets)
+  stands by the altar. 2 Skeletons (MM 272) flank the open sarcophagus.
+  Kodor opens the encounter with a brief threatening line and then casts
+  Magic Missile or Shocking Grasp; he hangs back near the altar while the
+  skeletons engage in melee. Once Kodor drops, every other undead in the
+  tomb instantly collapses. The chest at the right contains the treasure
+  detailed in Kodor's NPC entry. The book on the altar contains Myrkul's
+  dogma (see Cult of Myrkul faction entry).
+
+  ## Scene 11 — Return to Phandalin
+  No combat. The captain confirms the source is destroyed and pays 15 gp
+  per character. After the party leaves, narrate that Rewalt did not turn
+  himself in — see Rewalt's npc_secrets. Award 200 XP per character plus
+  15 XP per trap they successfully disarmed or avoided.
+
   # Party Roster
 
   The party is four 1st-level characters, all played by the same player at
@@ -184,10 +268,26 @@ upsert_secret!(grave_robbers,
 # NPCs ────────────────────────────────────────────────────────────────────────
 
 captain = campaign.npcs.find_or_create_by!(name: "Captain Aldridge") do |n|
-  n.public_description = "The captain of the Phandalin city guard. Pragmatic " \
-                         "and direct. Meets the party at the cemetery, briefs " \
-                         "them on the disturbance, and promises 15 gp each on " \
-                         "their return."
+  n.public_description = <<~DESC.strip
+    The captain of the Phandalin city guard. Pragmatic and direct, in his
+    fifties, wears worn but well-kept leather and a city badge. He meets
+    the party at the cemetery gates and is the one who hired them.
+
+    Briefing he delivers when they arrive:
+    - Two citizens were attacked by a zombie in the cemetery a few nights
+      ago. Two city guards drove it off and destroyed it. The captain has
+      not risked sending more of his men into the tomb.
+    - The tomb has existed since before Phandalin was rebuilt centuries ago.
+    - He has told townspeople the tomb is cursed, to discourage them from
+      going near it.
+    - Records suggest it belonged to a mage named Kodor Drannon. The town
+      has no detailed records from before the rebuilding.
+    - 15 gp per character on return, once they've confirmed the source of
+      the undead has been stopped.
+
+    He stays at the cemetery entrance while the party explores. Two guards
+    stand at the tomb door under his command.
+  DESC
   n.location           = "Phandalin — cemetery entrance"
 end
 
@@ -199,11 +299,27 @@ upsert_secret!(captain,
 )
 
 rewalt = campaign.npcs.find_or_create_by!(name: "Rewalt Mason") do |n|
-  n.public_description = "A grimy human in his forties, locked inside the " \
-                         "tomb's Office of Records. Reeks of weeks without " \
-                         "bathing. Tells the party he and a friend were " \
-                         "exploring the tomb when it went wrong."
-  n.location           = "Tomb Floor 1 — Office of Records (Room 2)"
+  n.public_description = <<~DESC.strip
+    A grimy human in his forties, currently locked inside a side chamber
+    on the first floor of the tomb (the one with shelves of old records
+    along its walls). Reeks of weeks without bathing. Visibly terrified.
+
+    When the party reaches his door, he will not open it until convinced
+    the skeletons in the entrance hall have been destroyed.
+
+    Once the door is opened, the cover story he gives the party:
+    - His name is Rewalt Mason.
+    - He came into the tomb with a friend named Leodak (a halfling).
+    - They went down to the second floor and "things started happening" —
+      the dead came alive. He locked himself in here when they were
+      separated.
+    - He has no idea what woke the dead.
+    - He claims he is just an explorer/treasure hunter; nothing organised.
+
+    He will offer to turn himself in to the city guard once they're safely
+    back at the surface.
+  DESC
+  n.location           = "Tomb Floor 1 — side chamber off the entrance hall"
 end
 
 upsert_secret!(rewalt,
@@ -223,11 +339,16 @@ upsert_secret!(rewalt,
 )
 
 leodak = campaign.npcs.find_or_create_by!(name: "Leodak") do |n|
-  n.public_description = "A male halfling, found dead at the bottom of the " \
-                         "staircase leading down to the second-floor caverns. " \
-                         "Multiple claw and bite marks. Carries a dagger, " \
-                         "3 gp, and a silver necklace worth 5 sp."
-  n.location           = "Tomb Floor 2 — Caverns entrance"
+  n.public_description = <<~DESC.strip
+    A male halfling. The party will encounter him as a corpse at the foot
+    of the stairs leading down to the second-floor caverns — multiple claw
+    and bite marks, killed by undead. They will not know his name from his
+    body alone; the connection to Rewalt's missing friend is made later
+    when they return to Rewalt or to the captain.
+
+    Body carries: a dagger, 3 gp, and a silver necklace worth 5 sp.
+  DESC
+  n.location           = "Tomb Floor 2 — at the bottom of the descent stairs"
 end
 
 upsert_secret!(leodak,
@@ -238,12 +359,27 @@ upsert_secret!(leodak,
 )
 
 kodor = campaign.npcs.find_or_create_by!(name: "Kodor Drannon") do |n|
-  n.public_description = "An undead mage who has risen from his sarcophagus. " \
-                         "Skeletal form, black hooded robe, dark blue glow " \
-                         "from the eye sockets. The party will not learn his " \
-                         "name until they read the office records or speak " \
-                         "to Rewalt."
-  n.location           = "Tomb Floor 2 — Kodor's Resting Place (Room 4)"
+  n.public_description = <<~DESC.strip
+    The buried mage whose name the captain mentioned in his briefing.
+    The party will encounter him in the deepest chamber of the tomb —
+    a hexagonal stone room with an opened ornate sarcophagus (etched
+    with strange symbols), an empty weapons rack, a large chest, and
+    a stone altar at the back.
+
+    His appearance now: skeletal form in a black hooded robe, a dark
+    blue glow from the empty eye sockets. He stands by the altar reading
+    from a book. Two skeletons flank the sarcophagus.
+
+    Combat behaviour: he hangs back at the altar casting spells while
+    the two skeletons engage in melee. He does not parley before
+    attacking — he speaks only briefly before the fight begins.
+
+    The chest in the chamber contains: 500 cp, 250 sp, 40 gp, an elegant
+    robe (15 gp), a blue quartz gemstone (10 gp), a pewter crown (25 gp),
+    a carved bone statuette of Myrkul (25 gp), a malachite gemstone
+    (10 gp), a +1 Shield, and a Potion of Healing.
+  DESC
+  n.location           = "Tomb Floor 2 — deepest hexagonal chamber"
 end
 
 upsert_secret!(kodor,
@@ -272,105 +408,118 @@ upsert_secret!(kodor,
 )
 
 # Scenes ──────────────────────────────────────────────────────────────────────
-# Position is managed by acts_as_list. find_or_create_by on (campaign, title)
-# is naturally unique because we never reuse titles within a campaign.
+# IMPORTANT: scene.title and scene.summary both render to the player surface
+# (Play::Scenes::PlayComponent + Play::Campaigns::ScenePickerComponent).
+# Treat them as read-aloud text — environmental description only, no names
+# of beings the players have not met, no encounter composition, no trap or
+# DC info. DM-side encounter content lives on NPC public_description (which
+# the narrator's prompt sees but the player surface does not).
+#
+# v2 does not yet have a scene_secrets table or a narrator-only scene field;
+# the gap is to be addressed in a follow-up phase. Until then, the narrator
+# improvises encounter composition (how many skeletons, etc.) from the
+# campaign description + NPC roster + scene environmental cues.
+
+# If we have an existing seeded campaign with scenes but no play events,
+# wipe and re-seed scenes so content edits to this file always re-apply.
+# This guard is safe: once any narration / dice / oracle / scene-transition
+# event exists, the destroy_all is skipped and existing scenes are preserved.
+if campaign.scenes.any? && !campaign.scenes.joins(:events).exists?
+  destroyed = campaign.scenes.destroy_all
+  puts "  Pre-play state — cleared #{destroyed.size} existing scenes to re-seed."
+end
 
 scenes = [
   {
-    title:   "Cemetery & Tomb Entrance",
-    summary: "The captain meets the party at the cemetery gates, briefs them " \
-             "on the undead disturbance, and promises 15 gp each on return. " \
-             "Two soldiers guard the tomb door at the back of the cemetery; " \
-             "vines cover the walls and the headstones are unreadable."
+    title:   "Cemetery & Tomb Approach",
+    summary: "An old cemetery on the outskirts of Phandalin. Weathered " \
+             "headstones lean among long grass; vines cover the back wall " \
+             "of the yard. Set into the hillside at the back of the " \
+             "cemetery is a low stone tomb — its iron door dull with age, " \
+             "the rune-work above the lintel softened to illegibility."
   },
   {
-    title:   "Tomb Entrance Chamber",
-    summary: "Floor 1, Room 1. A circular, torch-lit room with three wooden " \
-             "doors (left, right, ahead). Two skeletons are banging on the " \
-             "left door, trying to break through to whatever lies beyond. " \
-             "Hostile: 2 Skeletons (100 XP)."
+    title:   "The Tomb — Entrance Hall",
+    summary: "A wide circular chamber, well-lit by guttering torches in " \
+             "iron sconces along the stone walls. The floor is dusty flagstone. " \
+             "Three heavy wooden doors lead away — one on the left, one to the " \
+             "right, and one directly across the room. The air smells of cold " \
+             "stone and old smoke."
   },
   {
-    title:   "Office of Records",
-    summary: "Floor 1, Room 2 (behind the door the skeletons were attacking). " \
-             "Rewalt Mason is locked inside, hesitant to open the door. " \
-             "Roleplay: he conceals that he is a thief; reveals it under " \
-             "questioning or after the party clears Floor 2. Says his friend " \
-             "Leodak is somewhere below."
+    title:   "The Tomb — West Side Chamber",
+    summary: "Behind the leftmost door of the entrance hall. A narrow stone " \
+             "room lined with collapsing wooden shelves; loose parchments " \
+             "lie scattered across the floor. A single heavy door stands at " \
+             "the back, currently barred from the inside."
   },
   {
-    title:   "The Crematorium",
-    summary: "Floor 1, Room 3 (north door from the entrance). Pungent " \
-             "odor, dust-covered surfaces, four wooden body-prep tables, a " \
-             "furnace at the back, a side table with 20 arrows, two short " \
-             "swords, and a copper ring (15 cp). Three zombies wander the " \
-             "room. Lighting the furnace and pushing zombies in destroys " \
-             "them instantly. Hostile: 3 Zombies (150 XP)."
+    title:   "The Tomb — North Chamber",
+    summary: "Behind the door directly across the entrance hall. A large " \
+             "stone room, every surface covered in a layer of grey dust. " \
+             "Four wooden body-prep tables stand along the left wall. At " \
+             "the far end of the room is a great furnace, cold and dark, " \
+             "with a stone slab in front of it. To the right is a smaller " \
+             "table piled with personal effects — arrows in a bundle, two " \
+             "short swords, a copper ring. The air carries a pungent, sour " \
+             "odour."
   },
   {
-    title:   "Narrow Skeletal Passage",
-    summary: "Floor 1, Room 4 (right door from the entrance). A 90-foot " \
-             "hallway with short side passages every 30 feet. Alcoves filled " \
-             "with resting skeletons line the walls. Four skeletons ambush " \
-             "the party between the first two hallways unless a character " \
-             "passes a DC 15 Wisdom (Perception) check. Hostile: 4 Skeletons " \
-             "(200 XP)."
+    title:   "The Tomb — East Hallway",
+    summary: "Behind the rightmost door of the entrance hall. A narrow " \
+             "passage stretching far into the dark, perhaps ninety feet long " \
+             "and only wide enough for three abreast. Short side hallways " \
+             "branch left and right every thirty feet or so. The walls on " \
+             "both sides are honeycombed from floor to ceiling with shallow " \
+             "alcoves, and in each alcove rests a body. The bones are dry " \
+             "and old."
   },
   {
-    title:   "Skeleton Captain Chamber",
-    summary: "Floor 1, Room 5. A second circular chamber. Doors lead to " \
-             "side rooms with already-opened sarcophagi. A staircase leads " \
-             "down to Floor 2. Two skeleton captains stand at the center. " \
-             "Hostile: 2 Skeleton Captains (Appendix, 200 XP)."
+    title:   "The Tomb — Far Chamber",
+    summary: "At the end of the east hallway. A second circular chamber, " \
+             "similar to the entrance hall but colder. Doors on the left " \
+             "and ahead open onto small rooms holding sarcophagi whose " \
+             "stone lids have already been shoved aside. To the right, a " \
+             "stone staircase descends into deeper darkness."
   },
   {
-    title:   "Caverns Entrance (Floor 2)",
-    summary: "Floor 2, Room 1. The stairs open onto a cavern that splits " \
-             "into two tunnels (left and right). Leodak's body lies at the " \
-             "foot of the stairs, killed by claws and bites. Searching " \
-             "yields a dagger, 3 gp, and a silver necklace (5 sp). No " \
-             "encounters here."
+    title:   "The Caverns — Entrance",
+    summary: "The stairs end in a cavern. Rough-hewn stone replaces the " \
+             "worked-tomb masonry of the floor above. The tunnel ahead " \
+             "splits in two — one branch curls away to the left, the other " \
+             "leads right. The walls of each tunnel are lined with shallow " \
+             "alcoves, each holding the dry remains of someone long " \
+             "interred."
   },
   {
-    title:   "Left Tunnel — Sarcophagus and Trapped Chest",
-    summary: "Floor 2, Room 2. 20-foot tunnel to an open sarcophagus. A " \
-             "trap-impaled skeleton lies beside it (silver ring, 5 sp). A " \
-             "wooden chest in front of the tomb contains 100 sp and bears a " \
-             "hidden crossbow trap (DC 15 Perception to spot, DC 10 Dex to " \
-             "disarm; 1d10 arrow damage on failure). No creatures."
+    title:   "The Caverns — West Tunnel",
+    summary: "The left branch is a short tunnel, roughly twenty feet long, " \
+             "ending in a small alcove. A stone sarcophagus stands open at " \
+             "the back, its lid askew. A wooden chest, banded with iron, " \
+             "sits in front of the sarcophagus."
   },
   {
-    title:   "Right Tunnel — The Ghoul",
-    summary: "Floor 2, Room 3. The tunnel opens onto a round room with an " \
-             "open sarcophagus on the left and another tunnel right toward " \
-             "the cavern exit. A ghoul waits in the center. Search after " \
-             "defeat yields a gold ring (5 gp). The 60-foot exit tunnel has " \
-             "a skull-statue magic-missile trap halfway down — DC 10 " \
-             "Perception to spot, DC 10 Dex to disable, 1d10 force damage " \
-             "to the lead character on failure. Hostile: Ghoul (200 XP)."
+    title:   "The Caverns — East Tunnel",
+    summary: "The right branch opens into a round chamber. An open " \
+             "sarcophagus lies along the left wall, its lid cracked on the " \
+             "floor. A narrow tunnel leaves the chamber on the far side, " \
+             "twisting onward into the deeper dark."
   },
   {
-    title:   "Kodor's Resting Place",
-    summary: "Floor 2, Room 4. The final chamber. A hexagon-shaped room with " \
-             "an opened ornate sarcophagus (etched with Myrkul's symbol), an " \
-             "empty weapons rack, a large chest, and a stone altar at the " \
-             "back. Kodor Drannon stands by the altar reading from a book. " \
-             "Two skeletons flank the sarcophagus. Kodor hangs back casting " \
-             "spells while the skeletons engage. Chest treasure: 500 cp, " \
-             "250 sp, 40 gp, elegant robe (15 gp), blue quartz (10 gp), " \
-             "pewter crown (25 gp), carved bone statuette of Myrkul (25 gp), " \
-             "malachite gem (10 gp), +1 Shield, Potion of Healing. Hostile: " \
-             "Kodor Drannon (200 XP), 2 Skeletons (100 XP)."
+    title:   "The Caverns — Deepest Chamber",
+    summary: "The far tunnel opens into a large hexagonal chamber. The " \
+             "walls and floor are smooth worked stone again, ancient and " \
+             "cold. At the centre of the room stands an ornate, opened " \
+             "sarcophagus, its lid carved with strange etchings. To the " \
+             "left, an empty wooden weapons rack leans against the wall; " \
+             "to the right, a great iron-bound chest. At the back of the " \
+             "chamber, a low stone altar."
   },
   {
     title:   "Return to Phandalin",
-    summary: "Climbing back to the surface, the party reports to the city " \
-             "guard. The captain confirms the source of the undead is " \
-             "destroyed and pays 15 gp each. The party also learns that " \
-             "Rewalt did not turn himself in — he told the guards he was " \
-             "dragged in by the undead, concealing his looting. Award 200 " \
-             "XP per character plus 15 XP per trap successfully disarmed or " \
-             "avoided."
+    summary: "The party climbs back to the surface and out through the " \
+             "cemetery gate. The captain is waiting. The horizon is just " \
+             "starting to lighten. Time to make a report."
   }
 ]
 
