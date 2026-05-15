@@ -56,5 +56,19 @@ RSpec.describe "Asymmetry coverage", type: :meta do
     nil
   end
 
-  # Coverage checks are added in Tasks 4–6.
+  describe "Player::*ViewModel coverage" do
+    it "every Player::*ViewModel has a leak_secrets_of assertion in its spec" do
+      view_models = descendants_of(Player)
+        .select { |c| c.is_a?(Class) && c.name.end_with?("ViewModel") }
+
+      expect(view_models).not_to be_empty,
+        "Sanity: no Player::*ViewModel classes were discovered. " \
+          "Did Rails.application.eager_load! actually run?"
+
+      problems = view_models.map { |vm| assert_coverage_for(vm) }.compact
+
+      expect(problems).to be_empty,
+        -> { "Player ViewModel coverage gaps:\n" + problems.map { |p| "  - #{p}" }.join("\n") }
+    end
+  end
 end
