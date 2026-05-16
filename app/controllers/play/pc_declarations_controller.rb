@@ -12,6 +12,8 @@ module Play
         focus_pc:               focus_pc(scene),
         undeclared_pcs:         state.undeclared_pcs_this_turn,
         undeclared_companions:  state.undeclared_companions_this_turn,
+        recent_narration:       recent_narration_text(scene),
+        last_gm_prompt:         last_gm_prompt_text(scene),
         user:                   current_user,
         scene:                  scene
       )
@@ -28,6 +30,16 @@ module Play
 
       pc_id = last_prompt.payload["focus_pc_id"]
       pc_id && scene.campaign.player_characters.find_by(id: pc_id)
+    end
+
+    def recent_narration_text(scene)
+      last = scene.events.where(kind: "narration").order(:occurred_at, :id).last
+      last&.payload&.dig("text")
+    end
+
+    def last_gm_prompt_text(scene)
+      last = scene.events.where(kind: "gm_collection_prompt").order(:occurred_at, :id).last
+      last&.payload&.dig("text")
     end
 
     def handle_result(scene, state, result)

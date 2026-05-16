@@ -23,7 +23,7 @@ module Narrator
     def self.call(**kwargs) = new(**kwargs).call
 
     def initialize(text:, campaign:, focus_pc: nil, undeclared_pcs: [], undeclared_companions: [],
-                   user: nil, scene: nil)
+                   user: nil, scene: nil, recent_narration: nil, last_gm_prompt: nil)
       @text                  = text.to_s.strip
       @campaign              = campaign
       @focus_pc              = focus_pc
@@ -31,6 +31,8 @@ module Narrator
       @undeclared_companions = undeclared_companions
       @user                  = user
       @scene                 = scene
+      @recent_narration      = recent_narration
+      @last_gm_prompt        = last_gm_prompt
     end
 
     def call
@@ -99,7 +101,7 @@ module Narrator
 
         # Party in this campaign
 
-        - Main PC (the protagonist; default subject when nothing is named): #{main_character_name || "(none — every action must name a PC)"}
+        - Main PC (the protagonist; the IMPLIED subject of anything unattributed): #{main_character_name || "(none — every action must name a PC)"}
         - PCs (player-voiced; player declares for these every turn): #{pc_names_list}
         - Companions (DM-voiced by default; player may override): #{companion_names_list}
 
@@ -109,27 +111,59 @@ module Narrator
         - Companions who still need a declaration this turn: #{names(@undeclared_companions)}
         - PC the DM most recently addressed (use as default if main PC is already declared and input is unattributed): #{@focus_pc&.name || "none"}
 
+        # Recent conversation (use this to resolve pronouns and questions!)
+
+        #{recent_context_block}
+
+        # Bias: ALWAYS prefer to declare
+
+        Player inputs are actions. They look like prose, dialogue, questions, casual commentary, or even mild frustration with you. Your job is to turn them into a per-PC declaration. Use the `clarify` tool ONLY in two situations:
+
+        a. The input names a character that is NOT in the party (e.g. "Boromir charges in" when there is no Boromir).
+        b. The input is structurally meta-game ("what should I do next?", "explain the rules", "reset the scene") and has no in-fiction reading at all.
+
+        Things that are NOT reasons to clarify:
+        - A question ("What's behind the door?", "Tell me about X") — the main PC is asking the GM/NPC about the world; that IS an action. Render as: `{main PC} asks about X.`
+        - A pronoun ("they", "she", "the rest") — resolve it from the Recent conversation block above and the undeclared lists. If the DM just asked "Anything from Caine, Fred, Patric?" and the player said "They remain silent," it is OBVIOUS that "they" = Caine, Fred, Patric.
+        - First-person voice ("I open the door") — main PC speaking, render as third-person ({main PC} opens the door).
+        - Conversational framing ("ok, then the party heads in") — strip the framing, declare the action.
+        - Snarky or frustrated player text directed at you — find the action inside it ("they remain silent" inside a longer rant is still a declaration), declare that, ignore the rant.
+
+        When in doubt, DECLARE. A noisy declaration is recoverable; a clarify-loop frustrates the player.
+
         # Rules
 
-        1. Split the player's input into per-PC declarations. Call the `declare` tool with an array of `{pc_name, text}` objects.
-        2. A sentence that names a specific PC → declaration for that PC. The text should be that sentence (cleaned up to be natural English, but preserving the player's intent and any dialogue verbatim).
-        3. A sentence that names multiple PCs doing one collective action ("Aragorn, Caine, Fred, and Patric enter the tomb") → ONE declaration for the main PC ("Aragorn and the party enter the tomb") plus a companion-summary declaration like "follows Aragorn into the tomb" for each named companion. Don't duplicate the full text verbatim across four PCs.
-        4. "Everyone else", "the rest", "the others", "the party" → companions only (the speaker is the main PC and is implicitly the subject of the rest of the input).
-        5. "Everyone", "we", "us", "all of us" → all undeclared characters (PCs + companions). Same caveat as rule 3 — don't duplicate text; write per-PC declarations that read naturally.
-        6. "they", "both" → undeclared companions, not the main PC.
-        7. Unattributed input ("opens the door", "asks the captain about X") with main PC undeclared → declaration for the main PC.
-        8. Unattributed input with main PC already declared and a focus PC set → declaration for the focus PC.
-        9. If the player names a character who isn't in the party → call `clarify` with reason like "I don't see X in the party. Did you mean Y?"
-        10. If the input is genuinely ambiguous (can't tell who's doing what) → call `clarify` with a brief question.
+        1. Split the input into per-PC declarations. Call `declare` with an array of `{pc_name, text}` objects.
+        2. Named PC → declaration for that PC.
+        3. Multiple-name collective action ("Aragorn, Caine, Fred, Patric enter the tomb") → ONE declaration for the main PC describing the lead action, PLUS a brief companion summary for each named companion (e.g. "follows Aragorn into the tomb"). Don't duplicate the full text verbatim across four PCs.
+        4. "Everyone else", "the rest", "the others", "the party" → companions only (speaker = main PC is excluded).
+        5. "Everyone", "we", "us", "all of us" → all undeclared characters (PCs + companions). Per-PC text that reads naturally; don't duplicate.
+        6. "they", "both", "them" → undeclared companions (resolve via Recent conversation).
+        7. Unattributed input + main PC undeclared → declaration for the main PC.
+        8. Unattributed input + main PC already declared + focus PC set → declaration for the focus PC.
+        9. Unknown character name → `clarify` ("I don't see X in the party. Did you mean Y?").
 
         # Style
 
-        Write each declaration's `text` as a clean, third-person past-tense narration of intent, not the player's literal first-person input. For example: player types "I push the door open" → text "Aragorn pushes the door open". Player types "Caine listens" → text "Caine listens at the door". This keeps the resolution narration coherent with the declaration.
+        Each `text` is third-person present/past tense narration of intent. "I push the door" → "{main PC} pushes the door open." "Caine listens" → "Caine listens at the door." Preserve in-character dialogue verbatim inside the declaration text.
 
         # Output
 
-        ALWAYS call either `declare` or `clarify`. Never respond with plain text.
+        ALWAYS call `declare` or `clarify`. Never respond with plain text.
       PROMPT
+    end
+
+    def recent_context_block
+      lines = []
+      if @recent_narration.present?
+        snippet = @recent_narration.to_s.strip
+        snippet = "...#{snippet.last(600)}" if snippet.length > 600
+        lines << "Most recent DM narration (last portion):\n#{snippet}"
+      end
+      if @last_gm_prompt.present?
+        lines << "Most recent DM turn-collection prompt (the question the player is replying to):\n\"#{@last_gm_prompt}\""
+      end
+      lines.any? ? lines.join("\n\n") : "(no prior turns yet — this is the player's first declaration)"
     end
 
     def pc_names_list
