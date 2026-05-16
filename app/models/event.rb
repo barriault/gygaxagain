@@ -26,7 +26,7 @@
 #  fk_rails_...  (scene_id => scenes.id) ON DELETE => cascade
 #
 class Event < ApplicationRecord
-  KINDS = %w[narration player_action dice_roll oracle_query scene_transition].freeze
+  KINDS = %w[narration pc_declaration gm_collection_prompt dice_roll scene_transition].freeze
 
   belongs_to :scene
   belongs_to :pc, class_name: "PlayerCharacter", optional: true

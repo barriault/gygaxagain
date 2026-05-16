@@ -32,32 +32,38 @@ RSpec.describe Event, type: :model do
     it { is_expected.to belong_to(:scene) }
   end
 
+  describe ".kinds" do
+    it "lists the Phase 9.1 event kinds" do
+      expect(described_class.kinds.keys).to match_array(
+        %w[narration pc_declaration gm_collection_prompt dice_roll scene_transition]
+      )
+    end
+
+    it "does not include the retired Phase 8 kinds" do
+      expect(described_class.kinds.keys).not_to include("player_action", "oracle_query")
+    end
+  end
+
   describe "kind enum" do
-    %w[narration dice_roll oracle_query scene_transition].each do |kind|
+    %w[narration dice_roll scene_transition].each do |kind|
       it "round-trips kind=#{kind}" do
         event = create(:event, kind: kind)
         expect(event.reload.kind).to eq(kind)
       end
     end
 
+    it "round-trips kind=pc_declaration" do
+      event = create(:event, kind: "pc_declaration", payload: { text: "I declare!" })
+      expect(event.reload.kind).to eq("pc_declaration")
+    end
+
+    it "round-trips kind=gm_collection_prompt" do
+      event = create(:event, kind: "gm_collection_prompt", payload: { prompt: "What next?" })
+      expect(event.reload.kind).to eq("gm_collection_prompt")
+    end
+
     it "raises ArgumentError on an unknown kind" do
       expect { build(:event, kind: "unknown_kind") }.to raise_error(ArgumentError)
-    end
-  end
-
-  describe "kind enum with player_action" do
-    it "accepts player_action as a valid kind" do
-      scene = create(:scene)
-      event = scene.events.build(kind: "player_action", payload: { "text" => "hi" })
-      expect(event).to be_valid
-    end
-
-    it "preserves the existing four kinds" do
-      expect(Event::KINDS).to include("narration", "dice_roll", "oracle_query", "scene_transition")
-    end
-
-    it "lists exactly the five expected kinds" do
-      expect(Event::KINDS).to match_array(%w[narration player_action dice_roll oracle_query scene_transition])
     end
   end
 
