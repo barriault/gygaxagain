@@ -82,10 +82,14 @@ module Narrator
     end
 
     def unknown_names
-      # Capitalized whole-word tokens that aren't a party member's name or common English words
+      # Capitalized whole-word tokens that aren't a party member's name or common English words.
+      # Strip quoted strings first so words inside dialogue ("What else...") don't trigger.
       common = %w[I The And A But Or So Then With At In On To For Of From By As Is It If
-                  Ask Tell Look Say Walk Go Come Run Stop Take Give Find See Hear]
-      caps = text.scan(/\b[A-Z][a-z]+\b/)
+                  Ask Tell Look Say Walk Go Come Run Stop Take Give Find See Hear
+                  What When Where Why How Who Which Yes No Maybe Please Try
+                  This That These Those Here There Now Then Today Tonight Tomorrow]
+      stripped = text.gsub(/"[^"]*"/, "").gsub(/'[^']*'/, "")
+      caps = stripped.scan(/\b[A-Z][a-z]+\b/)
       caps.reject { |w| all_party.any? { _1.name.casecmp(w).zero? } || common.include?(w) }
     end
 
