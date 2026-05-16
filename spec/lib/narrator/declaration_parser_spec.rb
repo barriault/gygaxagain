@@ -75,6 +75,24 @@ RSpec.describe Narrator::DeclarationParser do
                      undeclared_pcs: [ aragorn ], undeclared_companions: [ caine, fred, patric ])
       expect(result.declarations.size).to eq(4)
     end
+
+    it "splits 'main-PC action. Everyone else waits.' into separate declarations" do
+      result = parse('Ask the captain, "What else?" Everyone else waits.',
+                     undeclared_pcs: [ aragorn ], undeclared_companions: [ caine, fred, patric ])
+      by_pc = result.declarations.to_h { |d| [ d[:pc], d[:text] ] }
+      expect(by_pc.keys).to contain_exactly(aragorn, caine, fred, patric)
+      expect(by_pc[aragorn]).to include("Ask the captain")
+      expect(by_pc[caine]).to  include("Everyone else waits")
+      expect(by_pc[aragorn]).not_to include("Everyone else")
+      expect(by_pc[caine]).not_to  include("Ask the captain")
+    end
+
+    it "'the rest' is exclusive (companions only, not main PC)" do
+      result = parse("The rest hang back.",
+                     undeclared_pcs: [ aragorn ], undeclared_companions: [ caine, fred, patric ])
+      pcs = result.declarations.map { _1[:pc] }
+      expect(pcs).to contain_exactly(caine, fred, patric)
+    end
   end
 
   context "unknown PC" do

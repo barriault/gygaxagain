@@ -1,16 +1,23 @@
 module Narrator
   class DeclarationParser
-    GROUP_RE    = /\b(the rest|the others|the party|everyone( else)?|they|both|we|us|all of (us|them|us))\b/i
+    # "Everyone else" / "the rest" / "the others" specifically EXCLUDE the speaker
+    # (the main PC / focus). They route to undeclared companions only.
+    EXCLUSIVE_GROUP_RE = /\b(the rest|the others|the party|everyone else)\b/i
+    # "Everyone" / "We" / "us" / "all of us" / "they" / "both" route to ALL undeclared
+    # characters (PCs + companions). Note: place EXCLUSIVE check first so "everyone else"
+    # matches the exclusive form before falling through to plain "everyone".
+    INCLUSIVE_GROUP_RE = /\b(everyone|we|us|all of (us|them)|they|both)\b/i
+
     SHORTCUT_RE = /\A\s*(resolve|go|next|done|nothing)\s*[.!]?\s*\z/i
     DICE_RE     = /\A\s*\d*d\d+([+\-]\d+)?\s*\z/i
 
     def self.call(**kwargs) = new(**kwargs).call
 
     def initialize(text:, campaign:, focus_pc: nil, undeclared_pcs: [], undeclared_companions: [])
-      @text                 = text.to_s
-      @campaign             = campaign
-      @focus_pc             = focus_pc
-      @undeclared_pcs       = undeclared_pcs
+      @text                  = text.to_s
+      @campaign              = campaign
+      @focus_pc              = focus_pc
+      @undeclared_pcs        = undeclared_pcs
       @undeclared_companions = undeclared_companions
     end
 
@@ -22,19 +29,22 @@ module Narrator
         return Failure.new(reason: CollectionPrompt.short_circuit_decline(@undeclared_pcs.map(&:name)))
       end
 
-      # Group/anaphoric words take priority over named PC matching when undeclared characters exist
-      if text =~ GROUP_RE && (@undeclared_pcs.any? || @undeclared_companions.any?)
-        decls = (@undeclared_pcs + @undeclared_companions).map { { pc: _1, text: text } }
-        return Success.new(declarations: decls)
-      end
-
       unknown = unknown_names
       return Failure.new(reason: CollectionPrompt.unknown_pc(unknown.first)) if unknown.any?
 
-      named = matched_names
-      return build_named_declarations(named) if named.any?
+      # Per-sentence attribution: each sentence is routed independently. This lets
+      # "Ask the captain... Everyone else waits." split correctly — first sentence
+      # → main PC, second sentence → companions only.
+      sentences = split_sentences(text)
+      decls = sentences.flat_map { |s| attribute_sentence(s) }.compact
 
-      return Success.new(declarations: [ { pc: default_target, text: text } ]) if default_target
+      # Dedupe: a PC gets only one declaration per turn. Keep the LAST occurrence
+      # so "Aragorn looks. Aragorn draws." merges to the second.
+      seen = {}
+      decls.reverse_each { |d| seen[d[:pc].id] ||= d }
+      ordered = decls.uniq { _1[:pc].id }.map { |d| seen[d[:pc].id] }
+
+      return Success.new(declarations: ordered) if ordered.any?
 
       Failure.new(reason: CollectionPrompt.no_focus_no_main)
     end
@@ -45,31 +55,38 @@ module Narrator
 
     def all_party = @all_party ||= @campaign.player_characters.to_a
 
-    def matched_names
-      all_party.select { name_present?(_1.name) }
+    def split_sentences(str)
+      parts = str.split(/(?<=[.!?])\s+/).map(&:strip).reject(&:empty?)
+      parts.empty? ? [ str ] : parts
+    end
+
+    # Returns an Array of { pc:, text: } declarations (possibly empty) for one sentence.
+    def attribute_sentence(sentence)
+      named = all_party.select { |pc| sentence =~ /\b#{Regexp.escape(pc.name)}\b/i }
+      return named.map { |pc| { pc:, text: sentence } } if named.any?
+
+      # Exclusive group ("everyone else", "the rest", etc.) → companions only.
+      if sentence =~ EXCLUSIVE_GROUP_RE && @undeclared_companions.any?
+        return @undeclared_companions.map { |pc| { pc:, text: sentence } }
+      end
+
+      # Inclusive group ("everyone", "we", "they", etc.) → all undeclared.
+      if sentence =~ INCLUSIVE_GROUP_RE && (@undeclared_pcs.any? || @undeclared_companions.any?)
+        return (@undeclared_pcs + @undeclared_companions).map { |pc| { pc:, text: sentence } }
+      end
+
+      # Default: main PC or focus.
+      default = default_target
+      return [ { pc: default, text: sentence } ] if default
+      []
     end
 
     def unknown_names
       # Capitalized whole-word tokens that aren't a party member's name or common English words
-      common = %w[I The And A But Or So Then With At In On To For Of From By As Is It If]
+      common = %w[I The And A But Or So Then With At In On To For Of From By As Is It If
+                  Ask Tell Look Say Walk Go Come Run Stop Take Give Find See Hear]
       caps = text.scan(/\b[A-Z][a-z]+\b/)
       caps.reject { |w| all_party.any? { _1.name.casecmp(w).zero? } || common.include?(w) }
-    end
-
-    def name_present?(name)
-      text =~ /\b#{Regexp.escape(name)}\b/i
-    end
-
-    def build_named_declarations(pcs)
-      sentences = text.split(/(?<=[.!?])\s+/)
-      if pcs.size > 1 && sentences.size > 1
-        decls = sentences.flat_map do |s|
-          matched = pcs.select { |p| s =~ /\b#{Regexp.escape(p.name)}\b/i }
-          matched.map { { pc: _1, text: s.strip } }
-        end
-        return Success.new(declarations: decls.uniq { _1[:pc].id })
-      end
-      Success.new(declarations: pcs.map { { pc: _1, text: text } })
     end
 
     def default_target = @focus_pc || @campaign.main_character
