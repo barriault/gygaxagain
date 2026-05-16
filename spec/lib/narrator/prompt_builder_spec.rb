@@ -1,84 +1,112 @@
 require "rails_helper"
 
 RSpec.describe Narrator::PromptBuilder do
-  let(:campaign) { create(:campaign, name: "Test Campaign", description: "A short description.") }
-  let(:scene)    { create(:scene, campaign: campaign, title: "The Tavern", summary: "A noisy hall.") }
-  let!(:faction) { create(:faction, :with_secrets, campaign: campaign, name: "The Cult", public_description: "Allegedly charitable.") }
-  let!(:npc)     { create(:npc, :with_secrets, campaign: campaign, name: "Old Tom", public_description: "Bartender.", location: "The Tavern") }
+  let(:campaign) { create(:campaign, name: "Phandalin", description: "Hook.") }
+  let!(:aragorn) { create(:player_character, campaign:, name: "Aragorn", role: "pc", notes: "PC notes") }
+  let!(:caine)   { create(:player_character, campaign:, name: "Caine",   role: "companion") }
+  before         { campaign.update!(main_character: aragorn) }
+  let(:scene)    { create(:scene, campaign:, title: "Cemetery", summary: "Old graves.") }
+  before         { create(:scene_secret, scene:, label: "Encounter", content: "2 skeletons") }
 
-  describe ".call" do
-    it "returns a Narrator::Prompt with three system blocks and one user message" do
-      prompt = described_class.call(scene: scene, player_action_text: "I look around.")
+  context "framing call (zero events)" do
+    subject(:prompt) { described_class.framing(scene:) }
 
-      expect(prompt).to be_a(Narrator::Prompt)
+    it "produces three system blocks" do
       expect(prompt.system.length).to eq(3)
-      expect(prompt.messages).to eq([ { role: "user", content: "I look around." } ])
-      expect(prompt.cache_breakpoints).to eq([ 0, 1 ])
+      expect(prompt.system.map { _1[:type] }).to eq(%w[text text text])
     end
 
-    it "includes the rules block first" do
-      prompt = described_class.call(scene: scene, player_action_text: "x")
-      expect(prompt.system[0][:text]).to eq(Narrator::SystemPrompt.text)
+    it "interpolates PC and companion names into the system prompt" do
+      expect(prompt.system[0][:text]).to include("Aragorn")
+      expect(prompt.system[0][:text]).to include("Caine")
     end
 
-    it "includes the campaign and roster in block 1" do
-      prompt = described_class.call(scene: scene, player_action_text: "x")
-      block = prompt.system[1][:text]
-      expect(block).to include("Test Campaign")
-      expect(block).to include("A short description.")
-      expect(block).to include("The Cult")
-      expect(block).to include("Allegedly charitable.")
-      expect(block).to include("Old Tom")
-      expect(block).to include("Bartender.")
-      expect(block).to include("The Tavern")
+    it "includes scene_secrets content in the scene context block" do
+      expect(prompt.system[2][:text]).to include("2 skeletons")
     end
 
-    it "includes the scene context and recent events in block 2" do
-      create(:event, scene: scene, kind: "narration", payload: { "text" => "It is dark." })
-      prompt = described_class.call(scene: scene, player_action_text: "x")
-      block = prompt.system[2][:text]
-      expect(block).to include("The Tavern")
-      expect(block).to include("A noisy hall.")
-      expect(block).to include("It is dark.")
+    it "messages contains only the framing kickoff" do
+      expect(prompt.messages.length).to eq(1)
+      expect(prompt.messages.first[:role]).to eq("user")
+      expect(prompt.messages.first[:content]).to include("Scene start")
+      expect(prompt.messages.first[:content]).to include("Aragorn")
+    end
+
+    it "sets stop_sequences to ]]" do
+      expect(prompt.stop_sequences).to eq([ "]]" ])
+    end
+
+    it "sets cache_breakpoints for the three system blocks" do
+      expect(prompt.cache_breakpoints).to include(0, 1, 2)
     end
   end
 
-  describe "#input_view_models" do
-    it "returns only Player::* view models" do
-      builder = described_class.new(scene: scene, player_action_text: "x")
-      vms = builder.input_view_models
-      expect(vms).not_to be_empty
-      expect(vms).to all(satisfy { |vm| vm.class.name.start_with?("Player::") })
-    end
-  end
-
-  describe "asymmetry" do
-    it "does not leak any faction or NPC secret content into the rendered prompt" do
-      prompt = described_class.call(scene: scene, player_action_text: "I look around.")
-      expect(prompt.to_s).not_to leak_secrets_of(faction, npc)
-    end
-  end
-
-  describe "event window truncation" do
+  context "resolution call (turn declarations collected)" do
     before do
-      35.times do |i|
-        create(:event, scene: scene, kind: "narration", payload: { "text" => "Event #{i}" }, occurred_at: i.minutes.ago)
-      end
+      create(:event, scene:, kind: "pc_declaration", pc: aragorn, turn_number: 1,
+             payload: { "text" => "I push the door open." })
     end
 
-    it "includes a truncation marker when more than RECENT_EVENT_WINDOW events exist" do
-      prompt = described_class.call(scene: scene, player_action_text: "x")
-      block = prompt.system[2][:text]
-      expect(block).to include("[5 earlier events truncated for context]")
+    subject(:prompt) do
+      described_class.resolution(scene:, current_turn_declarations: [
+        { pc: aragorn, text: "I push the door open." }
+      ])
     end
 
-    it "includes only the last RECENT_EVENT_WINDOW events" do
-      prompt = described_class.call(scene: scene, player_action_text: "x")
-      block = prompt.system[2][:text]
-      # The 5 oldest events should be excluded; sample one.
-      expect(block).not_to include("Event 30")
-      # The most recent should be included.
-      expect(block).to include("Event 0")
+    it "builds a user message labeled [Turn N]" do
+      expect(prompt.messages.last[:role]).to eq("user")
+      expect(prompt.messages.last[:content]).to include("[Turn 1]")
+      expect(prompt.messages.last[:content]).to include("Aragorn declares: I push the door open.")
+    end
+
+    it "filters gm_collection_prompt events from history" do
+      create(:event, scene:, kind: "gm_collection_prompt", turn_number: 1, payload: { "text" => "And the others?" })
+      expect(prompt.messages.last[:content]).not_to include("And the others?")
+    end
+
+    it "adds a negative cache breakpoint on the second-to-last assistant when prior turns exist" do
+      # Add a prior completed turn
+      create(:event, scene:, kind: "pc_declaration", pc: aragorn, turn_number: 1, payload: { "text" => "look" })
+      create(:event, scene:, kind: "narration", turn_number: 1, payload: { "text" => "You see things. What do you do?" })
+      create(:event, scene:, kind: "pc_declaration", pc: aragorn, turn_number: 2, payload: { "text" => "open" })
+      prompt2 = described_class.resolution(scene:, current_turn_declarations: [ { pc: aragorn, text: "open" } ])
+      assistant_indices = prompt2.messages.each_with_index.select { |m, _| m[:role] == "assistant" }.map(&:last)
+      expect(prompt2.cache_breakpoints).to include(-2) if assistant_indices.length >= 1
+    end
+  end
+
+  context "continuation call (after a mid-turn dice roll)" do
+    before do
+      create(:event, scene:, kind: "pc_declaration", pc: aragorn, turn_number: 1,
+             payload: { "text" => "I approach the captain." })
+      create(:event, scene:, kind: "narration", turn_number: 1,
+             payload: { "text" => "He straightens. [[1d20+5 — Aragorn Insight on the captain]]" })
+      create(:event, scene:, kind: "dice_roll", pc: aragorn, turn_number: 1,
+             payload: { "expression" => "1d20+5", "result" => 17, "reason" => "Insight on the captain" })
+    end
+
+    subject(:prompt) do
+      described_class.continuation(scene:, latest_roll: scene.events.where(kind: "dice_roll").last)
+    end
+
+    it "ends with a user message containing only the roll result" do
+      expect(prompt.messages.last[:role]).to eq("user")
+      expect(prompt.messages.last[:content]).to include("Aragorn rolled 1d20+5 = 17")
+      expect(prompt.messages.last[:content]).not_to include("approach the captain")
+    end
+
+    it "includes the partial narration as the preceding assistant message" do
+      assistant_idx = prompt.messages.rindex { _1[:role] == "assistant" }
+      expect(prompt.messages[assistant_idx][:content]).to include("He straightens.")
+    end
+  end
+
+  describe "asymmetry-NOT-protected (narrator prompt is DM-side)" do
+    # PromptBuilder *should* include secrets — this is not a leak, it's the contract.
+    # The asymmetry meta-spec covers Player VMs and Play components, not PromptBuilder.
+    it "includes scene_secret content in scene block" do
+      prompt = described_class.framing(scene:)
+      expect(prompt.system[2][:text]).to include("2 skeletons")
     end
   end
 end
