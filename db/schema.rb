@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_16_153515) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_16_153517) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,10 +18,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_153515) do
     t.integer "chaos_factor", default: 5, null: false
     t.datetime "created_at", null: false
     t.text "description"
+    t.bigint "main_character_id"
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index "user_id, lower((name)::text)", name: "index_campaigns_on_user_id_and_lower_name", unique: true
+    t.index ["main_character_id"], name: "index_campaigns_on_main_character_id"
     t.index ["user_id"], name: "index_campaigns_on_user_id"
   end
 
@@ -30,10 +32,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_153515) do
     t.string "kind", null: false
     t.datetime "occurred_at", null: false
     t.jsonb "payload", default: {}, null: false
+    t.bigint "pc_id"
     t.bigint "scene_id", null: false
+    t.integer "turn_number"
     t.datetime "updated_at", null: false
     t.index ["kind"], name: "index_events_on_kind"
+    t.index ["pc_id"], name: "index_events_on_pc_id"
     t.index ["scene_id", "occurred_at"], name: "index_events_on_scene_id_and_occurred_at"
+    t.index ["scene_id", "turn_number"], name: "index_events_on_scene_id_and_turn_number"
     t.index ["scene_id"], name: "index_events_on_scene_id"
   end
 
@@ -172,7 +178,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_153515) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  add_foreign_key "campaigns", "player_characters", column: "main_character_id", on_delete: :nullify
   add_foreign_key "campaigns", "users", on_delete: :cascade
+  add_foreign_key "events", "player_characters", column: "pc_id", on_delete: :nullify
   add_foreign_key "events", "scenes", on_delete: :cascade
   add_foreign_key "faction_secrets", "factions", on_delete: :cascade
   add_foreign_key "factions", "campaigns", on_delete: :cascade
