@@ -7,13 +7,15 @@ module Llm
     # on HTTP errors — those are persisted into the row's response_payload.
     def self.execute(purpose:, messages:, system: nil, max_tokens: 1024,
                      cache_breakpoints: [], cache_ttl: :ephemeral_5m,
-                     user:, campaign: nil, scene: nil, model: nil, stop_sequences: nil)
+                     user:, campaign: nil, scene: nil, model: nil,
+                     stop_sequences: nil, tools: nil, tool_choice: nil)
       adapter = Llm::Provider.for(purpose)
       adapter = override_model(adapter, model) if model
 
       result = adapter.call(
         system: system, messages: messages, max_tokens: max_tokens,
-        cache_breakpoints: cache_breakpoints, stop_sequences: stop_sequences
+        cache_breakpoints: cache_breakpoints, stop_sequences: stop_sequences,
+        tools: tools, tool_choice: tool_choice
       )
 
       persist!(adapter: adapter, purpose: purpose, result: result, cache_ttl: cache_ttl,

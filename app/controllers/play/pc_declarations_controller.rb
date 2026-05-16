@@ -6,12 +6,14 @@ module Play
 
       state = Player::SceneStateViewModel.new(scene)
 
-      result = Narrator::DeclarationParser.call(
+      result = Narrator::DeclarationLlm.call(
         text:                   params.require(:text),
         campaign:               scene.campaign,
         focus_pc:               focus_pc(scene),
         undeclared_pcs:         state.undeclared_pcs_this_turn,
-        undeclared_companions:  state.undeclared_companions_this_turn
+        undeclared_companions:  state.undeclared_companions_this_turn,
+        user:                   current_user,
+        scene:                  scene
       )
 
       handle_result(scene, state, result)

@@ -13,13 +13,15 @@ module Llm
       # Returns Llm::Result. Never raises on HTTP/transport errors —
       # those are captured into result.error. Raises Llm::ConfigError
       # if the API key is missing from Rails credentials.
-      def call(system: nil, messages:, max_tokens: 1024, cache_breakpoints: [], stop_sequences: nil)
+      def call(system: nil, messages:, max_tokens: 1024, cache_breakpoints: [], stop_sequences: nil,
+               tools: nil, tool_choice: nil)
         api_key = self.class.api_key
         raise Llm::ConfigError, "Anthropic API key not configured (credentials.anthropic.api_key)" if api_key.blank?
 
         request_body = build_request_body(system: system, messages: messages,
                                           max_tokens: max_tokens, cache_breakpoints: cache_breakpoints,
-                                          stop_sequences: stop_sequences)
+                                          stop_sequences: stop_sequences,
+                                          tools: tools, tool_choice: tool_choice)
 
         started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
@@ -27,8 +29,14 @@ module Llm
           response = self.class.sdk_client.messages.create(**request_body)
           latency_ms = elapsed_ms(started_at)
 
+          # When the model invokes a tool, the response's first content block is a tool_use
+          # (not text). Pull text out best-effort; callers using tools should read tool calls
+          # from response_payload directly.
+          first = response.content.first
+          text_value = first.respond_to?(:text) ? first.text : nil
+
           Llm::Result.new(
-            text:                  response.content.first.text,
+            text:                  text_value,
             input_tokens:          response.usage.input_tokens.to_i,
             output_tokens:         response.usage.output_tokens.to_i,
             cache_creation_tokens: cache_creation_from(response.usage),
@@ -127,7 +135,8 @@ module Llm
 
       private
 
-      def build_request_body(system:, messages:, max_tokens:, cache_breakpoints:, stop_sequences: nil)
+      def build_request_body(system:, messages:, max_tokens:, cache_breakpoints:,
+                             stop_sequences: nil, tools: nil, tool_choice: nil)
         body = { model: model, max_tokens: max_tokens, messages: messages }
 
         if system.present?
@@ -139,6 +148,8 @@ module Llm
         end
 
         body[:stop_sequences] = stop_sequences if stop_sequences.present?
+        body[:tools]          = tools          if tools.present?
+        body[:tool_choice]    = tool_choice    if tool_choice.present?
         body
       end
 
