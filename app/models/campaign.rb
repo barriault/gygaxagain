@@ -24,6 +24,7 @@ class Campaign < ApplicationRecord
   has_many :llm_calls, dependent: :destroy
   has_many :factions, dependent: :destroy
   has_many :npcs, dependent: :destroy
+  has_many :player_characters, dependent: :destroy
   has_many :scenes, dependent: :destroy
   has_many :scene_audits, through: :scenes, source: :audit
 

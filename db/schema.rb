@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_16_152109) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,6 +100,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
     t.index ["campaign_id"], name: "index_npcs_on_campaign_id"
   end
 
+  create_table "player_characters", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.string "class_name"
+    t.datetime "created_at", null: false
+    t.integer "level"
+    t.string "name", null: false
+    t.text "notes"
+    t.string "pronouns"
+    t.string "role", default: "pc", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id", "name"], name: "index_player_characters_on_campaign_and_name", unique: true
+    t.index ["campaign_id"], name: "index_player_characters_on_campaign_id"
+  end
+
   create_table "scene_audits", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "llm_call_id", null: false
@@ -157,6 +171,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
   add_foreign_key "llm_calls", "users", on_delete: :cascade
   add_foreign_key "npc_secrets", "npcs", on_delete: :cascade
   add_foreign_key "npcs", "campaigns", on_delete: :cascade
+  add_foreign_key "player_characters", "campaigns", on_delete: :cascade
   add_foreign_key "scene_audits", "llm_calls", on_delete: :restrict
   add_foreign_key "scene_audits", "scenes", on_delete: :cascade
   add_foreign_key "scenes", "campaigns", on_delete: :cascade
