@@ -1,0 +1,16 @@
+<h1><%= heading %></h1>
+<%= form_with model: pc, url: form_url, method: form_method do |f| %>
+  <% if pc.errors.any? %>
+    <ul class="errors">
+      <% pc.errors.full_messages.each do |m| %><li><%= m %></li><% end %>
+    </ul>
+  <% end %>
+  <div><%= f.label :name %><%= f.text_field :name %></div>
+  <div><%= f.label :role %><%= f.select :role, PlayerCharacter::ROLES.map { [ _1, _1 ] } %></div>
+  <div><%= f.label :pronouns %><%= f.text_field :pronouns %></div>
+  <div><%= f.label :class_name %><%= f.text_field :class_name %></div>
+  <div><%= f.label :level %><%= f.number_field :level %></div>
+  <div><%= f.label :notes, "Notes (DM-only)" %><%= f.text_area :notes, rows: 6 %></div>
+  <%= f.submit submit %>
+<% end %>
+<p><%= link_to "← Cancel", admin_campaign_player_characters_path(campaign) %></p>

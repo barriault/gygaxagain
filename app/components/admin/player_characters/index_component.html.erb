@@ -1,0 +1,15 @@
+<h1>Player Characters — <%= campaign.name %></h1>
+<p>
+  <%= link_to "New PC", new_admin_campaign_player_character_path(campaign), class: "btn" %>
+  <%= link_to "← Back to campaign", admin_campaign_path(campaign) %>
+</p>
+<table>
+  <thead>
+    <tr><th>Name</th><th>Role</th><th>Class</th><th>Level</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% player_characters.each do |pc| %>
+      <%= render Admin::PlayerCharacters::RowComponent.new(campaign:, player_character: pc) %>
+    <% end %>
+  </tbody>
+</table>
