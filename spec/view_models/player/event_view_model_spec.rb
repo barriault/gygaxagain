@@ -16,10 +16,17 @@ RSpec.describe Player::EventViewModel do
       expect(described_class.new(event).text).to eq("The door swings open.")
     end
 
-    it "renders player_action text" do
-      event = create(:event, scene: scene, kind: "player_action",
+    it "renders pc_declaration text" do
+      pc = create(:player_character, campaign: scene.campaign)
+      event = create(:event, scene: scene, kind: "pc_declaration", pc: pc,
                      payload: { "text" => "I open the door." })
       expect(described_class.new(event).text).to eq("I open the door.")
+    end
+
+    it "renders gm_collection_prompt text" do
+      event = create(:event, scene: scene, kind: "gm_collection_prompt",
+                     payload: { "text" => "And the others?" })
+      expect(described_class.new(event).text).to eq("And the others?")
     end
 
     it "renders dice_roll as expression and result" do
