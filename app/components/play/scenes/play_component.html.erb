@@ -11,7 +11,7 @@
       Scenes ▾
     </button>
     <%= button_to "Reset scene",
-                  helpers.play_campaign_scene_reset_path(scene.campaign, scene),
+                  helpers.campaign_scene_reset_path(scene.campaign, scene),
                   method: :post,
                   data: { turbo_confirm: "Clear all events and LLM history for this scene? This cannot be undone." },
                   class: "rounded border border-rose-800 px-3 py-1 text-sm text-rose-300 hover:bg-rose-900/40 hover:border-rose-600" %>

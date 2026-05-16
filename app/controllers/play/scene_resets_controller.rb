@@ -16,7 +16,7 @@ module Play
         Rails.logger.info("[SceneReset] scene=#{scene.id} deleted events=#{events_count} llm_calls=#{llm_count}")
       end
 
-      redirect_to play_campaign_scene_path(scene.campaign, scene),
+      redirect_to play_campaign_scene_url(scene.campaign, scene),
                   notice: "Scene history cleared. The scene will reframe on load."
     end
   end
