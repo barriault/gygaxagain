@@ -11,7 +11,6 @@ constraints subdomain: "" do
         member { get :play }
 
         resources :dice_rolls,       only: [ :create ]
-        resources :narrations,       only: [ :create ]
         resources :pc_declarations,  only: [ :create ]
       end
     end
