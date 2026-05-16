@@ -53,6 +53,25 @@ RSpec.describe NarrationJob, type: :job do
     end
   end
 
+  describe "stop_sequence handling" do
+    # Anthropic strips the matched stop_sequence from the response text. Without
+    # re-appending it, a dice chip like "[[1d20+3 — Aragorn Perception]]" arrives
+    # as "[[1d20+3 — Aragorn Perception" — ChipParser's regex (requires "]]")
+    # then fails to recognize it, and the player sees raw text instead of a button.
+    it "re-appends the matched stop sequence to the persisted text" do
+      stub_anthropic_streaming(
+        text_chunks: [ "You scan the room. ", "[[1d20+3 — Aragorn Perception check" ],
+        stop_reason: "stop_sequence",
+        stop_sequence: "]]"
+      )
+      narration = scene.events.create!(kind: "narration", turn_number: 1,
+                                       payload: { "text" => "", "status" => "streaming", "trigger" => "framing" })
+      described_class.perform_now(scene_id: scene.id, narration_event_id: narration.id, trigger: "framing")
+      expect(narration.reload.payload["text"]).to eq("You scan the room. [[1d20+3 — Aragorn Perception check]]")
+      expect(narration.reload.payload["status"]).to eq("complete")
+    end
+  end
+
   describe "errored streams" do
     it "marks the event errored on any exception" do
       allow(Llm::Call).to receive(:execute_streaming).and_raise(StandardError, "boom")

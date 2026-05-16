@@ -84,12 +84,20 @@ class NarrationJob < ApplicationJob
   end
 
   def finalize_success(event, text, llm_call)
+    final_text = text + matched_stop_sequence(llm_call).to_s
     event.with_lock do
       event.update!(payload: event.payload.merge(
-        "text" => text, "status" => "complete", "llm_call_id" => llm_call.id
+        "text" => final_text, "status" => "complete", "llm_call_id" => llm_call.id
       ))
     end
     broadcast_replace(event)
+  end
+
+  # Anthropic strips the matched stop sequence from the streamed text. Re-append
+  # it so dice chips ("[[…]]") arrive intact for ChipParser to render as buttons.
+  def matched_stop_sequence(llm_call)
+    return nil unless llm_call.response_payload["stop_reason"] == "stop_sequence"
+    llm_call.response_payload["stop_sequence"]
   end
 
   def finalize_error(event, text, llm_call)
