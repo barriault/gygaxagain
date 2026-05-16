@@ -95,4 +95,29 @@ RSpec.describe Player::SceneStateViewModel, type: :view_model do
       expect(described_class.new(scene).current_turn_number).to eq(2)
     end
   end
+
+  describe "asymmetry" do
+    before do
+      faction = create(:faction, campaign:)
+      create(:faction_secret, faction:, label: "Hidden", content: "secret content X")
+      npc = create(:npc, campaign:)
+      create(:npc_secret, npc:, label: "Knows", content: "secret content Y")
+    end
+
+    it "does not leak secrets via any of its derived state" do
+      vm = described_class.new(scene)
+      # All the VM's exposed methods serialize to strings/symbols/IDs/AR instances —
+      # none should ever surface the content of related *_secrets rows.
+      surface = [
+        vm.phase.to_s,
+        vm.current_turn_number.to_s,
+        vm.declared_this_turn.map(&:name).join(" "),
+        vm.undeclared_pcs_this_turn.map(&:name).join(" "),
+        vm.undeclared_companions_this_turn.map(&:name).join(" "),
+        vm.companion_prompt_offered?.to_s
+      ].join(" ")
+
+      expect(surface).not_to leak_secrets_of(*Faction.all, *Npc.all)
+    end
+  end
 end
