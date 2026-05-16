@@ -10,7 +10,17 @@ module Player
     def phase
       return :framing if events.empty?
       return :awaiting_roll if last_narration_open_chip?
-      return :idle          if last_narration_handoff?
+
+      # If the most recent narration ended cleanly AND nothing has happened
+      # since, we're idle (waiting for the player to start the next turn).
+      # If declarations / prompts have been created after that narration,
+      # we're collecting for the next turn.
+      if last_narration && last_narration_handoff?
+        events_arr = events.to_a
+        has_events_after = events_arr.any? { |e| e.id > last_narration.id }
+        return has_events_after ? :collecting : :idle
+      end
+
       :collecting
     end
 
@@ -18,9 +28,36 @@ module Player
       phase == :collecting && undeclared_pcs_this_turn.empty? && companion_prompt_offered?
     end
 
+    # Turn number for the NEXT event about to be created on this scene.
+    #
+    # Convention: the framing narration sits at turn 0 (system-initiated
+    # scene opener, no player input). Player turns are 1, 2, 3...
+    #
+    # Rules:
+    # - If there are events AFTER the last narration, we're mid-turn
+    #   (declarations / prompts being collected for the in-flight turn).
+    #   Reuse the current max so all of this turn's events share a number.
+    # - If the last narration is clean (handoff `?`) and is the most recent
+    #   event, we're between turns. The next event starts the next turn
+    #   (last narration's turn_number + 1).
+    # - If the last narration is in-progress (no handoff yet) and is the
+    #   most recent event, we're still in its turn.
     def current_turn_number
       return 1 if events.empty?
-      events.maximum(:turn_number) || 1
+
+      last_n = last_narration
+      return 1 unless last_n  # no narration yet — treat first player input as T1
+
+      events_arr = events.to_a
+      events_after_last_narration = events_arr.any? { |e| e.id > last_n.id }
+
+      if events_after_last_narration
+        events.maximum(:turn_number) || last_n.turn_number.to_i
+      elsif last_narration_handoff?
+        last_n.turn_number.to_i + 1
+      else
+        last_n.turn_number.to_i
+      end
     end
 
     def declared_this_turn

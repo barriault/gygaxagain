@@ -164,10 +164,20 @@ module Narrator
     end
 
     def user_content_for_turn(turn_n, evs)
+      # Turn 0 is the framing turn: no player declarations, a system-side
+      # opener. Render the same "[Scene start]" message that current_user_message
+      # uses for framing calls so the LLM sees a consistent prefix.
+      return "[Scene start] What does #{main_character_name} do?" if turn_n == 0
+
       declarations = evs.select { _1.kind == "pc_declaration" }
+      # Dedupe per-PC within a turn: a player who re-submits for the same PC
+      # should have only their LAST declaration sent to the model. Without
+      # this, retries (failed first attempt, successful second) double up.
+      declarations = declarations.group_by(&:pc_id).map { |_, group| group.last }
       rolls        = evs.select { _1.kind == "dice_roll" }
+
       lines = [ "[Turn #{turn_n}]" ]
-      declarations.each { lines << "#{_1.pc.name} declares: #{_1.payload['text']}" }
+      declarations.each { lines << "#{_1.pc&.name || 'Unknown PC'} declares: #{_1.payload['text']}" }
       rolls.each do |r|
         line = "#{r.pc&.name || 'Unknown PC'} rolled #{r.payload['expression']} = #{r.payload['result']}"
         line += " (#{r.payload['reason']})" if r.payload["reason"].present?

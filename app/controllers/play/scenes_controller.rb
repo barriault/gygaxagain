@@ -10,7 +10,7 @@ module Play
       if @scene.events.empty? && !prefetch_request?
         narration = @scene.events.create!(
           kind: "narration",
-          turn_number: 1,
+          turn_number: 0, # Framing = T0; player turns start at 1.
           payload: { "text" => "", "status" => "streaming", "trigger" => "framing" }
         )
         NarrationJob.perform_later(scene_id: @scene.id, narration_event_id: narration.id, trigger: "framing")
