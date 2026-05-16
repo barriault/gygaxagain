@@ -10,10 +10,16 @@ RSpec.describe Play::Events::Component do
       expect(described_class.for(event)).to eq(Play::Events::NarrationComponent)
     end
 
-    it "resolves player_action to PlayerActionComponent" do
+    it "resolves pc_declaration to PcDeclarationComponent" do
       scene = create(:scene)
-      event = create(:event, scene: scene, kind: "player_action", payload: { "text" => "x" })
-      expect(described_class.for(event)).to eq(Play::Events::PlayerActionComponent)
+      event = create(:event, scene: scene, kind: "pc_declaration", payload: { "text" => "x" })
+      expect(described_class.for(event)).to eq(Play::Events::PcDeclarationComponent)
+    end
+
+    it "resolves gm_collection_prompt to GmCollectionPromptComponent" do
+      scene = create(:scene)
+      event = create(:event, scene: scene, kind: "gm_collection_prompt", payload: { "text" => "x" })
+      expect(described_class.for(event)).to eq(Play::Events::GmCollectionPromptComponent)
     end
 
     it "returns DiceRollComponent for kind=dice_roll" do
