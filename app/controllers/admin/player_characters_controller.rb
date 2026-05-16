@@ -1,6 +1,5 @@
 module Admin
   class PlayerCharactersController < Admin::ApplicationController
-    before_action :authenticate_user!
     before_action :load_campaign
     before_action :load_player_character, only: %i[show edit update destroy]
 
