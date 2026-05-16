@@ -10,6 +10,11 @@
             class="rounded border border-slate-700 px-3 py-1 text-sm text-slate-500 cursor-not-allowed opacity-50">
       Scenes ▾
     </button>
+    <%= button_to "Reset scene",
+                  helpers.play_campaign_scene_reset_path(scene.campaign, scene),
+                  method: :post,
+                  data: { turbo_confirm: "Clear all events and LLM history for this scene? This cannot be undone." },
+                  class: "rounded border border-rose-800 px-3 py-1 text-sm text-rose-300 hover:bg-rose-900/40 hover:border-rose-600" %>
   </header>
 
   <div class="play-grid flex flex-1 relative">

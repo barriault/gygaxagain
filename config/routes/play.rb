@@ -12,6 +12,7 @@ constraints subdomain: "" do
 
         resources :dice_rolls,       only: [ :create ]
         resources :pc_declarations,  only: [ :create ]
+        resource  :reset,            only: [ :create ], controller: "scene_resets"
       end
     end
   end
