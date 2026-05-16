@@ -28,14 +28,6 @@ RSpec.describe Player::EventViewModel do
       expect(described_class.new(event).text).to eq("Rolled 2d6+3 → 11")
     end
 
-    it "renders oracle_query with question, likelihood, chaos, answer" do
-      event = create(:event, scene: scene, kind: "oracle_query",
-                     payload: { "question" => "Does the door open?",
-                                "likelihood" => "50_50", "chaos" => 5, "answer" => "Yes" })
-      vm = described_class.new(event)
-      expect(vm.text).to eq("Asked: Does the door open? (50_50, chaos 5) → Yes")
-    end
-
     it "renders scene_transition with reason" do
       event = create(:event, scene: scene, kind: "scene_transition",
                      payload: { "reason" => "Travel to the next town." })

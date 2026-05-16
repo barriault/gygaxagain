@@ -36,11 +36,10 @@ RSpec.describe Play::Scenes::PlayComponent, type: :component do
     expect(page).to have_link("← Back to #{campaign.name}", href: play_campaign_path(campaign))
   end
 
-  it "renders the input dock (dice + oracle forms)" do
+  it "renders the input dock (dice form)" do
     render_inline(described_class.new(scene: scene))
 
     expect(page).to have_text(/roll dice/i)
-    expect(page).to have_text(/ask the oracle/i)
   end
 
   it "renders the narration form" do

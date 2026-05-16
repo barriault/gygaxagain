@@ -21,11 +21,6 @@ RSpec.describe Play::Events::Component do
       expect(described_class.for(event)).to eq(Play::Events::DiceRollComponent)
     end
 
-    it "returns OracleQueryComponent for kind=oracle_query" do
-      event = build(:event, scene: scene, kind: "oracle_query")
-      expect(described_class.for(event)).to eq(Play::Events::OracleQueryComponent)
-    end
-
     it "returns SceneTransitionComponent for kind=scene_transition" do
       event = build(:event, scene: scene, kind: "scene_transition")
       expect(described_class.for(event)).to eq(Play::Events::SceneTransitionComponent)
