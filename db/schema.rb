@@ -110,7 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_152109) do
     t.string "pronouns"
     t.string "role", default: "pc", null: false
     t.datetime "updated_at", null: false
-    t.index ["campaign_id", "name"], name: "index_player_characters_on_campaign_and_name", unique: true
+    t.index "campaign_id, lower((name)::text)", name: "index_player_characters_on_campaign_and_name", unique: true
     t.index ["campaign_id"], name: "index_player_characters_on_campaign_id"
   end
 
