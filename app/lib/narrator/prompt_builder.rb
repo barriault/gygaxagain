@@ -127,7 +127,7 @@ module Narrator
     end
 
     def completed_turns
-      events = scene.events.where(kind: %w[pc_declaration dice_roll narration]).order(:turn_number, :occurred_at, :id)
+      events = scene.events.includes(:pc).where(kind: %w[pc_declaration dice_roll narration]).order(:turn_number, :occurred_at, :id)
       events.group_by(&:turn_number).select { |_, evs| evs.any? { _1.kind == "narration" } && handoff?(evs.select { _1.kind == "narration" }.last) }
     end
 
