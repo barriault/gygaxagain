@@ -5,7 +5,8 @@ RSpec.describe Narrator::Prompt do
     described_class.new(
       system: [ { type: "text", text: "rules" }, { type: "text", text: "roster" } ],
       messages: [ { role: "user", content: "hi" } ],
-      cache_breakpoints: [ 0, 1 ]
+      cache_breakpoints: [ 0, 1 ],
+      stop_sequences: nil
     )
   }
 
@@ -22,8 +23,8 @@ RSpec.describe Narrator::Prompt do
     expect(str).to include("hi")
   end
 
-  it "produces call_kwargs with the three components" do
+  it "produces call_kwargs with the four components" do
     kwargs = prompt.to_call_kwargs
-    expect(kwargs.keys).to contain_exactly(:system, :messages, :cache_breakpoints)
+    expect(kwargs.keys).to contain_exactly(:system, :messages, :cache_breakpoints, :stop_sequences)
   end
 end

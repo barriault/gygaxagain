@@ -15,7 +15,8 @@ module Narrator
       Narrator::Prompt.new(
         system: build_system_blocks,
         messages: build_messages,
-        cache_breakpoints: [ 0, 1 ]
+        cache_breakpoints: [ 0, 1 ],
+        stop_sequences: nil
       )
     end
 

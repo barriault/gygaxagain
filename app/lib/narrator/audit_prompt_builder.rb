@@ -12,7 +12,8 @@ module Narrator
       Narrator::Prompt.new(
         system: [ { type: "text", text: Narrator::AuditSystemPrompt.text } ],
         messages: [ { role: "user", content: scene_transcript } ],
-        cache_breakpoints: [ 0 ]
+        cache_breakpoints: [ 0 ],
+        stop_sequences: nil
       )
     end
 

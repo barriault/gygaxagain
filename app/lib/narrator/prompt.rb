@@ -1,7 +1,7 @@
 module Narrator
-  Prompt = Data.define(:system, :messages, :cache_breakpoints) do
+  Prompt = Data.define(:system, :messages, :cache_breakpoints, :stop_sequences) do
     def to_call_kwargs
-      { system: system, messages: messages, cache_breakpoints: cache_breakpoints }
+      { system:, messages:, cache_breakpoints:, stop_sequences: }
     end
 
     def to_s
