@@ -75,6 +75,8 @@ module Player
 
     def companion_prompt_offered?
       return true if campaign.player_characters.companions.none?
+      # All companions already declared → the check would be redundant.
+      return true if undeclared_companions_this_turn.empty?
       gm_collection_prompts_this_turn.any? { _1.payload["kind"] == "companion_check" }
     end
 
