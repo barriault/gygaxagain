@@ -70,10 +70,11 @@ class Event < ApplicationRecord
       target: ActionView::RecordIdentifier.dom_id(scene, :log_empty)
     )
 
+    component_class = Play::Events::Component.for(self)
     Turbo::StreamsChannel.broadcast_append_to(
       stream_key,
       target: ActionView::RecordIdentifier.dom_id(scene, :log),
-      renderable: Play::Events::Component.for(self),
+      renderable: component_class.new(event: self),
       layout: false
     )
   end
