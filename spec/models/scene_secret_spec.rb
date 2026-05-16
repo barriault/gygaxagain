@@ -29,6 +29,7 @@ RSpec.describe SceneSecret, type: :model do
     subject { build(:scene_secret) }
     it { is_expected.to validate_presence_of(:label) }
     it { is_expected.to validate_presence_of(:content) }
+    it { is_expected.to validate_length_of(:label).is_at_most(100) }
     it { is_expected.to validate_uniqueness_of(:label).scoped_to(:scene_id).case_insensitive }
   end
 

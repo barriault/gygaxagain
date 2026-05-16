@@ -22,6 +22,7 @@ class SceneSecret < ApplicationRecord
   belongs_to :scene
 
   validates :label,   presence: true,
+                      length: { maximum: 100 },
                       uniqueness: { scope: :scene_id, case_sensitive: false }
   validates :content, presence: true
 end
