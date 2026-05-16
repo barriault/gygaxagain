@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_16_152109) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_16_153515) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -126,6 +126,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_152109) do
     t.index ["verdict"], name: "index_scene_audits_on_verdict"
   end
 
+  create_table "scene_secrets", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.string "label", null: false
+    t.bigint "scene_id", null: false
+    t.datetime "updated_at", null: false
+    t.index "scene_id, lower((label)::text)", name: "index_scene_secrets_on_scene_and_label", unique: true
+    t.index ["scene_id"], name: "index_scene_secrets_on_scene_id"
+  end
+
   create_table "scenes", force: :cascade do |t|
     t.bigint "campaign_id", null: false
     t.datetime "closed_at"
@@ -174,6 +184,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_152109) do
   add_foreign_key "player_characters", "campaigns", on_delete: :cascade
   add_foreign_key "scene_audits", "llm_calls", on_delete: :restrict
   add_foreign_key "scene_audits", "scenes", on_delete: :cascade
+  add_foreign_key "scene_secrets", "scenes", on_delete: :cascade
   add_foreign_key "scenes", "campaigns", on_delete: :cascade
   add_foreign_key "users", "campaigns", column: "last_played_campaign_id", on_delete: :nullify
 end
