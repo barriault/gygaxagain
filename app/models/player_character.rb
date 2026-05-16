@@ -15,7 +15,7 @@
 #
 # Indexes
 #
-#  index_player_characters_on_campaign_and_name  (campaign_id,name) UNIQUE
+#  index_player_characters_on_campaign_and_name  (campaign_id, lower((name)::text)) UNIQUE
 #  index_player_characters_on_campaign_id        (campaign_id)
 #
 # Foreign Keys
