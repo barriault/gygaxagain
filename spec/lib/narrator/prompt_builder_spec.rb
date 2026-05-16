@@ -108,5 +108,15 @@ RSpec.describe Narrator::PromptBuilder do
       prompt = described_class.framing(scene:)
       expect(prompt.system[2][:text]).to include("2 skeletons")
     end
+
+    it "exposes faction secrets to the DM — intentional asymmetry (DM sees all)" do
+      # This is the DM-side contract: faction secrets MUST appear in the prompt.
+      # `to leak_secrets_of` (positive assertion) verifies they do — opposite of
+      # the player-surface guard that uses `not_to leak_secrets_of`.
+      faction = create(:faction, campaign:, name: "Shadow Thieves")
+      create(:faction_secret, faction:, label: "True Leader", content: "Secretly run by a lich")
+      prompt = described_class.framing(scene:)
+      expect(prompt.system[1][:text]).to leak_secrets_of(faction)
+    end
   end
 end
