@@ -1,0 +1,15 @@
+<h1>Scene Secrets — <%= scene.title %></h1>
+<p>
+  <%= link_to "New scene secret", new_admin_campaign_scene_scene_secret_path(campaign, scene), class: "btn" %>
+  <%= link_to "← Back to campaign", admin_campaign_path(campaign) %>
+</p>
+<table>
+  <thead>
+    <tr><th>Label</th><th>Content</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% scene_secrets.each do |secret| %>
+      <%= render Admin::SceneSecrets::RowComponent.new(campaign:, scene:, scene_secret: secret) %>
+    <% end %>
+  </tbody>
+</table>

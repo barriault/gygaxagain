@@ -24,6 +24,9 @@
                   class: "rounded bg-slate-700 px-3 py-1 text-xs uppercase tracking-widest text-slate-300 hover:text-slate-100" %>
     <% end %>
 
+    <%= link_to "Secrets (#{scene.scene_secrets.count})",
+                helpers.admin_campaign_scene_scene_secrets_path(campaign, scene),
+                class: "text-sm text-slate-300 hover:text-slate-100" %>
     <%= link_to "Edit",
                 helpers.edit_admin_campaign_scene_path(campaign, scene),
                 class: "text-sm text-slate-300 hover:text-slate-100" %>

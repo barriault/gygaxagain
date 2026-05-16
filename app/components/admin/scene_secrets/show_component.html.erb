@@ -1,0 +1,7 @@
+<h1><%= secret.label %></h1>
+<p><strong>Scene:</strong> <%= scene.title %></p>
+<pre><%= secret.content %></pre>
+<p>
+  <%= link_to "Edit", edit_admin_campaign_scene_scene_secret_path(campaign, scene, secret) %>
+  <%= link_to "← All scene secrets", admin_campaign_scene_scene_secrets_path(campaign, scene) %>
+</p>
