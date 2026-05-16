@@ -22,6 +22,17 @@ module Play
         }
       )
 
+      # Enqueue continuation if scene is awaiting a roll
+      state = Player::SceneStateViewModel.new(@scene)
+      if state.phase == :awaiting_roll
+        narration = @scene.events.create!(
+          kind: "narration",
+          turn_number: state.current_turn_number,
+          payload: { "text" => "", "status" => "streaming", "trigger" => "continuation" }
+        )
+        NarrationJob.perform_later(scene_id: @scene.id, narration_event_id: narration.id, trigger: "continuation")
+      end
+
       respond_to do |f|
         f.turbo_stream { render turbo_stream: stream_success(event) }
         f.html { redirect_to play_campaign_scene_path(@scene.campaign, @scene) }

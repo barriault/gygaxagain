@@ -5,12 +5,12 @@ class NarrationJob < ApplicationJob
   FLUSH_MS    = 80
   FLUSH_BYTES = 25
 
-  def perform(narration_event_id)
+  def perform(narration_event_id, scene_id: nil, trigger: nil)
     narration_event = Event.find(narration_event_id)
     scene           = narration_event.scene
     campaign        = scene.campaign
     user            = campaign.user
-    player_action   = Event.find(narration_event.payload.fetch("player_action_event_id"))
+    player_action   = Event.find(narration_event.payload.fetch("player_action_event_id", narration_event.id))
 
     prompt = Narrator::PromptBuilder.call(
       scene: scene,
