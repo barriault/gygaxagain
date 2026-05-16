@@ -13,12 +13,13 @@ module Llm
       # Returns Llm::Result. Never raises on HTTP/transport errors —
       # those are captured into result.error. Raises Llm::ConfigError
       # if the API key is missing from Rails credentials.
-      def call(system: nil, messages:, max_tokens: 1024, cache_breakpoints: [])
+      def call(system: nil, messages:, max_tokens: 1024, cache_breakpoints: [], stop_sequences: nil)
         api_key = self.class.api_key
         raise Llm::ConfigError, "Anthropic API key not configured (credentials.anthropic.api_key)" if api_key.blank?
 
         request_body = build_request_body(system: system, messages: messages,
-                                          max_tokens: max_tokens, cache_breakpoints: cache_breakpoints)
+                                          max_tokens: max_tokens, cache_breakpoints: cache_breakpoints,
+                                          stop_sequences: stop_sequences)
 
         started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
@@ -61,12 +62,13 @@ module Llm
       # On error, returns an Llm::Result with `error` populated and any partial text
       # captured into prompt_payload["partial_text"].
       def call_streaming(system: nil, messages:, max_tokens: 4096,
-                         cache_breakpoints: [], &on_chunk)
+                         cache_breakpoints: [], stop_sequences: nil, &on_chunk)
         api_key = self.class.api_key
         raise Llm::ConfigError, "Anthropic API key not configured (credentials.anthropic.api_key)" if api_key.blank?
 
         request_body = build_request_body(system: system, messages: messages,
-                                          max_tokens: max_tokens, cache_breakpoints: cache_breakpoints)
+                                          max_tokens: max_tokens, cache_breakpoints: cache_breakpoints,
+                                          stop_sequences: stop_sequences)
 
         started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         text       = +""
@@ -125,38 +127,58 @@ module Llm
 
       private
 
-      def build_request_body(system:, messages:, max_tokens:, cache_breakpoints:)
-        body = {
-          model: model,
-          max_tokens: max_tokens,
-          messages: messages
-        }
+      def build_request_body(system:, messages:, max_tokens:, cache_breakpoints:, stop_sequences: nil)
+        body = { model: model, max_tokens: max_tokens, messages: messages }
+
         if system.present?
-          body[:system] = if cache_breakpoints.any?
-                            normalize_system(system, cache_breakpoints)
-          else
-                            system
-          end
+          sys_bps, msg_bps = partition_cache_breakpoints(cache_breakpoints)
+          body[:system]   = sys_bps.any? ? normalize_system(system, sys_bps) : system
+          body[:messages] = msg_bps.any? ? normalize_messages(messages, msg_bps) : messages
         elsif cache_breakpoints.any?
           raise Llm::ConfigError, "cache_breakpoints requires a non-nil system parameter"
         end
+
+        body[:stop_sequences] = stop_sequences if stop_sequences.present?
         body
       end
 
-      def normalize_system(system, cache_breakpoints)
+      def partition_cache_breakpoints(bps)
+        sys, msg = [], []
+        bps.each do |bp|
+          index, ttl = bp.is_a?(Hash) ? [ bp.fetch(:index), bp.fetch(:ttl, :ephemeral_5m) ] : [ bp, :ephemeral_5m ]
+          (index.negative? ? msg : sys) << { index: index, ttl: ttl }
+        end
+        [ sys, msg ]
+      end
+
+      def normalize_system(system, breakpoints)
         blocks = case system
         when String then [ { type: "text", text: system } ]
         when Array  then system.map(&:dup)
         else             raise Llm::ConfigError, "system must be a String or Array of typed blocks"
         end
-        cache_breakpoints.each do |bp|
-          index, ttl = case bp
-          when Integer then [ bp, :ephemeral_5m ]
-          when Hash    then [ bp.fetch(:index), bp.fetch(:ttl, :ephemeral_5m) ]
-          end
-          blocks[index][:cache_control] = { type: "ephemeral", ttl: ttl_to_anthropic(ttl) }
+
+        breakpoints.each do |bp|
+          blocks[bp[:index]][:cache_control] = { type: "ephemeral", ttl: ttl_to_anthropic(bp[:ttl]) }
         end
+
         blocks
+      end
+
+      def normalize_messages(messages, breakpoints)
+        msgs = messages.map(&:dup)
+        breakpoints.each do |bp|
+          target = msgs[bp[:index]]
+          content_blocks =
+            case target[:content]
+            when String then [ { type: "text", text: target[:content] } ]
+            when Array  then target[:content].map(&:dup)
+            end
+          content_blocks[0] = content_blocks[0].merge(cache_control: { type: "ephemeral", ttl: ttl_to_anthropic(bp[:ttl]) })
+          target[:content] = content_blocks
+          msgs[bp[:index]] = target
+        end
+        msgs
       end
 
       def ttl_to_anthropic(ttl)

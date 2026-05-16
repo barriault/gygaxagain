@@ -237,4 +237,71 @@ RSpec.describe Llm::Providers::Anthropic do
         .to raise_error(Llm::ConfigError, /credentials\.anthropic\.api_key/)
     end
   end
+
+  describe "negative cache_breakpoints" do
+    let(:adapter) { described_class.new(model: "claude-opus-4-7") }
+    let(:system) { [ { type: "text", text: "rules" } ] }
+    let(:messages) do
+      [
+        { role: "user",      content: "t1 input" },
+        { role: "assistant", content: "t1 reply" },
+        { role: "user",      content: "t2 input" }
+      ]
+    end
+
+    it "applies cache_control to the message at the negative index" do
+      body = adapter.send(:build_request_body,
+                          system:, messages:,
+                          max_tokens: 100,
+                          cache_breakpoints: [ 0, -2 ],
+                          stop_sequences: nil)
+
+      # System block 0 gets cache_control
+      expect(body[:system].first).to have_key(:cache_control)
+
+      # Messages at index -2 (the assistant reply) gets cache_control on its content block
+      target = body[:messages][-2]
+      expect(target[:content]).to be_an(Array)
+      expect(target[:content].first).to include(cache_control: { type: "ephemeral", ttl: "5m" })
+    end
+
+    it "leaves messages untouched when no negative breakpoints given" do
+      body = adapter.send(:build_request_body,
+                          system:, messages:,
+                          max_tokens: 100,
+                          cache_breakpoints: [ 0 ],
+                          stop_sequences: nil)
+      expect(body[:messages].map { _1[:content] }).to all(be_a(String))
+    end
+  end
+
+  describe "stop_sequences pass-through" do
+    let(:adapter) { described_class.new(model: "claude-opus-4-7") }
+    let(:system)  { [ { type: "text", text: "rules" } ] }
+    let(:messages) { [ { role: "user", content: "hi" } ] }
+
+    it "includes stop_sequences in the body when provided" do
+      body = adapter.send(:build_request_body,
+                          system:, messages:,
+                          max_tokens: 100,
+                          cache_breakpoints: [],
+                          stop_sequences: [ "]]" ])
+      expect(body[:stop_sequences]).to eq([ "]]" ])
+    end
+
+    it "omits stop_sequences when nil or empty" do
+      body_nil = adapter.send(:build_request_body,
+                              system:, messages:,
+                              max_tokens: 100,
+                              cache_breakpoints: [],
+                              stop_sequences: nil)
+      body_empty = adapter.send(:build_request_body,
+                                system:, messages:,
+                                max_tokens: 100,
+                                cache_breakpoints: [],
+                                stop_sequences: [])
+      expect(body_nil).not_to have_key(:stop_sequences)
+      expect(body_empty).not_to have_key(:stop_sequences)
+    end
+  end
 end
