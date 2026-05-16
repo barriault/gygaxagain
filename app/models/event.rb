@@ -36,9 +36,45 @@ class Event < ApplicationRecord
   before_validation :default_occurred_at, on: :create
   validates :occurred_at, presence: true
 
+  after_create_commit :broadcast_append_to_play_surface
+
   private
 
   def default_occurred_at
     self.occurred_at ||= Time.current
+  end
+
+  # Push the new event element into the play surface's turbo-frame so
+  # subscribed browsers see it immediately, without a page reload.
+  #
+  # NarrationJob's per-flush `broadcast_replace_to` only works when the
+  # target element already exists in the DOM. For events created AFTER
+  # initial page render (declarations, collection prompts, resolution
+  # narrations triggered by PcDeclarationsController/DiceRollsController),
+  # nothing would push them to the browser without this append.
+  #
+  # The framing narration (created by ScenesController#play before the
+  # response renders) is already in the DOM at page load, so the append
+  # here is redundant for that one — but it's harmless: the append fires
+  # before subscribers exist on first load.
+  def broadcast_append_to_play_surface
+    return unless scene&.persisted?
+    user = scene.campaign&.user
+    return unless user
+
+    stream_key = [ scene, user ]
+
+    # Remove the empty-state placeholder if present (no-op when absent).
+    Turbo::StreamsChannel.broadcast_remove_to(
+      stream_key,
+      target: ActionView::RecordIdentifier.dom_id(scene, :log_empty)
+    )
+
+    Turbo::StreamsChannel.broadcast_append_to(
+      stream_key,
+      target: ActionView::RecordIdentifier.dom_id(scene, :log),
+      renderable: Play::Events::Component.for(self),
+      layout: false
+    )
   end
 end
