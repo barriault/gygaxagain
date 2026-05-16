@@ -1,23 +1,44 @@
-<aside class="roster">
-  <h2>Party</h2>
-  <section class="roster__section">
-    <h3>PCs</h3>
-    <% pcs.each do |pc| %>
-      <div class="roster__pc">
-        <strong><%= pc.name %></strong> <% if pc.id == main_id %>★<% end %>
-        <span class="roster__meta"><%= pc.class_name %> <%= pc.level %></span>
-        <span class="roster__status"><%= declared_ids.include?(pc.id) ? "✓ declared" : "—" %></span>
-      </div>
-    <% end %>
-  </section>
-  <section class="roster__section">
-    <h3>Companions</h3>
-    <% companions.each do |pc| %>
-      <div class="roster__companion">
-        <strong><%= pc.name %></strong>
-        <span class="roster__meta"><%= pc.class_name %> <%= pc.level %></span>
-        <span class="roster__status"><%= declared_ids.include?(pc.id) ? "✓ declared" : "DM-run" %></span>
-      </div>
-    <% end %>
-  </section>
+<aside class="roster flex-none w-64 border-l border-slate-800 bg-slate-900/40 px-4 py-4 overflow-y-auto">
+  <h2 class="text-xs uppercase tracking-widest text-slate-500 mb-3">Party</h2>
+
+  <% if pcs.any? %>
+    <section class="mb-4">
+      <h3 class="text-[10px] uppercase tracking-widest text-slate-600 mb-2">PCs</h3>
+      <% pcs.each do |pc| %>
+        <div class="mb-2 rounded border border-slate-800 bg-slate-900/60 px-3 py-2">
+          <div class="flex items-baseline justify-between gap-2">
+            <div class="flex items-baseline gap-1 min-w-0">
+              <strong class="text-sm text-slate-100 truncate"><%= pc.name %></strong>
+              <% if pc.id == main_id %><span class="text-amber-400 text-xs">★</span><% end %>
+            </div>
+            <% if declared_ids.include?(pc.id) %>
+              <span class="text-[10px] text-emerald-400 shrink-0">✓ declared</span>
+            <% else %>
+              <span class="text-[10px] text-slate-600 shrink-0">—</span>
+            <% end %>
+          </div>
+          <div class="mt-0.5 text-xs text-slate-500"><%= pc.class_name %> <%= pc.level %></div>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if companions.any? %>
+    <section>
+      <h3 class="text-[10px] uppercase tracking-widest text-slate-600 mb-2">Companions</h3>
+      <% companions.each do |pc| %>
+        <div class="mb-2 rounded border border-slate-800/60 bg-slate-900/30 px-3 py-2">
+          <div class="flex items-baseline justify-between gap-2">
+            <strong class="text-sm text-slate-200 truncate min-w-0"><%= pc.name %></strong>
+            <% if declared_ids.include?(pc.id) %>
+              <span class="text-[10px] text-emerald-400 shrink-0">✓ declared</span>
+            <% else %>
+              <span class="text-[10px] text-slate-500 shrink-0">DM-run</span>
+            <% end %>
+          </div>
+          <div class="mt-0.5 text-xs text-slate-500"><%= pc.class_name %> <%= pc.level %></div>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
 </aside>

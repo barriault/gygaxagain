@@ -40,12 +40,18 @@ module Play
       private
 
       def chip_button_html(chip)
-        %(<button class="dice-chip" data-controller="dice-chip" ) +
+        classes = "dice-chip inline-flex items-center gap-1 rounded border border-amber-700/60 " \
+                  "bg-amber-900/30 px-2 py-0.5 text-sm text-amber-200 " \
+                  "hover:bg-amber-800/50 hover:border-amber-500 " \
+                  "disabled:opacity-50 disabled:cursor-not-allowed " \
+                  "transition-colors cursor-pointer"
+        %(<button type="button" class="#{classes}" data-controller="dice-chip" ) +
           %(data-dice-chip-expression-value="#{ERB::Util.html_escape(chip[:expression])}" ) +
           %(data-dice-chip-pc-name-value="#{ERB::Util.html_escape(chip[:pc_name])}" ) +
           %(data-dice-chip-reason-value="#{ERB::Util.html_escape(chip[:reason])}" ) +
           %(data-action="click->dice-chip#roll">) +
-          %(🎲 #{ERB::Util.html_escape(chip[:expression])} — #{ERB::Util.html_escape(chip[:pc_name])} #{ERB::Util.html_escape(chip[:reason])}) +
+          %(🎲 <span class="font-mono">#{ERB::Util.html_escape(chip[:expression])}</span> ) +
+          %(<span class="text-amber-300/70">— #{ERB::Util.html_escape(chip[:pc_name])} #{ERB::Util.html_escape(chip[:reason])}</span>) +
           %(</button>)
       end
     end
