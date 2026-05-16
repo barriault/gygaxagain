@@ -1,0 +1,13 @@
+<div class="composer"
+     data-controller="chat-composer"
+     data-scene-id="<%= scene.id %>"
+     data-campaign-id="<%= scene.campaign_id %>">
+  <%= form_with url: submit_path, method: :post, local: false do |f| %>
+    <%= f.text_area :text,
+                    placeholder: placeholder,
+                    disabled: disabled?,
+                    rows: 2,
+                    data: { chat_composer_target: "input" } %>
+    <%= f.submit "Send", disabled: disabled? %>
+  <% end %>
+</div>
