@@ -23,177 +23,110 @@ campaign_description = <<~DESC.strip
   on the Sword Coast. The party is hired by the captain of the city guard
   to investigate undead attacks emanating from an old cemetery outside town.
   By Michael Klamerus (DMsGuild, 2016).
-
-  # DM Encounter Map
-
-  The narrator sees this section; the player surface never renders campaign
-  description. Use this to stage faithful encounters as the players move
-  through the seeded scenes. Each scene's summary contains only the room
-  architecture the players see on entering — every living or dead occupant
-  is introduced here and revealed through narration.
-
-  ## Scene 1 — Cemetery & Tomb Approach
-  Captain Aldridge is here, waiting at the gate. Two unnamed city soldiers
-  stand at the tomb door. No combat. The captain delivers his briefing
-  (see his NPC entry) and unbars the tomb door at the party's request.
-
-  ## Scene 2 — Tomb Entrance Hall
-  2 Skeletons (MM 272) are at the left door, trying to break through to
-  the side chamber. They do not notice the party at first; will notice
-  if anyone fails a Stealth check or stands too long in the open. CR 1/4
-  each, 100 XP for the pair.
-
-  ## Scene 3 — Tomb West Side Chamber
-  Rewalt Mason (see his NPC entry) is locked inside, alone. He will not
-  open the door until told the skeletons are destroyed. After opening,
-  roleplay per his NPC entry — he conceals he's a thief and his halfling
-  partner is named Leodak, until questioned hard or until the party
-  returns from Floor 2 having found Leodak's body. No combat in this room.
-
-  ## Scene 4 — Tomb North Chamber (Crematorium)
-  3 Zombies (MM 316) wander the room, awakened before they were cremated.
-  CR 1/4 each, 150 XP for the three. The furnace can be lit (wood already
-  underneath); any zombie pushed in is destroyed instantly. The side table
-  holds 20 arrows, two shortswords, and a copper ring (15 cp).
-
-  ## Scene 5 — Tomb East Hallway
-  4 Skeletons (MM 272) ambush the party as they pass the first set of side
-  passages, crawling out of the alcoves (two from each end of the hallway).
-  Characters get a DC 15 Wisdom (Perception) check before triggering the
-  trap to notice two skeletons moving near the first side passage; success
-  avoids the ambush surprise round. CR 1/4 each, 200 XP for the four.
-
-  ## Scene 6 — Tomb Far Chamber
-  2 Skeleton Captains (custom — see stat-block summary in their npc_secret
-  on Kodor; they're CR 1/2 each, 100 XP, AC 14 studded leather, HP 16,
-  Multiattack: two shortsword attacks at +4 for 1d6+2 piercing) stand at
-  the centre of the room. Side rooms left and ahead hold already-opened
-  sarcophagi (looted by Rewalt and Leodak earlier — no treasure left). The
-  staircase right descends to the second floor / caverns.
-
-  ## Scene 7 — Caverns Entrance
-  No encounter here. Leodak's body lies at the foot of the stairs — see
-  his NPC entry. The body has a dagger, 3 gp, and a silver necklace (5 sp).
-
-  ## Scene 8 — Caverns West Tunnel
-  No creatures. The wall trap that killed the previous victim is already
-  sprung (a rusted spear projecting from the side wall, with the impaled
-  skeleton). The skeleton has a silver ring (5 sp). The wooden chest in
-  front of the sarcophagus has a hidden crossbow trap on the lid — DC 15
-  Wisdom (Perception) to spot, DC 10 Dexterity (sleight of hand) to disarm,
-  1d10 piercing damage to whoever opens it untrained. Chest contains 100 sp.
-
-  ## Scene 9 — Caverns East Tunnel
-  Ghoul (MM 148) in the centre of the chamber. CR 1, 200 XP. The opened
-  sarcophagus along the left wall is empty (looted). After defeating it,
-  searching the ghoul yields a gold ring (5 gp). The 60-foot exit tunnel
-  has a magic-missile trap halfway down — a skull statue at the far end
-  fires at the lead character. DC 10 Wisdom (Perception) to spot, DC 10
-  Dexterity to disable, 1d10 force damage on a miss to the lead character
-  only.
-
-  ## Scene 10 — Caverns Deepest Chamber
-  Kodor Drannon (see his NPC entry — full stat block in his npc_secrets)
-  stands by the altar. 2 Skeletons (MM 272) flank the open sarcophagus.
-  Kodor opens the encounter with a brief threatening line and then casts
-  Magic Missile or Shocking Grasp; he hangs back near the altar while the
-  skeletons engage in melee. Once Kodor drops, every other undead in the
-  tomb instantly collapses. The chest at the right contains the treasure
-  detailed in Kodor's NPC entry. The book on the altar contains Myrkul's
-  dogma (see Cult of Myrkul faction entry).
-
-  ## Scene 11 — Return to Phandalin
-  No combat. The captain confirms the source is destroyed and pays 15 gp
-  per character. After the party leaves, narrate that Rewalt did not turn
-  himself in — see Rewalt's npc_secrets. Award 200 XP per character plus
-  15 XP per trap they successfully disarmed or avoided.
-
-  # Party Roster
-
-  The party is four 1st-level characters, all played by the same player at
-  the table. The narrator should address the group as a party and treat
-  each character as an independent actor whose declared actions the player
-  will narrate.
-
-  ## Aragorn — Human Ranger 1 (Guide background, Chaotic Good, male, Medium)
-  AC 15 (studded leather). HP 10 (1d10). Speed 30 ft.
-  STR 13/+1, DEX 16/+3, CON 10/+0, INT 10/+0, WIS 16/+3, CHA 10/+0.
-  Saves: STR +3, DEX +5. Proficiency +2. Passive Perception 15.
-  Skills: Animal Handling +5, Insight +5, Nature +2, Perception +5,
-  Stealth +5, Survival +5.
-  Languages: Common, Giant, Halfling. Tools: Cartographer's Tools.
-  Weapons: Longbow +5 (1d8+3 piercing, Slow), Shortsword +5 (1d6+3 piercing,
-  Vex), Shortsword +5 (1d6 piercing, dual-wield, Vex), Produce Flame +5
-  (1d8 fire). Unarmed +3 (2 bludgeoning).
-  Features: Favored Enemy — Hunter's Mark always prepared, castable 2x/long
-  rest without a slot. Savage Attacker — once per turn on a weapon hit, roll
-  damage dice twice and use either. Magic Initiate (Druid).
-  Spells (WIS, save DC 13, +5 attack, 2 1st-level slots):
-  - Cantrips: Mending, Produce Flame.
-  - 1st: Hail of Thorns, Cure Wounds (Ranger), Cure Wounds (Druid via Magic
-    Initiate, 1/long rest free), Hunter's Mark (always prepared).
-
-  ## Caine — Goliath Monk 1 (Sage background, Medium)
-  AC 16 (unarmored defense). HP 10 (1d8). Speed 35 ft.
-  STR 14/+2, DEX 16/+3, CON 14/+2, INT 14/+2, WIS 16/+3, CHA 16/+3.
-  Saves: STR +4, DEX +5. Proficiency +2. Passive Perception 13.
-  Skills: Arcana +4, Athletics +4, History +4, Stealth +5.
-  Languages: Common, Giant, Orc. Tools: Calligrapher's Supplies, Flute.
-  Weapons: Katana +5 (1d6+3 slashing, Nick), Shuriken +5 (1d6+3 piercing,
-  thrown 20/60, Nick) ×~14 carried.
-  Features: Martial Arts (Dex for unarmed/Monk weapon attack & damage; 1d6
-  Martial Arts die; unarmed strike as bonus action). Unarmored Defense.
-  Hill's Tumble (Hill Giant ancestry) 2/long rest — on a hit vs. Large or
-  smaller, can knock prone. Large Form (Goliath) — 1/long rest, grow Large
-  for 10 minutes. Powerful Build — count as one size larger for carrying;
-  advantage to end Grappled. Magic Initiate (Wizard).
-  Spells (no spellcasting ability shown — WIS for the feat):
-  - Cantrips: Light, Message.
-  - 1st: False Life (1/long rest free, or via Wizard slots — Caine has none).
-
-  ## Fred — Dwarf Cleric 1 (Acolyte background, Medium)
-  AC 18 (chain mail + shield). HP 11 (1d8 + Dwarven Toughness). Speed 30 ft.
-  STR 14/+2, DEX 8/-1, CON 14/+2, INT 10/+0, WIS 16/+3, CHA 12/+1.
-  Saves: WIS +5, CHA +3. Advantage on saves vs. poison; resistance to
-  poison damage. Proficiency +2. Passive Perception 13. Darkvision 120 ft.
-  Skills: Insight +5, Medicine +5, Religion +2.
-  Languages: Common, Dwarvish, Orc. Tools: Calligrapher's Supplies.
-  Subclass: Protector Cleric (martial weapons + heavy armor proficiency).
-  Weapons: Mace +4 (1d6+2 bludgeoning, Sap). Unarmed +4 (3 bludgeoning).
-  Features: Stonecunning (Tremorsense 60 ft on stone, 2/long rest as bonus
-  action). Magic Initiate (Cleric).
-  Spells (WIS, save DC 13, +5 attack, 2 1st-level slots):
-  - Cantrips: Light, Sacred Flame, Thaumaturgy, Spare the Dying (Magic
-    Initiate), Word of Radiance (Magic Initiate).
-  - 1st prepared: Bless, Cure Wounds, Guiding Bolt, Command, Ceremony [R],
-    Bane, Protection from Evil and Good, Purify Food and Drink [R],
-    Sanctuary, Shield of Faith, Create or Destroy Water, Detect Evil and
-    Good, Detect Poison and Disease [R], Detect Magic [R], Healing Word,
-    Inflict Wounds.
-  - 1st extra (Magic Initiate, 1/long rest free): Healing Word.
-
-  ## Patric — Human Wizard 1 (Charlatan background, Chaotic Good, male,
-  Medium)
-  AC 13 (dex only, no armor). HP 7 (1d6). Speed 30 ft.
-  STR 8/-1, DEX 16/+3, CON 12/+1, INT 15/+2, WIS 9/-1, CHA 14/+2.
-  Saves: INT +4, WIS +1. Proficiency +2. Passive Perception 9.
-  Skills: Arcana +4, Deception +4, Investigation +4, Sleight of Hand +5,
-  Stealth +5.
-  Languages: Common, Nordmaarian. Tools: Disguise Kit, Forgery Kit.
-  Weapons: Dagger +5 (1d4+3 piercing, finesse/thrown 20/60), Dart +5 (1d4+3
-  piercing, thrown 20/60) ×12 carried, Ray of Frost +4 (1d8 cold).
-  Features: Arcane Recovery (1/long rest, after short rest recover slots
-  totalling level 1).
-  Spells (INT, save DC 12, +4 attack, 2 1st-level slots; spellbook below):
-  - Cantrips prepared: Light, Mage Hand, Ray of Frost.
-  - 1st prepared (from spellbook): Burning Hands, Charm Person, Feather
-    Fall, Mage Armor, Magic Missile, Sleep.
 DESC
 
 campaign = Campaign.find_or_initialize_by(user: user, name: "The Ancient Tomb of Phandalin")
 campaign.description  = campaign_description
-campaign.chaos_factor = 5 if campaign.new_record?
 campaign.save!
+
+# Player Characters ───────────────────────────────────────────────────────────
+
+PC_SEEDS = [
+  {
+    name: "Aragorn", role: "pc", class_name: "Ranger", level: 1, pronouns: "he/him",
+    notes: <<~NOTES.strip
+      AC 15 (studded leather). HP 10 (1d10). Speed 30 ft.
+      STR 13/+1, DEX 16/+3, CON 10/+0, INT 10/+0, WIS 16/+3, CHA 10/+0.
+      Saves: STR +3, DEX +5. Proficiency +2. Passive Perception 15.
+      Skills: Animal Handling +5, Insight +5, Nature +2, Perception +5,
+      Stealth +5, Survival +5.
+      Languages: Common, Giant, Halfling. Tools: Cartographer's Tools.
+      Weapons: Longbow +5 (1d8+3 piercing, Slow), Shortsword +5 (1d6+3 piercing,
+      Vex), Shortsword +5 (1d6 piercing, dual-wield, Vex), Produce Flame +5
+      (1d8 fire). Unarmed +3 (2 bludgeoning).
+      Features: Favored Enemy — Hunter's Mark always prepared, castable 2x/long
+      rest without a slot. Savage Attacker — once per turn on a weapon hit, roll
+      damage dice twice and use either. Magic Initiate (Druid).
+      Spells (WIS, save DC 13, +5 attack, 2 1st-level slots):
+      - Cantrips: Mending, Produce Flame.
+      - 1st: Hail of Thorns, Cure Wounds (Ranger), Cure Wounds (Druid via Magic
+        Initiate, 1/long rest free), Hunter's Mark (always prepared).
+    NOTES
+  },
+  {
+    name: "Caine", role: "companion", class_name: "Monk", level: 1, pronouns: "he/him",
+    notes: <<~NOTES.strip
+      AC 16 (unarmored defense). HP 10 (1d8). Speed 35 ft.
+      STR 14/+2, DEX 16/+3, CON 14/+2, INT 14/+2, WIS 16/+3, CHA 16/+3.
+      Saves: STR +4, DEX +5. Proficiency +2. Passive Perception 13.
+      Skills: Arcana +4, Athletics +4, History +4, Stealth +5.
+      Languages: Common, Giant, Orc. Tools: Calligrapher's Supplies, Flute.
+      Weapons: Katana +5 (1d6+3 slashing, Nick), Shuriken +5 (1d6+3 piercing,
+      thrown 20/60, Nick) ×~14 carried.
+      Features: Martial Arts (Dex for unarmed/Monk weapon attack & damage; 1d6
+      Martial Arts die; unarmed strike as bonus action). Unarmored Defense.
+      Hill's Tumble (Hill Giant ancestry) 2/long rest — on a hit vs. Large or
+      smaller, can knock prone. Large Form (Goliath) — 1/long rest, grow Large
+      for 10 minutes. Powerful Build — count as one size larger for carrying;
+      advantage to end Grappled. Magic Initiate (Wizard).
+      Spells (no spellcasting ability shown — WIS for the feat):
+      - Cantrips: Light, Message.
+      - 1st: False Life (1/long rest free, or via Wizard slots — Caine has none).
+    NOTES
+  },
+  {
+    name: "Fred", role: "companion", class_name: "Cleric", level: 1, pronouns: "he/him",
+    notes: <<~NOTES.strip
+      AC 18 (chain mail + shield). HP 11 (1d8 + Dwarven Toughness). Speed 30 ft.
+      STR 14/+2, DEX 8/-1, CON 14/+2, INT 10/+0, WIS 16/+3, CHA 12/+1.
+      Saves: WIS +5, CHA +3. Advantage on saves vs. poison; resistance to
+      poison damage. Proficiency +2. Passive Perception 13. Darkvision 120 ft.
+      Skills: Insight +5, Medicine +5, Religion +2.
+      Languages: Common, Dwarvish, Orc. Tools: Calligrapher's Supplies.
+      Subclass: Protector Cleric (martial weapons + heavy armor proficiency).
+      Weapons: Mace +4 (1d6+2 bludgeoning, Sap). Unarmed +4 (3 bludgeoning).
+      Features: Stonecunning (Tremorsense 60 ft on stone, 2/long rest as bonus
+      action). Magic Initiate (Cleric).
+      Spells (WIS, save DC 13, +5 attack, 2 1st-level slots):
+      - Cantrips: Light, Sacred Flame, Thaumaturgy, Spare the Dying (Magic
+        Initiate), Word of Radiance (Magic Initiate).
+      - 1st prepared: Bless, Cure Wounds, Guiding Bolt, Command, Ceremony [R],
+        Bane, Protection from Evil and Good, Purify Food and Drink [R],
+        Sanctuary, Shield of Faith, Create or Destroy Water, Detect Evil and
+        Good, Detect Poison and Disease [R], Detect Magic [R], Healing Word,
+        Inflict Wounds.
+      - 1st extra (Magic Initiate, 1/long rest free): Healing Word.
+    NOTES
+  },
+  {
+    name: "Patric", role: "companion", class_name: "Wizard", level: 1, pronouns: "he/him",
+    notes: <<~NOTES.strip
+      AC 13 (dex only, no armor). HP 7 (1d6). Speed 30 ft.
+      STR 8/-1, DEX 16/+3, CON 12/+1, INT 15/+2, WIS 9/-1, CHA 14/+2.
+      Saves: INT +4, WIS +1. Proficiency +2. Passive Perception 9.
+      Skills: Arcana +4, Deception +4, Investigation +4, Sleight of Hand +5,
+      Stealth +5.
+      Languages: Common, Nordmaarian. Tools: Disguise Kit, Forgery Kit.
+      Weapons: Dagger +5 (1d4+3 piercing, finesse/thrown 20/60), Dart +5 (1d4+3
+      piercing, thrown 20/60) ×12 carried, Ray of Frost +4 (1d8 cold).
+      Features: Arcane Recovery (1/long rest, after short rest recover slots
+      totalling level 1).
+      Spells (INT, save DC 12, +4 attack, 2 1st-level slots; spellbook below):
+      - Cantrips prepared: Light, Mage Hand, Ray of Frost.
+      - 1st prepared (from spellbook): Burning Hands, Charm Person, Feather
+        Fall, Mage Armor, Magic Missile, Sleep.
+    NOTES
+  }
+].freeze
+
+PC_SEEDS.each do |attrs|
+  pc = campaign.player_characters.find_or_initialize_by(name: attrs[:name])
+  pc.assign_attributes(attrs)
+  pc.save!
+end
+
+aragorn = campaign.player_characters.find_by!(name: "Aragorn")
+campaign.update!(main_character: aragorn)
 
 # Factions ────────────────────────────────────────────────────────────────────
 # Each block: find-or-create the faction, then find-or-create each secret by
@@ -412,13 +345,7 @@ upsert_secret!(kodor,
 # (Play::Scenes::PlayComponent + Play::Campaigns::ScenePickerComponent).
 # Treat them as read-aloud text — environmental description only, no names
 # of beings the players have not met, no encounter composition, no trap or
-# DC info. DM-side encounter content lives on NPC public_description (which
-# the narrator's prompt sees but the player surface does not).
-#
-# v2 does not yet have a scene_secrets table or a narrator-only scene field;
-# the gap is to be addressed in a follow-up phase. Until then, the narrator
-# improvises encounter composition (how many skeletons, etc.) from the
-# campaign description + NPC roster + scene environmental cues.
+# DC info. DM-side encounter content lives in scene_secrets (narrator-only).
 
 # If we have an existing seeded campaign with scenes but no play events,
 # wipe and re-seed scenes so content edits to this file always re-apply.
@@ -529,9 +456,104 @@ scenes.each do |attrs|
   end
 end
 
+# Scene Secrets ───────────────────────────────────────────────────────────────
+# DM-only encounter map content, one secret per scene. These replace the
+# # DM Encounter Map section that previously lived in campaign.description.
+
+SCENE_SECRETS = {
+  "Cemetery & Tomb Approach"      => <<~TEXT,
+    Captain Aldridge is here, waiting at the gate. Two unnamed city soldiers
+    stand at the tomb door. No combat. The captain delivers his briefing
+    (see his NPC entry) and unbars the tomb door at the party's request.
+  TEXT
+  "The Tomb — Entrance Hall"      => <<~TEXT,
+    2 Skeletons (MM 272) are at the left door, trying to break through to
+    the side chamber. They do not notice the party at first; will notice
+    if anyone fails a Stealth check or stands too long in the open. CR 1/4
+    each, 100 XP for the pair.
+  TEXT
+  "The Tomb — West Side Chamber"  => <<~TEXT,
+    Rewalt Mason (see his NPC entry) is locked inside, alone. He will not
+    open the door until told the skeletons are destroyed. After opening,
+    roleplay per his NPC entry — he conceals he's a thief and his halfling
+    partner is named Leodak, until questioned hard or until the party
+    returns from Floor 2 having found Leodak's body. No combat in this room.
+  TEXT
+  "The Tomb — North Chamber"      => <<~TEXT,
+    3 Zombies (MM 316) wander the room, awakened before they were cremated.
+    CR 1/4 each, 150 XP for the three. The furnace can be lit (wood already
+    underneath); any zombie pushed in is destroyed instantly. The side table
+    holds 20 arrows, two shortswords, and a copper ring (15 cp).
+  TEXT
+  "The Tomb — East Hallway"       => <<~TEXT,
+    4 Skeletons (MM 272) ambush the party as they pass the first set of side
+    passages, crawling out of the alcoves (two from each end of the hallway).
+    Characters get a DC 15 Wisdom (Perception) check before triggering the
+    trap to notice two skeletons moving near the first side passage; success
+    avoids the ambush surprise round. CR 1/4 each, 200 XP for the four.
+  TEXT
+  "The Tomb — Far Chamber"        => <<~TEXT,
+    2 Skeleton Captains (custom — see stat-block summary in their npc_secret
+    on Kodor; they're CR 1/2 each, 100 XP, AC 14 studded leather, HP 16,
+    Multiattack: two shortsword attacks at +4 for 1d6+2 piercing) stand at
+    the centre of the room. Side rooms left and ahead hold already-opened
+    sarcophagi (looted by Rewalt and Leodak earlier — no treasure left). The
+    staircase right descends to the second floor / caverns.
+  TEXT
+  "The Caverns — Entrance"        => <<~TEXT,
+    No encounter here. Leodak's body lies at the foot of the stairs — see
+    his NPC entry. The body has a dagger, 3 gp, and a silver necklace (5 sp).
+  TEXT
+  "The Caverns — West Tunnel"     => <<~TEXT,
+    No creatures. The wall trap that killed the previous victim is already
+    sprung (a rusted spear projecting from the side wall, with the impaled
+    skeleton). The skeleton has a silver ring (5 sp). The wooden chest in
+    front of the sarcophagus has a hidden crossbow trap on the lid — DC 15
+    Wisdom (Perception) to spot, DC 10 Dexterity (sleight of hand) to disarm,
+    1d10 piercing damage to whoever opens it untrained. Chest contains 100 sp.
+  TEXT
+  "The Caverns — East Tunnel"     => <<~TEXT,
+    Ghoul (MM 148) in the centre of the chamber. CR 1, 200 XP. The opened
+    sarcophagus along the left wall is empty (looted). After defeating it,
+    searching the ghoul yields a gold ring (5 gp). The 60-foot exit tunnel
+    has a magic-missile trap halfway down — a skull statue at the far end
+    fires at the lead character. DC 10 Wisdom (Perception) to spot, DC 10
+    Dexterity to disable, 1d10 force damage on a miss to the lead character
+    only.
+  TEXT
+  "The Caverns — Deepest Chamber" => <<~TEXT,
+    Kodor Drannon (see his NPC entry — full stat block in his npc_secrets)
+    stands by the altar. 2 Skeletons (MM 272) flank the open sarcophagus.
+    Kodor opens the encounter with a brief threatening line and then casts
+    Magic Missile or Shocking Grasp; he hangs back near the altar while the
+    skeletons engage in melee. Once Kodor drops, every other undead in the
+    tomb instantly collapses. The chest at the right contains the treasure
+    detailed in Kodor's NPC entry. The book on the altar contains Myrkul's
+    dogma (see Cult of Myrkul faction entry).
+  TEXT
+  "Return to Phandalin"           => <<~TEXT,
+    No combat. The captain confirms the source is destroyed and pays 15 gp
+    per character. After the party leaves, narrate that Rewalt did not turn
+    himself in — see Rewalt's npc_secrets. Award 200 XP per character plus
+    15 XP per trap they successfully disarmed or avoided.
+  TEXT
+}.freeze
+
+campaign.scenes.each do |scene|
+  content = SCENE_SECRETS[scene.title]
+  next unless content
+  secret = scene.scene_secrets.find_or_initialize_by(label: "Encounter map")
+  secret.content = content.strip
+  secret.save!
+end
+
 puts "Seeded campaign '#{campaign.name}' for #{user.email}:"
 puts "  #{campaign.factions.count} factions, " \
      "#{campaign.factions.flat_map(&:secrets).count} faction secrets"
 puts "  #{campaign.npcs.count} NPCs, " \
      "#{campaign.npcs.flat_map(&:secrets).count} NPC secrets"
 puts "  #{campaign.scenes.count} scenes"
+puts "  #{campaign.player_characters.count} player characters " \
+     "(#{campaign.player_characters.pcs.count} PCs, " \
+     "#{campaign.player_characters.companions.count} companions)"
+puts "  #{campaign.scenes.flat_map(&:scene_secrets).count} scene secrets"
