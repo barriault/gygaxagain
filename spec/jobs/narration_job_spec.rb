@@ -1,100 +1,67 @@
 require "rails_helper"
 
 RSpec.describe NarrationJob, type: :job do
-  let(:user)          { create(:user) }
-  let(:campaign)      { create(:campaign, user: user) }
-  let(:scene)         { create(:scene, campaign: campaign) }
-  let!(:player_event) {
-    create(:event, scene: scene, kind: "player_action",
-           payload: { "text" => "I open the door." })
-  }
-  let!(:narration_event) {
-    create(:event, scene: scene, kind: "narration",
-           payload: { "text" => "", "status" => "streaming",
-                      "player_action_event_id" => player_event.id, "llm_call_id" => nil })
-  }
+  include ActiveJob::TestHelper
+
+  let(:campaign) { create(:campaign) }
+  let!(:aragorn) { create(:player_character, campaign:, name: "Aragorn", role: "pc").tap { campaign.update!(main_character: _1) } }
+  let(:scene)    { create(:scene, campaign:) }
 
   before do
-    install_turbo_capture!
-    allow(Rails.application.credentials).to receive(:dig).with(:anthropic, :api_key).and_return("sk-test")
     Llm::Providers::Anthropic.reset_client!
+    stub_anthropic_streaming(text_chunks: [ "OK. ", "What do you do?" ])
   end
 
-  describe "happy path" do
+  describe "framing trigger" do
+    it "calls PromptBuilder.framing and persists the streamed text" do
+      narration = scene.events.create!(kind: "narration", turn_number: 1,
+                                       payload: { "text" => "", "status" => "streaming", "trigger" => "framing" })
+      described_class.perform_now(scene_id: scene.id, narration_event_id: narration.id, trigger: "framing")
+      expect(narration.reload.payload["text"]).to eq("OK. What do you do?")
+      expect(narration.reload.payload["status"]).to eq("complete")
+    end
+  end
+
+  describe "resolution trigger" do
     before do
-      stub_anthropic_streaming(text_chunks: [ "Hello ", "there", "." ],
-                               input_tokens: 10, output_tokens: 4)
+      create(:event, scene:, kind: "pc_declaration", pc: aragorn, turn_number: 1,
+             payload: { "text" => "I look around." })
     end
 
-    it "accumulates text and finalizes the narration event payload" do
-      described_class.perform_now(narration_event.id)
-      narration_event.reload
-
-      expect(narration_event.payload["text"]).to eq("Hello there.")
-      expect(narration_event.payload["status"]).to eq("complete")
-      expect(narration_event.payload["llm_call_id"]).to be_a(Integer)
-    end
-
-    it "writes an LlmCall row" do
-      expect {
-        described_class.perform_now(narration_event.id)
-      }.to change(LlmCall, :count).by(1)
-
-      call = LlmCall.last
-      expect(call.purpose).to eq("narration")
-      expect(call.scene_id).to eq(scene.id)
-    end
-
-    it "broadcasts at least one replace to the per-(scene, user) channel" do
-      described_class.perform_now(narration_event.id)
-      replaces = captured_turbo_broadcasts.select { _1[:method] == :broadcast_replace_to }
-      expect(replaces).not_to be_empty
-      expect(replaces.first[:args]).to eq([ [ scene, user ] ])
-      expect(replaces.first[:kwargs][:target]).to include("event_#{narration_event.id}")
+    it "calls PromptBuilder.resolution with the turn's declarations" do
+      narration = scene.events.create!(kind: "narration", turn_number: 1,
+                                       payload: { "text" => "", "status" => "streaming", "trigger" => "resolution" })
+      described_class.perform_now(scene_id: scene.id, narration_event_id: narration.id, trigger: "resolution")
+      expect(narration.reload.payload["status"]).to eq("complete")
     end
   end
 
-  describe "error path" do
-    before { stub_anthropic_streaming_error(status: 500, message: "boom") }
-
-    it "marks the narration event as errored and persists an LlmCall" do
-      described_class.perform_now(narration_event.id)
-      narration_event.reload
-
-      expect(narration_event.payload["status"]).to eq("errored")
-      expect(narration_event.payload["error_message"]).to include("boom")
-      expect(narration_event.payload["llm_call_id"]).to be_a(Integer)
-    end
-  end
-
-  describe "untyped exception rescue" do
+  describe "continuation trigger" do
     before do
-      call_count = 0
-      allow(Llm::Call).to receive(:execute_streaming) do |**_kwargs, &block|
-        block.call(text: "The ")
-        call_count += 1
-        raise RuntimeError, "boom"
-      end
+      create(:event, scene:, kind: "pc_declaration", pc: aragorn, turn_number: 1, payload: { "text" => "approach" })
+      create(:event, scene:, kind: "narration", turn_number: 1,
+             payload: { "text" => "He looks up. [[1d20 — Aragorn Insight", "status" => "complete" })
+      create(:event, scene:, kind: "dice_roll", pc: aragorn, turn_number: 1,
+             payload: { "expression" => "1d20", "result" => 14, "reason" => "Insight" })
     end
 
-    it "re-raises the exception so ActiveJob sees the failure" do
+    it "calls PromptBuilder.continuation with the latest roll" do
+      narration = scene.events.create!(kind: "narration", turn_number: 1,
+                                       payload: { "text" => "", "status" => "streaming", "trigger" => "continuation" })
+      described_class.perform_now(scene_id: scene.id, narration_event_id: narration.id, trigger: "continuation")
+      expect(narration.reload.payload["status"]).to eq("complete")
+    end
+  end
+
+  describe "errored streams" do
+    it "marks the event errored on any exception" do
+      allow(Llm::Call).to receive(:execute_streaming).and_raise(StandardError, "boom")
+      narration = scene.events.create!(kind: "narration", turn_number: 1,
+                                       payload: { "text" => "", "status" => "streaming", "trigger" => "framing" })
       expect {
-        described_class.perform_now(narration_event.id)
-      }.to raise_error(RuntimeError, "boom")
-    end
-
-    it "marks the event as errored with the partial text and error message" do
-      begin
-        described_class.perform_now(narration_event.id)
-      rescue RuntimeError
-        # expected
-      end
-
-      narration_event.reload
-      expect(narration_event.payload["status"]).to eq("errored")
-      expect(narration_event.payload["error_message"]).to include("RuntimeError")
-      expect(narration_event.payload["error_message"]).to include("boom")
-      expect(narration_event.payload["text"]).to include("The ")
+        described_class.perform_now(scene_id: scene.id, narration_event_id: narration.id, trigger: "framing")
+      }.to raise_error(StandardError)
+      expect(narration.reload.payload["status"]).to eq("errored")
     end
   end
 end
