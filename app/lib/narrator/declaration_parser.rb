@@ -1,6 +1,6 @@
 module Narrator
   class DeclarationParser
-    GROUP_RE    = /\b(the rest|the others|the party|everyone else|they|both)\b/i
+    GROUP_RE    = /\b(the rest|the others|the party|everyone( else)?|they|both|we|us|all of (us|them|us))\b/i
     SHORTCUT_RE = /\A\s*(resolve|go|next|done|nothing)\s*[.!]?\s*\z/i
     DICE_RE     = /\A\s*\d*d\d+([+\-]\d+)?\s*\z/i
 

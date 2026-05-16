@@ -62,6 +62,19 @@ RSpec.describe Narrator::DeclarationParser do
                      undeclared_pcs: [], undeclared_companions: [ caine, fred, patric ])
       expect(result.declarations.size).to eq(3)
     end
+
+    it "attributes 'Everyone' to all undeclared (PCs + companions)" do
+      result = parse("Everyone walks to the cemetery.",
+                     undeclared_pcs: [ aragorn ], undeclared_companions: [ caine, fred, patric ])
+      pcs = result.declarations.map { _1[:pc] }
+      expect(pcs).to contain_exactly(aragorn, caine, fred, patric)
+    end
+
+    it "attributes 'We' to all undeclared" do
+      result = parse("We approach the gate.",
+                     undeclared_pcs: [ aragorn ], undeclared_companions: [ caine, fred, patric ])
+      expect(result.declarations.size).to eq(4)
+    end
   end
 
   context "unknown PC" do
