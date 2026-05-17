@@ -28,6 +28,20 @@ RSpec.describe "Play::DiceRolls", type: :request do
         expect(event.payload["rolls"]).to eq([ [ 4, 5 ], [] ])
       end
 
+      it "stamps turn_number on the dice_roll event so it's grouped with its turn in prompt history" do
+        # Set up an awaiting_roll state on Turn 1
+        aragorn = create(:player_character, campaign: campaign, name: "Aragorn", role: "pc")
+        campaign.update!(main_character: aragorn)
+        create(:event, scene: scene, kind: "narration", turn_number: 1,
+               payload: { "text" => "The door creaks. [[1d20+3 — Aragorn Strength]]", "status" => "complete" })
+
+        post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
+             params: { dice_roll: { expression: "1d20+3" } }
+
+        roll = scene.events.where(kind: "dice_roll").last
+        expect(roll.turn_number).to eq(1)
+      end
+
       it "responds with redirect on HTML format" do
         Dice::Random.with_fixed([ 4, 5 ]) do
           post "/campaigns/#{campaign.id}/scenes/#{scene.id}/dice_rolls",
