@@ -46,6 +46,22 @@ RSpec.describe Player::SceneStateViewModel, type: :view_model do
              payload: { "text" => "The door opens. What does Aragorn do?" })
       expect(described_class.new(scene).phase).to eq(:idle)
     end
+
+    # If a continuation call to Anthropic fails, NarrationJob leaves an errored
+    # narration event in the log. Without skipping it, "last narration" becomes
+    # the empty errored event — its text doesn't match OPEN_CHIP_RE, phase
+    # falls out of :awaiting_roll, and DiceRollsController stops enqueueing
+    # continuations. A single 400 would brick the chip until DB cleanup.
+    it "stays :awaiting_roll after a failed continuation (skips errored narrations)" do
+      create(:event, scene:, kind: "pc_declaration", pc: aragorn, turn_number: 1)
+      create(:event, scene:, kind: "narration", turn_number: 1,
+             payload: { "text" => "You see... [[1d20+3 — Aragorn Perception]]", "status" => "complete" })
+      create(:event, scene:, kind: "dice_roll", pc: aragorn, turn_number: 1,
+             payload: { "expression" => "1d20+3", "result" => 17 })
+      create(:event, scene:, kind: "narration", turn_number: 1,
+             payload: { "text" => "", "status" => "errored", "error_message" => "boom" })
+      expect(described_class.new(scene).phase).to eq(:awaiting_roll)
+    end
   end
 
   describe "#undeclared_pcs_this_turn" do

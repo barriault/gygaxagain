@@ -108,7 +108,10 @@ module Player
     end
 
     def last_narration
-      events.to_a.reverse.find { _1.kind == "narration" }
+      # Skip errored narrations: a failed continuation leaves an empty errored
+      # event in the log, and treating it as "last narration" would drop the
+      # phase out of :awaiting_roll, preventing chip-retry from re-enqueueing.
+      events.to_a.reverse.find { _1.kind == "narration" && _1.payload["status"] != "errored" }
     end
 
     def last_narration_text
