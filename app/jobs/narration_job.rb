@@ -91,6 +91,7 @@ class NarrationJob < ApplicationJob
       ))
     end
     broadcast_replace(event)
+    Player::ChromeBroadcaster.refresh(event.scene)
   end
 
   # Anthropic strips the matched stop sequence from the streamed text. Re-append
@@ -109,6 +110,7 @@ class NarrationJob < ApplicationJob
       ))
     end
     broadcast_replace(event)
+    Player::ChromeBroadcaster.refresh(event.scene)
   end
 
   def broadcast_replace(event)

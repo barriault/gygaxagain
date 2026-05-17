@@ -6,7 +6,7 @@ module Play
     end
     attr_reader :scene, :state
 
-    def render? = state.phase == :collecting && (state.undeclared_pcs_this_turn.any? || !state.companion_prompt_offered?)
+    def visible? = state.phase == :collecting && (state.undeclared_pcs_this_turn.any? || !state.companion_prompt_offered?)
 
     def message
       if state.undeclared_pcs_this_turn.any?

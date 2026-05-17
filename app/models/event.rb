@@ -77,5 +77,10 @@ class Event < ApplicationRecord
       renderable: component_class.new(event: self),
       layout: false
     )
+
+    # Phase may have changed (e.g. new pc_declaration → :collecting, new
+    # narration → "narrating"). Refresh the composer + state indicator so
+    # the player surface reflects the new disabled/placeholder state.
+    Player::ChromeBroadcaster.refresh(scene)
   end
 end

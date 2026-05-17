@@ -1,7 +1,6 @@
-<div class="composer flex-none border-t border-slate-800 bg-slate-900 px-6 py-3"
-     data-controller="chat-composer"
-     data-scene-id="<%= scene.id %>"
-     data-campaign-id="<%= scene.campaign_id %>">
+<div id="scene_<%= scene.id %>_composer"
+     class="composer flex-none border-t border-slate-800 bg-slate-900 px-6 py-3"
+     data-controller="chat-composer">
   <%= form_with url: submit_path, method: :post, local: false,
                 data: { chat_composer_target: "form" },
                 class: "flex gap-2 items-end" do |f| %>

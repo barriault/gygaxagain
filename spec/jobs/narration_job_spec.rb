@@ -53,6 +53,25 @@ RSpec.describe NarrationJob, type: :job do
     end
   end
 
+  describe "chrome refresh broadcasts" do
+    # The composer/state-indicator are rendered once at page load with the
+    # phase-at-the-time disabled state. Without a broadcast after the narration
+    # finalizes, the composer stays disabled until the user reloads — even
+    # though the new phase (e.g. :idle after a handoff) would re-enable it.
+    it "broadcasts a composer replace after finalize_success" do
+      install_turbo_capture!
+      narration = scene.events.create!(kind: "narration", turn_number: 1,
+                                       payload: { "text" => "", "status" => "streaming", "trigger" => "framing" })
+      described_class.perform_now(scene_id: scene.id, narration_event_id: narration.id, trigger: "framing")
+
+      replace_targets = captured_turbo_broadcasts
+        .select { |b| b[:method] == :broadcast_replace_to }
+        .map    { |b| b[:kwargs][:target].to_s }
+      expect(replace_targets).to include(a_string_matching(/composer/))
+      expect(replace_targets).to include(a_string_matching(/state_indicator/))
+    end
+  end
+
   describe "stop_sequence handling" do
     # Anthropic strips the matched stop_sequence from the response text. Without
     # re-appending it, a dice chip like "[[1d20+3 — Aragorn Perception]]" arrives

@@ -14,10 +14,13 @@ RSpec.describe Play::StateIndicatorComponent, type: :component do
     expect(rendered.to_s).to include("Patric")
   end
 
-  it "renders nothing outside collecting phase" do
-    # no events = :framing phase — render? returns false
+  it "renders only the empty broadcast wrapper outside collecting phase" do
+    # The wrapper must always render so Turbo broadcasts can target its DOM id;
+    # the visible message is conditional on the collecting/waiting state.
     rendered = render_inline(described_class.new(scene: scene))
-    expect(rendered.to_s.strip).to eq("")
+    expect(rendered.to_s).to include(%(id="scene_#{scene.id}_state_indicator"))
+    expect(rendered.to_s).not_to include("state-indicator")
+    expect(rendered.to_s).not_to include("Waiting on")
   end
 
   describe "asymmetry" do

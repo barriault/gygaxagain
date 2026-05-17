@@ -1,3 +1,7 @@
-<div class="state-indicator flex-none border-t border-slate-800 bg-slate-950/60 px-6 py-2 text-xs text-amber-300/80">
-  <%= message %>
+<div id="scene_<%= scene.id %>_state_indicator">
+  <% if visible? %>
+    <div class="state-indicator flex-none border-t border-slate-800 bg-slate-950/60 px-6 py-2 text-xs text-amber-300/80">
+      <%= message %>
+    </div>
+  <% end %>
 </div>
