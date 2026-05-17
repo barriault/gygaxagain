@@ -26,19 +26,11 @@ RSpec.describe Play::Scenes::LogComponent, type: :component do
              payload: { "expression" => "2d6+3", "result" => 10 },
              occurred_at: 4.minutes.ago)
     end
-    let!(:oracle_event) do
-      create(:event, :oracle_query,
-             scene: scene,
-             payload: { "question" => "Does he leave?", "answer" => "no" },
-             occurred_at: 3.minutes.ago)
-    end
-
     it "renders each event via its dedicated component" do
       render_inline(described_class.new(scene: scene))
 
       expect(page).to have_text("The tavern is quiet.")
       expect(page).to have_text("2d6+3")
-      expect(page).to have_text("Does he leave?")
     end
 
     it "renders events in chronological order (oldest to newest)" do
@@ -46,10 +38,8 @@ RSpec.describe Play::Scenes::LogComponent, type: :component do
 
       narration_pos = rendered.index("The tavern is quiet.")
       dice_pos      = rendered.index("2d6+3")
-      oracle_pos    = rendered.index("Does he leave?")
 
       expect(narration_pos).to be < dice_pos
-      expect(dice_pos).to be < oracle_pos
     end
   end
 

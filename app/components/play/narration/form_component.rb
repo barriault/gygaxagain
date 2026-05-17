@@ -14,7 +14,7 @@ module Play
       end
 
       def submit_path
-        helpers.campaign_scene_narrations_path(scene.campaign, scene)
+        helpers.campaign_scene_pc_declarations_path(scene.campaign, scene)
       end
     end
   end

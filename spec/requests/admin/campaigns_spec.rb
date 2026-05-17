@@ -239,4 +239,24 @@ RSpec.describe "Admin::Campaigns", type: :request do
       end
     end
   end
+
+  describe "main_character_id" do
+    let(:user) { create(:user) }
+    before { sign_in user; host! "admin.gygaxagain.com" }
+
+    it "assigns the main character on update" do
+      campaign = create(:campaign, user:)
+      aragorn  = create(:player_character, campaign:, name: "Aragorn")
+      patch admin_campaign_path(campaign), params: { campaign: { main_character_id: aragorn.id } }
+      expect(campaign.reload.main_character).to eq(aragorn)
+    end
+
+    it "accepts nil (unsetting)" do
+      campaign = create(:campaign, user:)
+      aragorn  = create(:player_character, campaign:, name: "Aragorn")
+      campaign.update!(main_character: aragorn)
+      patch admin_campaign_path(campaign), params: { campaign: { main_character_id: "" } }
+      expect(campaign.reload.main_character).to be_nil
+    end
+  end
 end

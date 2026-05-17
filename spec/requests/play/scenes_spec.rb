@@ -20,11 +20,13 @@ RSpec.describe "Play::Scenes", type: :request do
       before { sign_in user }
 
       it "renders the scene play page" do
+        # Pre-create an event so we don't trigger framing on load
+        create(:event, scene:, kind: "narration", payload: { "text" => "What do you do?" })
+
         get "/campaigns/#{campaign.id}/scenes/#{scene.id}/play"
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Tavern at Dusk")
-        expect(response.body).to match(/the scene is set/i)
       end
 
       it "404s for a scene in another user's campaign" do
@@ -42,6 +44,33 @@ RSpec.describe "Play::Scenes", type: :request do
         get "/campaigns/#{campaign_b.id}/scenes/#{scene.id}/play"
         expect(response).to have_http_status(:not_found)
       end
+    end
+  end
+
+  describe "framing trigger" do
+    include ActiveJob::TestHelper
+
+    it "enqueues a framing NarrationJob when scene has zero events" do
+      user     = create(:user)
+      campaign = create(:campaign, user:)
+      create(:player_character, campaign:, name: "Aragorn", role: "pc").tap { campaign.update!(main_character: _1) }
+      scene = create(:scene, campaign:)
+      sign_in user
+      expect {
+        get play_campaign_scene_path(campaign, scene)
+      }.to have_enqueued_job(NarrationJob).with(hash_including(trigger: "framing"))
+    end
+
+    it "does not enqueue framing when events exist" do
+      user     = create(:user)
+      campaign = create(:campaign, user:)
+      create(:player_character, campaign:, name: "Aragorn", role: "pc").tap { campaign.update!(main_character: _1) }
+      scene = create(:scene, campaign:)
+      create(:event, scene:, kind: "narration", payload: { "text" => "What do you do?" })
+      sign_in user
+      expect {
+        get play_campaign_scene_path(campaign, scene)
+      }.not_to have_enqueued_job(NarrationJob)
     end
   end
 end

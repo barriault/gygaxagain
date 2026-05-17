@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_16_155121) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,10 +18,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
     t.integer "chaos_factor", default: 5, null: false
     t.datetime "created_at", null: false
     t.text "description"
+    t.bigint "main_character_id"
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index "user_id, lower((name)::text)", name: "index_campaigns_on_user_id_and_lower_name", unique: true
+    t.index ["main_character_id"], name: "index_campaigns_on_main_character_id"
     t.index ["user_id"], name: "index_campaigns_on_user_id"
   end
 
@@ -30,10 +32,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
     t.string "kind", null: false
     t.datetime "occurred_at", null: false
     t.jsonb "payload", default: {}, null: false
+    t.bigint "pc_id"
     t.bigint "scene_id", null: false
+    t.integer "turn_number"
     t.datetime "updated_at", null: false
     t.index ["kind"], name: "index_events_on_kind"
+    t.index ["pc_id"], name: "index_events_on_pc_id"
     t.index ["scene_id", "occurred_at"], name: "index_events_on_scene_id_and_occurred_at"
+    t.index ["scene_id", "turn_number"], name: "index_events_on_scene_id_and_turn_number"
     t.index ["scene_id"], name: "index_events_on_scene_id"
   end
 
@@ -100,6 +106,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
     t.index ["campaign_id"], name: "index_npcs_on_campaign_id"
   end
 
+  create_table "player_characters", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.string "class_name"
+    t.datetime "created_at", null: false
+    t.integer "level"
+    t.string "name", null: false
+    t.text "notes"
+    t.string "pronouns"
+    t.string "role", default: "pc", null: false
+    t.datetime "updated_at", null: false
+    t.index "campaign_id, lower((name)::text)", name: "index_player_characters_on_campaign_and_name", unique: true
+    t.index ["campaign_id"], name: "index_player_characters_on_campaign_id"
+  end
+
   create_table "scene_audits", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "llm_call_id", null: false
@@ -110,6 +130,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
     t.index ["llm_call_id"], name: "index_scene_audits_on_llm_call_id"
     t.index ["scene_id"], name: "index_scene_audits_on_scene_id", unique: true
     t.index ["verdict"], name: "index_scene_audits_on_verdict"
+  end
+
+  create_table "scene_secrets", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.string "label", null: false
+    t.bigint "scene_id", null: false
+    t.datetime "updated_at", null: false
+    t.index "scene_id, lower((label)::text)", name: "index_scene_secrets_on_scene_and_label", unique: true
+    t.index ["scene_id"], name: "index_scene_secrets_on_scene_id"
   end
 
   create_table "scenes", force: :cascade do |t|
@@ -148,7 +178,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
+  add_foreign_key "campaigns", "player_characters", column: "main_character_id", on_delete: :nullify
   add_foreign_key "campaigns", "users", on_delete: :cascade
+  add_foreign_key "events", "player_characters", column: "pc_id", on_delete: :nullify
   add_foreign_key "events", "scenes", on_delete: :cascade
   add_foreign_key "faction_secrets", "factions", on_delete: :cascade
   add_foreign_key "factions", "campaigns", on_delete: :cascade
@@ -157,8 +189,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_14_230134) do
   add_foreign_key "llm_calls", "users", on_delete: :cascade
   add_foreign_key "npc_secrets", "npcs", on_delete: :cascade
   add_foreign_key "npcs", "campaigns", on_delete: :cascade
+  add_foreign_key "player_characters", "campaigns", on_delete: :cascade
   add_foreign_key "scene_audits", "llm_calls", on_delete: :restrict
   add_foreign_key "scene_audits", "scenes", on_delete: :cascade
+  add_foreign_key "scene_secrets", "scenes", on_delete: :cascade
   add_foreign_key "scenes", "campaigns", on_delete: :cascade
   add_foreign_key "users", "campaigns", column: "last_played_campaign_id", on_delete: :nullify
 end

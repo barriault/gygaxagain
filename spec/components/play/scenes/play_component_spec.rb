@@ -30,36 +30,35 @@ RSpec.describe Play::Scenes::PlayComponent, type: :component do
     expect(page).to have_text(/the scene is set/i)
   end
 
-  it "renders a back link to the campaign play page" do
-    render_inline(described_class.new(scene: scene))
+  describe "Phase 9.1 layout" do
+    let(:scene) { create(:scene) }
+    let!(:pc) { create(:player_character, campaign: scene.campaign, name: "Aragorn", role: "pc").tap { scene.campaign.update!(main_character: _1) } }
 
-    expect(page).to have_link("← Back to #{campaign.name}", href: play_campaign_path(campaign))
-  end
+    it "renders the composer" do
+      rendered = render_inline(described_class.new(scene: scene))
+      expect(rendered.to_s).to include("composer")
+    end
 
-  it "renders the input dock (dice + oracle forms)" do
-    render_inline(described_class.new(scene: scene))
+    it "renders the roster sidebar" do
+      rendered = render_inline(described_class.new(scene: scene))
+      expect(rendered.to_s).to include("roster")
+    end
 
-    expect(page).to have_text(/roll dice/i)
-    expect(page).to have_text(/ask the oracle/i)
-  end
+    it "disables the scene picker with tooltip" do
+      rendered = render_inline(described_class.new(scene: scene))
+      expect(rendered.to_s).to include("Scene transitions arrive in Phase 9.3")
+    end
 
-  it "renders the narration form" do
-    scene = create(:scene)
-    rendered = render_inline(described_class.new(scene: scene))
-    expect(rendered.css("[data-controller='narration-form']")).to be_present
-  end
-
-  it "wraps the log in a scene-log-scroll Stimulus container" do
-    scene = create(:scene)
-    rendered = render_inline(described_class.new(scene: scene))
-    expect(rendered.css("[data-controller='scene-log-scroll']")).to be_present
-  end
-
-  it "hides the narration form when the scene is closed" do
-    scene = create(:scene, closed_at: Time.current)
-    rendered = render_inline(described_class.new(scene: scene))
-    expect(rendered.css("[data-controller='narration-form']")).to be_empty
-    expect(rendered.text).to include("scene has been closed")
+    # dice_chip_controller.js does `this.element.closest("[data-scene-id]")` —
+    # the chip lives inside the log subtree, the composer is a sibling, so the
+    # IDs must hang on a common ancestor or the click handler aborts.
+    it "exposes data-scene-id and data-campaign-id on a common ancestor of the log and composer" do
+      rendered = render_inline(described_class.new(scene: scene))
+      ancestor = rendered.css("[data-scene-id='#{scene.id}'][data-campaign-id='#{scene.campaign_id}']").first
+      expect(ancestor).not_to be_nil, "expected a wrapper carrying scene_id and campaign_id"
+      expect(ancestor.css("[data-controller~='chat-composer']")).not_to be_empty
+      expect(ancestor.text).to match(/the scene is set/i) # log is inside too
+    end
   end
 
   describe "asymmetry" do

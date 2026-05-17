@@ -1,17 +1,28 @@
-<div id="<%= dom_id %>" class="py-3 <%= 'rounded border border-rose-700 bg-rose-900/20 p-3' if status == 'errored' %>">
-  <% if status == 'errored' %>
+<div id="<%= dom_id %>" class="py-3 <%= 'rounded border border-rose-700 bg-rose-900/20 p-3' if errored? %>">
+  <% if errored? %>
     <p class="text-xs uppercase tracking-widest text-rose-400">Narrator error</p>
   <% end %>
 
-  <p class="text-slate-200 leading-relaxed">
-    <%= text %><%= '…' if status == 'streaming' %>
-    <% if status == 'streaming' %>
+  <div class="text-slate-200 leading-relaxed max-w-none
+              [&_p]:mb-4 [&_p:last-child]:mb-0
+              [&_strong]:font-semibold [&_strong]:text-slate-50
+              [&_em]:italic
+              [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
+              [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-4 [&_h2]:mb-2
+              [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1
+              [&_blockquote]:border-l-2 [&_blockquote]:border-slate-700 [&_blockquote]:pl-3 [&_blockquote]:text-slate-400 [&_blockquote]:italic
+              [&_code]:rounded [&_code]:bg-slate-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-xs [&_code]:text-amber-300
+              [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4
+              [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4
+              [&_li]:mb-1">
+    <%= rendered_html %><%= '…' if streaming? %>
+    <% if streaming? %>
       <span data-narration-status="streaming"
             class="inline-block w-2 h-4 align-middle ml-1 bg-amber-500 animate-pulse"></span>
     <% end %>
-  </p>
+  </div>
 
-  <% if status == 'errored' && error_message.present? %>
+  <% if errored? && error_message.present? %>
     <p class="mt-2 text-sm text-rose-300">
       the narrator couldn't finish — <%= error_message %>. try again.
     </p>

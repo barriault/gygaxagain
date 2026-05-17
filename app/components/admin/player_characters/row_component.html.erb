@@ -1,0 +1,11 @@
+<tr>
+  <td><%= link_to pc.name, admin_campaign_player_character_path(campaign, pc) %></td>
+  <td><%= pc.role %></td>
+  <td><%= pc.class_name %></td>
+  <td><%= pc.level %></td>
+  <td>
+    <%= link_to "Edit", edit_admin_campaign_player_character_path(campaign, pc) %>
+    <%= button_to "Delete", admin_campaign_player_character_path(campaign, pc), method: :delete,
+                  data: { turbo_confirm: "Remove #{pc.name}?" } %>
+  </td>
+</tr>

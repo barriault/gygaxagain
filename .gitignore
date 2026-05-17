@@ -81,5 +81,8 @@ yarn-error.log
 # Claude Code per-machine local settings.
 .claude/settings.local.json
 
+# Claude Code per-session worktree markers (created by sibling sessions).
+.claude/worktrees/
+
 # Superpowers visual companion / brainstorm session artifacts.
 .superpowers/

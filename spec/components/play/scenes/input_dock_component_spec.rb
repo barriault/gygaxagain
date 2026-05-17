@@ -12,13 +12,6 @@ RSpec.describe Play::Scenes::InputDockComponent, type: :component do
     expect(page).to have_field("dice_roll[expression]")
   end
 
-  it "renders the oracle form" do
-    render_inline(described_class.new(scene: scene))
-
-    expect(page).to have_text(/ask the oracle/i)
-    expect(page).to have_field("oracle_query[question]")
-  end
-
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }

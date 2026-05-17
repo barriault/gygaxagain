@@ -65,7 +65,7 @@ module Admin
     end
 
     def campaign_params
-      params.require(:campaign).permit(:name, :description)
+      params.require(:campaign).permit(:name, :description, :main_character_id)
     end
   end
 end

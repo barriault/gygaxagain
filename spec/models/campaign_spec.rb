@@ -2,21 +2,24 @@
 #
 # Table name: campaigns
 #
-#  id           :bigint           not null, primary key
-#  chaos_factor :integer          default(5), not null
-#  description  :text
-#  name         :string           not null
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
-#  user_id      :bigint           not null
+#  id                :bigint           not null, primary key
+#  chaos_factor      :integer          default(5), not null
+#  description       :text
+#  name              :string           not null
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  main_character_id :bigint
+#  user_id           :bigint           not null
 #
 # Indexes
 #
+#  index_campaigns_on_main_character_id       (main_character_id)
 #  index_campaigns_on_user_id                 (user_id)
 #  index_campaigns_on_user_id_and_lower_name  (user_id, lower((name)::text)) UNIQUE
 #
 # Foreign Keys
 #
+#  fk_rails_...  (main_character_id => player_characters.id) ON DELETE => nullify
 #  fk_rails_...  (user_id => users.id) ON DELETE => cascade
 #
 require "rails_helper"
@@ -25,6 +28,11 @@ RSpec.describe Campaign, type: :model do
   describe "associations" do
     it { is_expected.to belong_to(:user) }
     it { is_expected.to have_many(:llm_calls).dependent(:destroy) }
+    it { is_expected.to have_many(:player_characters).dependent(:destroy) }
+    it "optionally belongs to a main_character" do
+      expect(described_class.reflect_on_association(:main_character).options[:optional]).to eq(true)
+      expect(described_class.reflect_on_association(:main_character).options[:class_name]).to eq("PlayerCharacter")
+    end
   end
 
   describe "validations" do

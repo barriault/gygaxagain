@@ -14,12 +14,12 @@ module Player
 
     def render_text
       case @record.kind
-      when "narration"        then @record.payload["text"].to_s
-      when "player_action"    then @record.payload["text"].to_s
-      when "dice_roll"        then "Rolled #{@record.payload["expression"]} → #{@record.payload["result"]}"
-      when "oracle_query"     then "Asked: #{@record.payload["question"]} (#{@record.payload["likelihood"]}, chaos #{@record.payload["chaos"]}) → #{@record.payload["answer"]}"
-      when "scene_transition" then @record.payload["reason"].to_s
-      else                         ""
+      when "narration"             then @record.payload["text"].to_s
+      when "pc_declaration"        then @record.payload["text"].to_s
+      when "gm_collection_prompt"  then @record.payload["text"].to_s
+      when "dice_roll"             then "Rolled #{@record.payload["expression"]} → #{@record.payload["result"]}"
+      when "scene_transition"      then @record.payload["reason"].to_s
+      else                              ""
       end
     end
   end

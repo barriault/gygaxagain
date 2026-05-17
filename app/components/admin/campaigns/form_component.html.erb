@@ -31,6 +31,16 @@
                         class: "mt-2 w-full rounded bg-slate-800 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500" %>
       </div>
 
+      <% if campaign.player_characters.pcs.any? %>
+        <div>
+          <%= f.label :main_character_id, "Main PC", class: "block text-sm uppercase tracking-widest text-slate-400" %>
+          <%= f.select :main_character_id,
+                       campaign.player_characters.pcs.order(:name).pluck(:name, :id),
+                       { include_blank: "(none)" },
+                       class: "mt-2 rounded bg-slate-800 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500" %>
+        </div>
+      <% end %>
+
       <div class="flex items-center gap-4">
         <%= f.submit (campaign.persisted? ? "Update campaign" : "Create campaign"),
                      class: "rounded bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white" %>

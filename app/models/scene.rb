@@ -25,6 +25,7 @@ class Scene < ApplicationRecord
   belongs_to :campaign
   has_many :events, dependent: :destroy
   has_many :llm_calls, dependent: :nullify
+  has_many :scene_secrets, dependent: :destroy
   has_one :audit, class_name: "SceneAudit", dependent: :destroy
 
   acts_as_list scope: :campaign

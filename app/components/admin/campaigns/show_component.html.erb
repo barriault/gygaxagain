@@ -13,6 +13,10 @@
 
     <%= render Admin::Campaigns::ChaosFactorComponent.new(campaign: campaign) %>
 
+    <div class="mt-6">
+      <p><%= link_to "Manage PCs (#{campaign.player_characters.count})", helpers.admin_campaign_player_characters_path(campaign) %></p>
+    </div>
+
     <div class="mt-10">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">Scenes</h2>

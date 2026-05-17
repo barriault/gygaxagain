@@ -1,0 +1,15 @@
+<h1><%= pc.name %></h1>
+<p>
+  <strong>Role:</strong> <%= pc.role %><br>
+  <strong>Class:</strong> <%= pc.class_name %><br>
+  <strong>Level:</strong> <%= pc.level %><br>
+  <strong>Pronouns:</strong> <%= pc.pronouns %><br>
+</p>
+<% if pc.notes.present? %>
+  <h2>Notes (DM-only)</h2>
+  <pre><%= pc.notes %></pre>
+<% end %>
+<p>
+  <%= link_to "Edit", edit_admin_campaign_player_character_path(campaign, pc) %>
+  <%= link_to "← All PCs", admin_campaign_player_characters_path(campaign) %>
+</p>

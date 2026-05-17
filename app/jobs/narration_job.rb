@@ -1,21 +1,18 @@
 class NarrationJob < ApplicationJob
   queue_as :narration
+
   discard_on ActiveRecord::RecordNotFound, KeyError, Llm::ConfigError
 
   FLUSH_MS    = 80
   FLUSH_BYTES = 25
 
-  def perform(narration_event_id)
-    narration_event = Event.find(narration_event_id)
-    scene           = narration_event.scene
-    campaign        = scene.campaign
-    user            = campaign.user
-    player_action   = Event.find(narration_event.payload.fetch("player_action_event_id"))
+  def perform(scene_id:, narration_event_id:, trigger:)
+    scene    = Scene.find(scene_id)
+    event    = scene.events.find(narration_event_id)
+    campaign = scene.campaign
+    user     = campaign.user
 
-    prompt = Narrator::PromptBuilder.call(
-      scene: scene,
-      player_action_text: player_action.payload.fetch("text")
-    )
+    prompt = build_prompt(scene:, trigger:)
 
     accumulator = +""
     buffer      = +""
@@ -30,35 +27,54 @@ class NarrationJob < ApplicationJob
       buffer      << text
       now = monotonic_ms
       if now - last_flush >= FLUSH_MS || buffer.bytesize >= FLUSH_BYTES
-        flush(narration_event, accumulator, status: "streaming")
+        flush(event, accumulator, status: "streaming")
         buffer.clear
         last_flush = now
       end
     end
 
     if llm_call.successful?
-      finalize_success(narration_event, accumulator, llm_call)
+      finalize_success(event, accumulator, llm_call)
     else
-      finalize_error(narration_event, accumulator, llm_call)
+      finalize_error(event, accumulator, llm_call)
     end
-  rescue Exception => e
+  rescue StandardError => e
     # Mark the event errored so the user sees a clear "failed" state instead
     # of perma-streaming. Re-raise so ActiveJob can still apply retry/discard.
-    if defined?(narration_event) && narration_event
+    if defined?(event) && event
       error_message = "#{e.class.name}: #{e.message}".byteslice(0, 500)
       text          = defined?(accumulator) ? accumulator.to_s : ""
-      narration_event.with_lock do
-        narration_event.update!(payload: narration_event.payload.merge(
+      event.with_lock do
+        event.update!(payload: event.payload.merge(
           "text" => text, "status" => "errored", "error_message" => error_message
         ))
       end
-      broadcast_replace(narration_event)
+      broadcast_replace(event)
     end
     Rails.logger.error("[NarrationJob] #{e.class}: #{e.message}\n#{e.backtrace.first(10).join("\n")}")
     raise
   end
 
   private
+
+  def build_prompt(scene:, trigger:)
+    case trigger.to_s
+    when "framing"
+      Narrator::PromptBuilder.framing(scene: scene)
+    when "resolution"
+      decls = scene.events
+                   .where(kind: "pc_declaration",
+                          turn_number: Player::SceneStateViewModel.new(scene).current_turn_number)
+                   .order(:occurred_at, :id)
+                   .map { |e| { pc: e.pc, text: e.payload["text"] } }
+      Narrator::PromptBuilder.resolution(scene: scene, current_turn_declarations: decls)
+    when "continuation"
+      latest_roll = scene.events.where(kind: "dice_roll").order(:occurred_at, :id).last
+      Narrator::PromptBuilder.continuation(scene: scene, latest_roll: latest_roll)
+    else
+      raise KeyError, "Unknown trigger: #{trigger}"
+    end
+  end
 
   def flush(event, text, status:)
     event.with_lock do
@@ -68,12 +84,21 @@ class NarrationJob < ApplicationJob
   end
 
   def finalize_success(event, text, llm_call)
+    final_text = text + matched_stop_sequence(llm_call).to_s
     event.with_lock do
       event.update!(payload: event.payload.merge(
-        "text" => text, "status" => "complete", "llm_call_id" => llm_call.id
+        "text" => final_text, "status" => "complete", "llm_call_id" => llm_call.id
       ))
     end
     broadcast_replace(event)
+    Player::ChromeBroadcaster.refresh(event.scene)
+  end
+
+  # Anthropic strips the matched stop sequence from the streamed text. Re-append
+  # it so dice chips ("[[…]]") arrive intact for ChipParser to render as buttons.
+  def matched_stop_sequence(llm_call)
+    return nil unless llm_call.response_payload["stop_reason"] == "stop_sequence"
+    llm_call.response_payload["stop_sequence"]
   end
 
   def finalize_error(event, text, llm_call)
@@ -85,6 +110,7 @@ class NarrationJob < ApplicationJob
       ))
     end
     broadcast_replace(event)
+    Player::ChromeBroadcaster.refresh(event.scene)
   end
 
   def broadcast_replace(event)

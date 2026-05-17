@@ -1,0 +1,9 @@
+<tr>
+  <td><%= link_to secret.label, admin_campaign_scene_scene_secret_path(campaign, scene, secret) %></td>
+  <td><%= truncate(secret.content, length: 100) %></td>
+  <td>
+    <%= link_to "Edit", edit_admin_campaign_scene_scene_secret_path(campaign, scene, secret) %>
+    <%= button_to "Delete", admin_campaign_scene_scene_secret_path(campaign, scene, secret), method: :delete,
+                  data: { turbo_confirm: "Remove '#{secret.label}'?" } %>
+  </td>
+</tr>

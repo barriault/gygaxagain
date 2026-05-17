@@ -7,7 +7,6 @@ module Play
             { kind: "narration",        payload: { "text" => "The tavern is quiet. Rain drips from the eaves." } },
             { kind: "dice_roll",        payload: { "expression" => "2d6+3", "result" => 10, "breakdown" => [ 4, 3, "+3" ] } },
             { kind: "narration",        payload: { "text" => "You notice a familiar dagger on his belt." } },
-            { kind: "oracle_query",     payload: { "question" => "Does he leave?", "likelihood" => "unlikely", "chaos" => 5, "answer" => "no, exceptional" } },
             { kind: "scene_transition", payload: { "reason" => "Player followed the stranger to the forest." } }
           ]
         )

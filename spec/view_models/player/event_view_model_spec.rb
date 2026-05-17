@@ -16,24 +16,23 @@ RSpec.describe Player::EventViewModel do
       expect(described_class.new(event).text).to eq("The door swings open.")
     end
 
-    it "renders player_action text" do
-      event = create(:event, scene: scene, kind: "player_action",
+    it "renders pc_declaration text" do
+      pc = create(:player_character, campaign: scene.campaign)
+      event = create(:event, scene: scene, kind: "pc_declaration", pc: pc,
                      payload: { "text" => "I open the door." })
       expect(described_class.new(event).text).to eq("I open the door.")
+    end
+
+    it "renders gm_collection_prompt text" do
+      event = create(:event, scene: scene, kind: "gm_collection_prompt",
+                     payload: { "text" => "And the others?" })
+      expect(described_class.new(event).text).to eq("And the others?")
     end
 
     it "renders dice_roll as expression and result" do
       event = create(:event, scene: scene, kind: "dice_roll",
                      payload: { "expression" => "2d6+3", "result" => 11 })
       expect(described_class.new(event).text).to eq("Rolled 2d6+3 → 11")
-    end
-
-    it "renders oracle_query with question, likelihood, chaos, answer" do
-      event = create(:event, scene: scene, kind: "oracle_query",
-                     payload: { "question" => "Does the door open?",
-                                "likelihood" => "50_50", "chaos" => 5, "answer" => "Yes" })
-      vm = described_class.new(event)
-      expect(vm.text).to eq("Asked: Does the door open? (50_50, chaos 5) → Yes")
     end
 
     it "renders scene_transition with reason" do

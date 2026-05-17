@@ -52,6 +52,23 @@ RSpec.describe Play::Events::NarrationComponent, type: :component do
     end
   end
 
+  describe "markdown rendering" do
+    it "renders **bold** as <strong>" do
+      event = create(:event, kind: "narration", payload: { "text" => "He **slams** the door.", "status" => "complete" })
+      rendered = render_inline(described_class.new(event: event))
+      expect(rendered.to_s).to include("<strong>slams</strong>")
+    end
+  end
+
+  describe "dice chips" do
+    it "renders [[…]] as a clickable button" do
+      event = create(:event, kind: "narration", payload: { "text" => "Roll [[1d20+3 — Aragorn Strength]] now.", "status" => "complete" })
+      rendered = render_inline(described_class.new(event: event))
+      expect(rendered.to_s).to include('class="dice-chip"')
+      expect(rendered.to_s).to include("1d20+3")
+    end
+  end
+
   describe "asymmetry" do
     let(:faction) { create(:faction, campaign: campaign) }
     let(:npc)     { create(:npc, campaign: campaign) }

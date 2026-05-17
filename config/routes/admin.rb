@@ -5,9 +5,12 @@ constraints subdomain: "admin" do
     resources :campaigns do
       resource :chaos_factor, only: [ :update ], controller: "chaos_factors"
 
+      resources :player_characters
+
       resources :scenes do
         resource :closure, only: [ :create ], controller: "scene_closures"
         resource :audit, only: [ :show ], controller: "scene_audits"
+        resources :scene_secrets
 
         member do
           post :move_up

@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true do
+RSpec.describe "Phase 7: dice play mechanics", type: :system, js: true do
   let(:password) { "correct horse battery staple" }
   let(:user) { create(:user, password: password, password_confirmation: password) }
   let!(:campaign) { create(:campaign, user: user, name: "Curse", chaos_factor: 5) }
@@ -16,10 +16,8 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
   # (which would otherwise point at the real gygaxagain.com production host).
   #
   # Because Turbo submits forms via fetch (asynchronously from Capybara's
-  # perspective), the Dice::Random / Mythic::Random fixed queues must be set
-  # BEFORE the click and left in place until the server consumes them. We set
-  # them directly rather than using the with_fixed block wrapper, which would
-  # restore the queue to nil before the async fetch reaches the server thread.
+  # perspective), the Dice::Random fixed queues must be set BEFORE the click
+  # and left in place until the server consumes them.
   before do
     Capybara.app_host = "http://lvh.me"
     sign_in user
@@ -27,11 +25,10 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
 
   after do
     Capybara.app_host = "http://gygaxagain.com"
-    Dice::Random.fixed_queue   = nil
-    Mythic::Random.fixed_queue = nil
+    Dice::Random.fixed_queue = nil
   end
 
-  it "rolls dice, asks the oracle, and adjusts chaos from admin" do
+  it "rolls dice and adjusts chaos from admin" do
     # Navigate directly to the scene's play page on the apex (play) subdomain.
     visit play_campaign_scene_path(campaign, scene)
     expect(page).to have_text("Tavern at Dusk")
@@ -49,15 +46,6 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
     expect(page).to have_text("Result: 15")
     expect(page).not_to have_text(/the scene is set/i)
 
-    # Ask the oracle — a roll of 33 with chaos 5 triggers a random event.
-    Mythic::Random.fixed_queue = [ 33 ]
-    fill_in "oracle_query[question]", with: "Does the door open?"
-    select "Likely", from: "oracle_query[likelihood]"
-    click_button "Ask"
-
-    expect(page).to have_text("Does the door open?")
-    expect(page).to have_text(/random event/i)
-
     # Switch to admin and bump chaos.
     Capybara.app_host = "http://admin.lvh.me"
     visit "/campaigns/#{campaign.id}"
@@ -68,11 +56,6 @@ RSpec.describe "Phase 7: dice + oracle play mechanics", type: :system, js: true 
     # the database, to avoid a race between the Capybara driver and the server.
     expect(page).to have_css("p", text: "6")
     expect(campaign.reload.chaos_factor).to eq(6)
-
-    # Back to play; confirm the oracle form's chaos label updated.
-    Capybara.app_host = "http://lvh.me"
-    visit play_campaign_scene_path(campaign, scene)
-    expect(page).to have_text("chaos 6")
   end
 
   describe "dice builder chips" do

@@ -1,0 +1,19 @@
+<div id="scene_<%= scene.id %>_composer"
+     class="composer flex-none border-t border-slate-800 bg-slate-900 px-6 py-3"
+     data-controller="chat-composer">
+  <%= form_with url: submit_path, method: :post, local: false,
+                data: { chat_composer_target: "form" },
+                class: "flex gap-2 items-end" do |f| %>
+    <%= f.text_area :text,
+                    placeholder: placeholder,
+                    disabled: disabled?,
+                    rows: 2,
+                    data: { chat_composer_target: "input",
+                            action: "keydown->chat-composer#handleKeydown input->chat-composer#handleInput" },
+                    class: "flex-1 min-w-0 resize-none rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed" %>
+    <%= f.submit "Send",
+                 disabled: disabled?,
+                 class: "rounded bg-amber-600 px-4 py-2 text-sm font-medium text-slate-50 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-700" %>
+  <% end %>
+  <p class="mt-1 text-xs text-slate-600">Enter to send · Shift+Enter for newline</p>
+</div>

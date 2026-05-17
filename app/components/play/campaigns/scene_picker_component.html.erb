@@ -9,7 +9,8 @@
       <% scenes.each do |scene| %>
         <li>
           <%= link_to helpers.play_campaign_scene_path(campaign, scene),
-                      class: "block rounded bg-slate-800 px-4 py-3 hover:bg-slate-700" do %>
+                      class: "block rounded bg-slate-800 px-4 py-3 hover:bg-slate-700",
+                      data: { turbo_prefetch: "false" } do %>
             <p class="font-semibold"><%= scene.title %></p>
             <% if scene.summary.present? %>
               <p class="mt-1 text-sm text-slate-400 line-clamp-2"><%= scene.summary %></p>
