@@ -6,7 +6,9 @@
 
 <%= helpers.turbo_stream_from [scene, scene.campaign.user] %>
 
-<div class="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+<div class="min-h-screen bg-slate-900 text-slate-100 flex flex-col"
+     data-scene-id="<%= scene.id %>"
+     data-campaign-id="<%= scene.campaign_id %>">
   <header class="play-header sticky top-12 z-20 px-6 py-4 border-b border-slate-800 flex items-center gap-4 bg-slate-900/95 backdrop-blur">
     <div class="flex-1 min-w-0">
       <p class="text-xs uppercase tracking-widest text-slate-500 truncate"><%= campaign.name %></p>

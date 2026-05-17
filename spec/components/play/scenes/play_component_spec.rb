@@ -48,6 +48,17 @@ RSpec.describe Play::Scenes::PlayComponent, type: :component do
       rendered = render_inline(described_class.new(scene: scene))
       expect(rendered.to_s).to include("Scene transitions arrive in Phase 9.3")
     end
+
+    # dice_chip_controller.js does `this.element.closest("[data-scene-id]")` —
+    # the chip lives inside the log subtree, the composer is a sibling, so the
+    # IDs must hang on a common ancestor or the click handler aborts.
+    it "exposes data-scene-id and data-campaign-id on a common ancestor of the log and composer" do
+      rendered = render_inline(described_class.new(scene: scene))
+      ancestor = rendered.css("[data-scene-id='#{scene.id}'][data-campaign-id='#{scene.campaign_id}']").first
+      expect(ancestor).not_to be_nil, "expected a wrapper carrying scene_id and campaign_id"
+      expect(ancestor.css("[data-controller~='chat-composer']")).not_to be_empty
+      expect(ancestor.text).to match(/the scene is set/i) # log is inside too
+    end
   end
 
   describe "asymmetry" do
