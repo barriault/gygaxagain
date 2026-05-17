@@ -141,9 +141,15 @@ module Narrator
     end
 
     def partial_turn_messages
-      # Only relevant for continuation kind: include partial narration as last assistant message
+      # Only relevant for continuation kind: include the chip-ending narration as
+      # the last assistant message. Skip the empty streaming placeholder that
+      # DiceRollsController creates for THIS continuation — an empty content
+      # block with a cache_control breakpoint triggers a 400 from Anthropic.
       return [] unless kind == :continuation
-      partial = scene.events.where(kind: "narration").order(:turn_number, :occurred_at, :id).last
+      partial = scene.events.where(kind: "narration")
+                            .order(:turn_number, :occurred_at, :id)
+                            .reject { |e| e.payload["text"].to_s.empty? }
+                            .last
       return [] unless partial
       [ { role: "assistant", content: partial.payload["text"].to_s } ]
     end

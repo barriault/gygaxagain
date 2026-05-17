@@ -99,6 +99,24 @@ RSpec.describe Narrator::PromptBuilder do
       assistant_idx = prompt.messages.rindex { _1[:role] == "assistant" }
       expect(prompt.messages[assistant_idx][:content]).to include("He straightens.")
     end
+
+    # DiceRollsController creates an empty streaming narration event BEFORE
+    # enqueuing the continuation job. Without skipping it, partial_turn_messages
+    # picks it up as the last narration and emits {role: "assistant", content: ""},
+    # which Anthropic rejects with "cache_control cannot be set for empty text blocks"
+    # because the -2 cache breakpoint lands on the empty assistant block.
+    context "when an empty streaming narration is already enqueued for this continuation" do
+      before do
+        create(:event, scene:, kind: "narration", turn_number: 1,
+               payload: { "text" => "", "status" => "streaming", "trigger" => "continuation" })
+      end
+
+      it "skips the empty placeholder and keeps the chip-ending narration as the partial assistant message" do
+        assistant_idx = prompt.messages.rindex { _1[:role] == "assistant" }
+        expect(prompt.messages[assistant_idx][:content]).to include("He straightens.")
+        expect(prompt.messages).to all(satisfy { |m| m[:content].to_s.length.positive? })
+      end
+    end
   end
 
   describe "asymmetry-NOT-protected (narrator prompt is DM-side)" do
